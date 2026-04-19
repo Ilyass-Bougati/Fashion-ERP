@@ -1,9 +1,10 @@
 ---
-name: Feature Request
+name: Request a Feature
 about: Suggest an enhancement for this project
 title: "[FEAT] "
 labels: enhancement
 assignees: ''
+
 ---
 
 **The Problem**
