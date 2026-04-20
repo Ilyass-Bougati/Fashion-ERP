@@ -28,6 +28,7 @@
     </scm>
     <properties>
         <java.version>17</java.version>
+        <spotless.version>3.3.0</spotless.version>
     </properties>
     <dependencies>
         <dependency>
@@ -54,6 +55,30 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>${spotless.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.7.0.Beta1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.14</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>1.4.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa-test</artifactId>
             <scope>test</scope>
@@ -73,6 +98,53 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.14</version>
+                <configuration>
+                    <excludes>
+                        <!-- ADD PACKAGES THAT SHOULD BE EXCLUDED (ALL BUT SERVICE)  -->
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/entity/**</exclude>
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/security/**</exclude>
+                        <exclude>**/controller/**</exclude>
+                        <exclude>**/mapper/**</exclude>
+                        <exclude>**/*Application.class</exclude>
+                    </excludes>
+                    <rules>
+                        <rule>
+                            <element>PACKAGE</element>
+                            <includes>
+                                <include>com.sefault.server.service.impl</include>
+                            </includes>
+                            <limits>
+                                <limit>
+                                    <counter>LINE</counter>
+                                    <value>COVEREDRATIO</value>
+                                    <minimum>0.60</minimum>
+                                </limit>
+                            </limits>
+                        </rule>
+                    </rules>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
@@ -82,6 +154,39 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <ratchetFrom>origin/main</ratchetFrom>
+
+                    <formats>
+                        <format>
+                            <includes>
+                                <include>.gitattributes</include>
+                                <include>.gitignore</include>
+                            </includes>
+                            <trimTrailingWhitespace/>
+                            <endWithNewline/>
+                            <indent>
+                                <tabs>true</tabs>
+                                <spacesPerTab>4</spacesPerTab>
+                            </indent>
+                        </format>
+                    </formats>
+
+                    <java>
+                        <palantirJavaFormat>
+                            <version>2.89.0</version>
+                        </palantirJavaFormat>
+
+                        <importOrder/>
+
+                        <removeUnusedImports/>
+                    </java>
                 </configuration>
             </plugin>
             <plugin>
@@ -99,6 +204,16 @@
                                 <path>
                                     <groupId>org.projectlombok</groupId>
                                     <artifactId>lombok</artifactId>
+                                </path>
+                                <path>
+                                    <groupId>org.mapstruct</groupId>
+                                    <artifactId>mapstruct-processor</artifactId>
+                                    <version>1.7.0.Beta1</version>
+                                </path>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok-mapstruct-binding</artifactId>
+                                    <version>0.2.0</version>
                                 </path>
                             </annotationProcessorPaths>
                         </configuration>
