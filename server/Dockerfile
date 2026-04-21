@@ -1,4 +1,4 @@
-FROM openjdk:17-slim AS builder
+FROM eclipse-temurin:17-jre
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,6 +10,7 @@ WORKDIR /java
 COPY . /java
 
 # Generate keypair
+RUN chmod +x keygen.sh
 RUN ./keygen.sh
 
 # Build the JAR
