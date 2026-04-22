@@ -3,7 +3,6 @@ package com.sefault.server.annotation;
 import com.sefault.server.validator.PhoneNumberValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
 import java.lang.annotation.*;
 
 @Documented
@@ -16,5 +15,6 @@ public @interface PhoneNumber {
 
     // Boilerplate required by the validation API
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }
