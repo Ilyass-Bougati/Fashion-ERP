@@ -2,13 +2,12 @@ package com.sefault.server.finance.entity;
 
 import com.sefault.server.hr.entity.Employee;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.*;
-import org.hibernate.annotations.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.*;
 
 @Entity
 @NoArgsConstructor
@@ -24,7 +23,7 @@ public class Payroll {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transaction_id", referencedColumnName = "id")
     private Transaction transaction;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
     private Employee employee;

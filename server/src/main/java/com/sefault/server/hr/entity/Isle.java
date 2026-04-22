@@ -1,12 +1,11 @@
 package com.sefault.server.hr.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.*;
 import org.hibernate.annotations.*;
-
-import java.util.UUID;
 
 @Entity
 @NoArgsConstructor

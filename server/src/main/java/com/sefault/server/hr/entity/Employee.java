@@ -5,15 +5,14 @@ import com.sefault.server.image.entity.Image;
 import com.sefault.server.sales.entity.Sale;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.*;
-import org.hibernate.annotations.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.*;
 
 @Entity
 @NoArgsConstructor
@@ -22,7 +21,7 @@ public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id")
     private Image image;
@@ -32,7 +31,7 @@ public class Employee {
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Sale> sales = new ArrayList<>();
-    
+
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Isle> isles = new ArrayList<>();
 

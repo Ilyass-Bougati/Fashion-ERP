@@ -2,13 +2,12 @@ package com.sefault.server.runner;
 
 import com.sefault.server.user.entity.Authority;
 import com.sefault.server.user.repository.AuthorityRepository;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -25,8 +24,7 @@ public class DefaultAuthoritiesRunner implements CommandLineRunner {
                 new Authority(null, new ArrayList<>(), "CREATE_USERS"),
                 new Authority(null, new ArrayList<>(), "DELETE_USERS"),
                 new Authority(null, new ArrayList<>(), "UPDATE_USERS"),
-                new Authority(null, new ArrayList<>(), "GRANT_AUTHORITIES")
-        );
+                new Authority(null, new ArrayList<>(), "GRANT_AUTHORITIES"));
 
         authorityRepository.saveAll(authorities);
         log.info("Create default authorities");

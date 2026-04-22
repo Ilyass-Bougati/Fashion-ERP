@@ -2,13 +2,12 @@ package com.sefault.server.user.entity;
 
 import com.sefault.server.user.entity.id.UserReportId;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.*;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

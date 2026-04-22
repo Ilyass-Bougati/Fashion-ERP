@@ -1,9 +1,8 @@
 package com.sefault.server.sales.entity.id;
 
 import jakarta.persistence.Embeddable;
-import lombok.*;
-
 import java.util.UUID;
+import lombok.*;
 
 @Getter
 @Setter

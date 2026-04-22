@@ -1,13 +1,12 @@
 package com.sefault.server.storage.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.*;
-import org.hibernate.annotations.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.*;
 
 @Entity
 @NoArgsConstructor
@@ -35,7 +34,7 @@ public class Vendor {
 
     @NotNull
     private Boolean active;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;

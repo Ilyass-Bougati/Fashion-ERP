@@ -4,18 +4,17 @@ import com.sefault.server.user.enums.ReportStatus;
 import com.sefault.server.user.enums.ReportType;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.*;
-import lombok.Setter;
-import org.hibernate.annotations.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.*;
 
 @Getter
 @Setter
@@ -54,8 +53,7 @@ public class Report {
     @JoinTable(
             name = "report_report_category",
             joinColumns = @JoinColumn(name = "report_id"),
-            inverseJoinColumns = @JoinColumn(name = "report_category_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "report_category_id"))
     private Set<ReportCategory> categories;
 
     @CreationTimestamp

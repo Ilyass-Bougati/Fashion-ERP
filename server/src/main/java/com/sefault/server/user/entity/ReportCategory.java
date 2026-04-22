@@ -2,13 +2,12 @@ package com.sefault.server.user.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
