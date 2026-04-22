@@ -10,10 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.*;
 
 @Entity
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductVariation {
@@ -30,6 +34,10 @@ public class ProductVariation {
     @OneToMany(mappedBy = "productVariation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleLine> saleLines = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
     @NotNull
     private Integer quantity;
 
@@ -38,6 +46,7 @@ public class ProductVariation {
     private Image image;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp

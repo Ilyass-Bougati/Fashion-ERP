@@ -27,5 +27,6 @@ public class UserReport {
     private Report report;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime accessedAt;
 }

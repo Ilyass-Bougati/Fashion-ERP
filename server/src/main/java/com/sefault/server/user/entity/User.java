@@ -58,6 +58,7 @@ public class User {
     private Boolean active = true;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
