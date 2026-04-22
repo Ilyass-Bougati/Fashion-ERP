@@ -1,38 +1,32 @@
-package com.sefault.server.entity;
+package com.sefault.server.user.entity;
 
-import com.sefault.server.entity.id.UserAuthorityId;
+import com.sefault.server.user.entity.id.UserReportId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.*;
 import lombok.Setter;
 import org.hibernate.annotations.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserAuthority {
+public class UserReport {
     @EmbeddedId
-    private UserAuthorityId id;
+    private UserReportId id = new UserReportId();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("authorityId")
-    private Authority authority;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "granted_by_id")
-    private User grantedBy;
+    @MapsId("reportId")
+    private Report report;
 
     @CreationTimestamp
-    private LocalDateTime grantedAt;
+    private LocalDateTime accessedAt;
 }

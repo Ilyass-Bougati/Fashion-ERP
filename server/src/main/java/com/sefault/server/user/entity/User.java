@@ -1,4 +1,4 @@
-package com.sefault.server.entity;
+package com.sefault.server.user.entity;
 
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
@@ -56,7 +56,7 @@ public class User {
     private String phoneNumber;
 
     @NotNull
-    private Boolean active;
+    private Boolean active = true;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

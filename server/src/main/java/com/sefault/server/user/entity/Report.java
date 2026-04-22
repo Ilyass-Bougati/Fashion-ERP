@@ -1,7 +1,7 @@
-package com.sefault.server.entity;
+package com.sefault.server.user.entity;
 
-import com.sefault.server.enums.ReportStatus;
-import com.sefault.server.enums.ReportType;
+import com.sefault.server.user.enums.ReportStatus;
+import com.sefault.server.user.enums.ReportType;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import lombok.AllArgsConstructor;
@@ -31,9 +31,11 @@ public class Report {
     private String title;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private ReportType type;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     private ReportStatus status;
 
     @NotEmpty

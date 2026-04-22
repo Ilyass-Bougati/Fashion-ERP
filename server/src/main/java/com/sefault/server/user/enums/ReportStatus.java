@@ -1,4 +1,4 @@
-package com.sefault.server.enums;
+package com.sefault.server.user.enums;
 
 public enum ReportStatus {
     PENDING,
