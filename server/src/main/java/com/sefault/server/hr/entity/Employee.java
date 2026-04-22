@@ -1,5 +1,6 @@
 package com.sefault.server.hr.entity;
 
+import com.sefault.server.annotation.PhoneNumber;
 import com.sefault.server.finance.entity.Payroll;
 import com.sefault.server.image.entity.Image;
 import com.sefault.server.sales.entity.Sale;
@@ -46,9 +47,12 @@ public class Employee {
     private String lastName;
 
     @NotEmpty
+    @PhoneNumber
+    @Column(unique = true)
     private String phoneNumber;
 
     @NotEmpty
+    @Column(unique = true)
     private String CIN;
 
     @Email

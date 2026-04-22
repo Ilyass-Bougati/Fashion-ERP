@@ -1,5 +1,6 @@
 package com.sefault.server.user.entity;
 
+import com.sefault.server.annotation.PhoneNumber;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.validation.constraints.*;
@@ -50,8 +51,9 @@ public class User {
     @OneToMany(mappedBy = "grantedBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserAuthority> grantedAuthorities = new ArrayList<>();
 
-    // This needs validation and to be unique
     @NotEmpty
+    @PhoneNumber
+    @Column(unique = true)
     private String phoneNumber;
 
     @NotNull
