@@ -43,6 +43,9 @@ public class Vendor {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Column(name = "product_id", insertable = false, updatable = false)
+    private UUID productId;
+
     @CreationTimestamp
     @Immutable
     @Column(updatable = false)

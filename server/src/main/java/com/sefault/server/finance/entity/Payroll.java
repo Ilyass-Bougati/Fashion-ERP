@@ -32,6 +32,9 @@ public class Payroll {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
+    @Column(name = "employee_id", insertable = false, updatable = false)
+    private UUID employeeId;
+
     @NotNull
     private Double commission;
 

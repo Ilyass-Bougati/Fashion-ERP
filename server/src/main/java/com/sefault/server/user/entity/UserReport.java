@@ -3,6 +3,7 @@ package com.sefault.server.user.entity;
 import com.sefault.server.user.entity.id.UserReportId;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,9 +23,15 @@ public class UserReport {
     @MapsId("userId")
     private User user;
 
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private UUID userId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("reportId")
     private Report report;
+
+    @Column(name = "report_id", insertable = false, updatable = false)
+    private UUID reportId;
 
     @CreationTimestamp
     @Immutable

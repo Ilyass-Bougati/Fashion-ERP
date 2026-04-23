@@ -38,12 +38,18 @@ public class ProductVariation {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Column(name = "product_id", insertable = false, updatable = false)
+    private UUID productId;
+
     @NotNull
     private Integer quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id")
     private Image image;
+
+    @Column(name = "image_id", insertable = false, updatable = false)
+    private UUID imageId;
 
     @CreationTimestamp
     @Immutable
