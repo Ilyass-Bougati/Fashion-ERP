@@ -3,9 +3,7 @@ package com.sefault.server.finance.mapper;
 import com.sefault.server.finance.dto.projection.PayrollProjection;
 import com.sefault.server.finance.dto.record.PayrollRecord;
 import com.sefault.server.finance.entity.Payroll;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")

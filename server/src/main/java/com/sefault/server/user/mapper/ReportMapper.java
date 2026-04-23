@@ -3,9 +3,7 @@ package com.sefault.server.user.mapper;
 import com.sefault.server.user.dto.projection.ReportProjection;
 import com.sefault.server.user.dto.record.ReportRecord;
 import com.sefault.server.user.entity.Report;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")

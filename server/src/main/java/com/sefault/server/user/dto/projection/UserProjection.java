@@ -3,7 +3,6 @@ package com.sefault.server.user.dto.projection;
 import com.sefault.server.user.entity.Session;
 import com.sefault.server.user.entity.UserAuthority;
 import com.sefault.server.user.entity.UserReport;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

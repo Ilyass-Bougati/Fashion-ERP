@@ -3,9 +3,7 @@ package com.sefault.server.image.mapper;
 import com.sefault.server.image.dto.projection.ImageProjection;
 import com.sefault.server.image.dto.record.ImageRecord;
 import com.sefault.server.image.entity.Image;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")

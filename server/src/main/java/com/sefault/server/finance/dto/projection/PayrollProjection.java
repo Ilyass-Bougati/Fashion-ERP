@@ -2,7 +2,6 @@ package com.sefault.server.finance.dto.projection;
 
 import com.sefault.server.finance.entity.Transaction;
 import com.sefault.server.hr.entity.Employee;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 

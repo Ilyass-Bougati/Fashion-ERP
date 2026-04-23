@@ -3,9 +3,7 @@ package com.sefault.server.storage.mapper;
 import com.sefault.server.storage.dto.projection.ProductCategoryProjection;
 import com.sefault.server.storage.dto.record.ProductCategoryRecord;
 import com.sefault.server.storage.entity.ProductCategory;
-import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")

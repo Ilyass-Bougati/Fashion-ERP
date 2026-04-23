@@ -26,8 +26,8 @@ public class Sale {
     private UUID id;
 
     @NotNull
-    @Positive
     @Max(1)
+    @PositiveOrZero
     private Double discount;
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -39,6 +39,9 @@ public class Sale {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
     private Employee employee;
+
+    @Column(name = "employee_id", insertable = false, updatable = false)
+    private UUID employeeId;
 
     @NotNull
     private Boolean refunded = false;

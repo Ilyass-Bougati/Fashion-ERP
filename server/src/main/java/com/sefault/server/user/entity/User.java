@@ -31,9 +31,9 @@ public class User {
     @NotEmpty
     private String lastName;
 
-    // This needs to be unique
     @Email
     @NotEmpty
+    @Column(unique = true)
     private String email;
 
     @NotEmpty

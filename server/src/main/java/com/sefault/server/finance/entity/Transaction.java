@@ -31,6 +31,9 @@ public class Transaction {
     @JoinColumn(name = "sale_id")
     private Sale sale;
 
+    @Column(name = "sale_id", insertable = false, updatable = false)
+    private UUID saleId;
+
     @OneToOne(mappedBy = "transaction")
     private Payroll payroll;
 

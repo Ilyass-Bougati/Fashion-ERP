@@ -4,7 +4,6 @@ import com.sefault.server.finance.entity.Payroll;
 import com.sefault.server.hr.entity.Isle;
 import com.sefault.server.image.entity.Image;
 import com.sefault.server.sales.entity.Sale;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +25,4 @@ public record EmployeeRecord(
         LocalDateTime hiredAt,
         LocalDateTime terminatedAt,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) {
-}
-
+        LocalDateTime updatedAt) {}

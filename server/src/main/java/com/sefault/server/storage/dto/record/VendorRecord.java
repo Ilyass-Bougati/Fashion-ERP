@@ -1,7 +1,6 @@
 package com.sefault.server.storage.dto.record;
 
 import com.sefault.server.storage.entity.Product;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,7 +14,4 @@ public record VendorRecord(
         Boolean active,
         Product product,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) {
-}
-
+        LocalDateTime updatedAt) {}
