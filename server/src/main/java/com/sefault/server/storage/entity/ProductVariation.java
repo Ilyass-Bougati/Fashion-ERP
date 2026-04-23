@@ -46,6 +46,7 @@ public class ProductVariation {
     private Image image;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

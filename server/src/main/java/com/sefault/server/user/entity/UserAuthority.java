@@ -31,6 +31,7 @@ public class UserAuthority {
     private User grantedBy;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime grantedAt;
 }

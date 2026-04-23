@@ -44,6 +44,7 @@ public class Vendor {
     private Product product;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

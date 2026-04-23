@@ -45,6 +45,7 @@ public class Image {
     private List<Employee> employees = new ArrayList<>();
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

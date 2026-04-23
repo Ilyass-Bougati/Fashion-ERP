@@ -60,6 +60,7 @@ public class User {
     private Boolean active = true;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

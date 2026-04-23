@@ -42,6 +42,7 @@ public class Product {
     private List<Vendor> vendors = new ArrayList<>();
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

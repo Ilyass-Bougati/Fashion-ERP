@@ -36,6 +36,7 @@ public class Payroll {
     private Double commission;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 }

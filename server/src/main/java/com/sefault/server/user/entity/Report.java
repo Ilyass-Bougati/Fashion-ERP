@@ -57,6 +57,7 @@ public class Report {
     private Set<ReportCategory> categories;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime generatedAt;
 }

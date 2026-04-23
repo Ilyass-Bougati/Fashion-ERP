@@ -35,6 +35,7 @@ public class FixCharge {
     private Boolean active;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 }

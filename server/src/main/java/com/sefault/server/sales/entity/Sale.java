@@ -44,6 +44,7 @@ public class Sale {
     private Boolean refunded = false;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 

@@ -77,6 +77,7 @@ public class Employee {
     private LocalDateTime terminatedAt = null;
 
     @CreationTimestamp
+    @Immutable
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
