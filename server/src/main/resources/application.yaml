@@ -17,3 +17,9 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     hikari:
       connection-test-query: SELECT 1
+
+springdoc:
+  api-docs:
+    enabled: ${API-DOCS:true}
+  swagger-ui:
+    enabled: ${SWAGGER-UI:true}
