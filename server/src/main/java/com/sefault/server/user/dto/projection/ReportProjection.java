@@ -1,11 +1,8 @@
 package com.sefault.server.user.dto.projection;
 
-import com.sefault.server.user.entity.ReportCategory;
-import com.sefault.server.user.entity.UserReport;
 import com.sefault.server.user.enums.ReportStatus;
 import com.sefault.server.user.enums.ReportType;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,9 +21,7 @@ public interface ReportProjection {
 
     String getContentType();
 
-    List<UserReport> getUserReports();
-
-    Set<ReportCategory> getCategories();
+    Set<ReportCategoryProjection> getCategories();
 
     LocalDateTime getGeneratedAt();
 }
