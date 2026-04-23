@@ -64,7 +64,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: fashion-erp
+          POSTGRES_DB: fashion_erp
         ports:
           - 5432:5432
         options: >-
