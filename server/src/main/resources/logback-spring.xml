@@ -26,7 +26,6 @@
     <springProfile name="local, dev, default">
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
-            <appender-ref ref="LOKI" />
         </root>
     </springProfile>
 
