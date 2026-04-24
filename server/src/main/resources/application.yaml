@@ -17,6 +17,22 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     hikari:
       connection-test-query: SELECT 1
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name:server}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
 
 springdoc:
   api-docs:
