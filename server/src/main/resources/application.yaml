@@ -10,6 +10,16 @@ spring:
         format_sql: true
     show-sql: true
 
+  data:
+    redis:
+      lettuce:
+        pool:
+          max-active: 8
+          enabled: true
+          max-wait: 1ms
+      port: '6379'
+      host: ${SPRING_DATA_REDIS_URI:localhost}
+
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/fashion_erp}
     driver-class-name: org.postgresql.Driver
@@ -39,3 +49,6 @@ springdoc:
     enabled: ${API-DOCS:true}
   swagger-ui:
     enabled: ${SWAGGER-UI:true}
+
+redis:
+  time-to-live: ${REDIS_TTL:1800000}
