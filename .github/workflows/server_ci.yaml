@@ -107,7 +107,7 @@ jobs:
       run: mvn test
       env:
         # Postgres Config
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/fashion-erp
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/fashion_erp
         SPRING_DATASOURCE_USERNAME: postgres
         SPRING_DATASOURCE_PASSWORD: postgres
 
