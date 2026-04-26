@@ -2,7 +2,7 @@ package com.sefault.server.image.controller;
 
 import com.sefault.server.image.dto.record.ImageRecord;
 import com.sefault.server.image.dto.record.ImageUrlRecord;
-import com.sefault.server.image.service.ImageServiceImpl;
+import com.sefault.server.image.service.ImageService;
 import io.minio.errors.MinioException;
 import java.util.Map;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/v1/images")
 @RequiredArgsConstructor
 public class ImageController {
-    private final ImageServiceImpl imageService;
+    private final ImageService imageService;
 
     @PostMapping("/upload")
     public ResponseEntity<ImageUrlRecord> uploadFile(@RequestParam("file") MultipartFile file) {
