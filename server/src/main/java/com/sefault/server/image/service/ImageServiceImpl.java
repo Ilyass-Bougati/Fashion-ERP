@@ -5,5 +5,4 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ImageServiceImpl {
-}
+public class ImageServiceImpl {}

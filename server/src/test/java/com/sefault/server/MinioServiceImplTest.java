@@ -1,10 +1,18 @@
 package com.sefault.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.sefault.server.minio.MinioProperties;
 import com.sefault.server.minio.MinioServiceImpl;
 import io.minio.*;
 import io.minio.errors.MinioException;
 import io.minio.errors.ServerException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,15 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MinioServiceImplTest {
@@ -128,8 +127,7 @@ class MinioServiceImplTest {
 
     @Test
     void getFileUrl_shouldPassCorrectArgsToClient() throws Exception {
-        ArgumentCaptor<GetPresignedObjectUrlArgs> captor =
-                ArgumentCaptor.forClass(GetPresignedObjectUrlArgs.class);
+        ArgumentCaptor<GetPresignedObjectUrlArgs> captor = ArgumentCaptor.forClass(GetPresignedObjectUrlArgs.class);
         when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://url");
 
         minioService.getFileUrl(OBJECT_NAME, 7200);
@@ -147,8 +145,7 @@ class MinioServiceImplTest {
         when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class)))
                 .thenThrow(new ServerException("presign error", 500, ""));
 
-        assertThatThrownBy(() -> minioService.getFileUrl(OBJECT_NAME, 3600))
-                .isInstanceOf(MinioException.class);
+        assertThatThrownBy(() -> minioService.getFileUrl(OBJECT_NAME, 3600)).isInstanceOf(MinioException.class);
     }
 
     // --- deleteFile ---
@@ -168,10 +165,10 @@ class MinioServiceImplTest {
     @Test
     void deleteFile_whenMinioClientThrows_shouldPropagateException() throws Exception {
         doThrow(new ServerException("delete error", 500, ""))
-                .when(minioClient).removeObject(any(RemoveObjectArgs.class));
+                .when(minioClient)
+                .removeObject(any(RemoveObjectArgs.class));
 
-        assertThatThrownBy(() -> minioService.deleteFile(OBJECT_NAME))
-                .isInstanceOf(MinioException.class);
+        assertThatThrownBy(() -> minioService.deleteFile(OBJECT_NAME)).isInstanceOf(MinioException.class);
     }
 
     // --- getPermanentFileUrl ---

@@ -21,19 +21,21 @@ public class MinioTestController {
 
     @Operation(
             summary = "Upload a new file",
-            description = "Uploads a multipart file to the MinIO bucket and assigns it the provided object name."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "File successfully uploaded"),
-            @ApiResponse(responseCode = "500", description = "Internal server error during upload process")
-    })
+            description = "Uploads a multipart file to the MinIO bucket and assigns it the provided object name.")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "File successfully uploaded"),
+                @ApiResponse(responseCode = "500", description = "Internal server error during upload process")
+            })
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(
-            @Parameter(description = "The physical file payload to upload", required = true)
-            @RequestPart("file") MultipartFile file,
-
-            @Parameter(description = "The exact target name for the file in the bucket (e.g., 'image.png')", required = true)
-            @RequestParam("objectName") String objectName) {
+            @Parameter(description = "The physical file payload to upload", required = true) @RequestPart("file")
+                    MultipartFile file,
+            @Parameter(
+                            description = "The exact target name for the file in the bucket (e.g., 'image.png')",
+                            required = true)
+                    @RequestParam("objectName")
+                    String objectName) {
         try {
             minioService.uploadFile(objectName, file);
             return ResponseEntity.ok("File uploaded successfully as: " + objectName);
@@ -44,52 +46,48 @@ public class MinioTestController {
 
     @Operation(
             summary = "Gets a temporary url to a file",
-            description = "Returns a url which allows temporary access to the file for a limited time"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Temporary URL successfully generated"),
-            @ApiResponse(responseCode = "404", description = "File not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error during URL generation")
-    })
+            description = "Returns a url which allows temporary access to the file for a limited time")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "Temporary URL successfully generated"),
+                @ApiResponse(responseCode = "404", description = "File not found"),
+                @ApiResponse(responseCode = "500", description = "Internal server error during URL generation")
+            })
     @GetMapping("/url/temp")
     public ResponseEntity<String> getTemporaryUrl(
             @Parameter(description = "The exact name of the file in the bucket", required = true)
-            @RequestParam("objectName") String objectName) {
+                    @RequestParam("objectName")
+                    String objectName) {
         try {
-            String url = minioService.getFileUrl(objectName, 60*60);
+            String url = minioService.getFileUrl(objectName, 60 * 60);
             return ResponseEntity.ok(url);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to generate URL: " + e.getMessage());
         }
     }
 
-    @Operation(
-            summary = "Gets a permanent url to a file",
-            description = "Returns a permanent url to access the file"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Permanent URL successfully generated")
-    })
+    @Operation(summary = "Gets a permanent url to a file", description = "Returns a permanent url to access the file")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Permanent URL successfully generated")})
     @GetMapping("/url/permanent")
     public ResponseEntity<String> getPermanentUrl(
             @Parameter(description = "The exact name of the file in the bucket", required = true)
-            @RequestParam("objectName") String objectName) {
+                    @RequestParam("objectName")
+                    String objectName) {
         String url = minioService.getPermanentFileUrl(objectName);
         return ResponseEntity.ok(url);
     }
 
-    @Operation(
-            summary = "Deletes a file",
-            description = "Deletes the specified file from the MinIO bucket"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "File successfully deleted"),
-            @ApiResponse(responseCode = "500", description = "Internal server error during deletion process")
-    })
+    @Operation(summary = "Deletes a file", description = "Deletes the specified file from the MinIO bucket")
+    @ApiResponses(
+            value = {
+                @ApiResponse(responseCode = "200", description = "File successfully deleted"),
+                @ApiResponse(responseCode = "500", description = "Internal server error during deletion process")
+            })
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteFile(
             @Parameter(description = "The exact name of the file to delete from the bucket", required = true)
-            @RequestParam("objectName") String objectName) {
+                    @RequestParam("objectName")
+                    String objectName) {
         try {
             minioService.deleteFile(objectName);
             return ResponseEntity.ok("File deleted successfully: " + objectName);
