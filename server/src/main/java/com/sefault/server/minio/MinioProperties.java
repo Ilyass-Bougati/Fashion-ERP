@@ -9,5 +9,4 @@ public record MinioProperties(
         @DefaultValue("images") String imagesBucket,
         @DefaultValue("reports") String reportsBucket,
         String accessKey,
-        String secretKey
-) {}
+        String secretKey) {}

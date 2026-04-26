@@ -12,12 +12,9 @@ public class SecurityConfig {
     // THIS IS TEMPORARY
     @Bean
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .securityMatcher("/api/**")
+        return http.securityMatcher("/api/**")
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/**").permitAll()
-                )
+                .authorizeHttpRequests(request -> request.requestMatchers("/**").permitAll())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .build();
     }

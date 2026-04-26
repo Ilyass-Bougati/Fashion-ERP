@@ -1,5 +1,11 @@
 package com.sefault.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.image.dto.projection.ImageProjection;
 import com.sefault.server.image.dto.record.ImageRecord;
@@ -11,6 +17,9 @@ import com.sefault.server.image.service.ImageServiceImpl;
 import com.sefault.server.minio.MinioProperties;
 import com.sefault.server.minio.MinioService;
 import io.minio.errors.MinioException;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,16 +30,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ImageServiceImpl Tests")
@@ -164,7 +163,8 @@ class ImageServiceImplTest {
         void shouldPropagateIOException() throws IOException, MinioException {
             when(multipartFile.getContentType()).thenReturn(CONTENT_TYPE);
             doThrow(new IOException("Storage unavailable"))
-                    .when(minioService).uploadFile(anyString(), any(MultipartFile.class));
+                    .when(minioService)
+                    .uploadFile(anyString(), any(MultipartFile.class));
 
             assertThatThrownBy(() -> imageService.uploadImage(multipartFile))
                     .isInstanceOf(IOException.class)
@@ -176,10 +176,10 @@ class ImageServiceImplTest {
         void shouldPropagateMinioException() throws IOException, MinioException {
             when(multipartFile.getContentType()).thenReturn(CONTENT_TYPE);
             doThrow(new MinioException("Minio error"))
-                    .when(minioService).uploadFile(anyString(), any(MultipartFile.class));
+                    .when(minioService)
+                    .uploadFile(anyString(), any(MultipartFile.class));
 
-            assertThatThrownBy(() -> imageService.uploadImage(multipartFile))
-                    .isInstanceOf(MinioException.class);
+            assertThatThrownBy(() -> imageService.uploadImage(multipartFile)).isInstanceOf(MinioException.class);
         }
     }
 
@@ -273,8 +273,7 @@ class ImageServiceImplTest {
             when(imageMapper.projectionToRecord(projection)).thenReturn(record);
             doThrow(new MinioException("Delete failed")).when(minioService).deleteFile(OBJECT_KEY);
 
-            assertThatThrownBy(() -> imageService.deleteImageById(id))
-                    .isInstanceOf(MinioException.class);
+            assertThatThrownBy(() -> imageService.deleteImageById(id)).isInstanceOf(MinioException.class);
 
             verify(imageRepository, never()).deleteById(any());
         }
@@ -342,7 +341,6 @@ class ImageServiceImplTest {
             assertThatThrownBy(() -> imageService.getImageUrl(id))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining(id.toString());
-
         }
     }
 }

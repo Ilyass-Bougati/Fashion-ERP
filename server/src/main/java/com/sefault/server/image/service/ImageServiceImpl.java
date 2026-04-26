@@ -9,24 +9,25 @@ import com.sefault.server.image.repository.ImageRepository;
 import com.sefault.server.minio.MinioProperties;
 import com.sefault.server.minio.MinioService;
 import io.minio.errors.MinioException;
-import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-
 @Service
 @Transactional
-public class ImageServiceImpl implements ImageService{
+public class ImageServiceImpl implements ImageService {
     private final MinioService minioService;
     private final ImageRepository imageRepository;
     private final MinioProperties minioProperties;
     private final ImageMapper imageMapper;
 
-    public ImageServiceImpl(MinioService minioService, ImageRepository imageRepository, MinioProperties minioProperties, ImageMapper imageMapper) {
+    public ImageServiceImpl(
+            MinioService minioService,
+            ImageRepository imageRepository,
+            MinioProperties minioProperties,
+            ImageMapper imageMapper) {
         this.minioService = minioService;
         this.imageRepository = imageRepository;
         this.minioProperties = minioProperties;
@@ -50,7 +51,8 @@ public class ImageServiceImpl implements ImageService{
 
     @Transactional(readOnly = true)
     public ImageRecord findImageById(UUID id) {
-        return imageRepository.getImageProjectionById(id)
+        return imageRepository
+                .getImageProjectionById(id)
                 .map(imageMapper::projectionToRecord)
                 .orElseThrow(() -> new NotFoundException("Image not found with id: " + id));
     }

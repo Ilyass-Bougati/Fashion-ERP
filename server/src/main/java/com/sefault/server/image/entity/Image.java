@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import jdk.jfr.ContentType;
 import lombok.*;
 import org.hibernate.annotations.*;
 

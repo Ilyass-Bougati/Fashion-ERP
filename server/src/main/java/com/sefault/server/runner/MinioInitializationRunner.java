@@ -27,9 +27,7 @@ public class MinioInitializationRunner implements CommandLineRunner {
 
     private void setupPublicBucket(String bucketName) throws Exception {
         if (!bucketExists(bucketName)) {
-            minioClient.makeBucket(
-                    MakeBucketArgs.builder().bucket(bucketName).build()
-            );
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
 
             String policyJson = """
                 {
@@ -45,28 +43,23 @@ public class MinioInitializationRunner implements CommandLineRunner {
                 }
                 """.formatted(bucketName);
 
-            minioClient.setBucketPolicy(
-                    SetBucketPolicyArgs.builder()
-                            .bucket(bucketName)
-                            .config(policyJson)
-                            .build()
-            );
+            minioClient.setBucketPolicy(SetBucketPolicyArgs.builder()
+                    .bucket(bucketName)
+                    .config(policyJson)
+                    .build());
             log.info("Created public bucket: {}", bucketName);
         }
     }
 
     private void setupPrivateBucket(String bucketName) throws Exception {
         if (!bucketExists(bucketName)) {
-            minioClient.makeBucket(
-                    MakeBucketArgs.builder().bucket(bucketName).build()
-            );
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
             log.info("Created private bucket: {}", bucketName);
         }
     }
 
     private boolean bucketExists(String bucketName) throws Exception {
         return minioClient.bucketExists(
-                BucketExistsArgs.builder().bucket(bucketName).build()
-        );
+                BucketExistsArgs.builder().bucket(bucketName).build());
     }
 }

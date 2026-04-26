@@ -4,14 +4,13 @@ import com.sefault.server.image.dto.record.ImageRecord;
 import com.sefault.server.image.dto.record.ImageUrlRecord;
 import com.sefault.server.image.service.ImageServiceImpl;
 import io.minio.errors.MinioException;
+import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/images")
