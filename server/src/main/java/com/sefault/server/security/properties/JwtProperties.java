@@ -1,4 +1,4 @@
-package com.sefault.server.properties;
+package com.sefault.server.security.properties;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;

@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sefault.server.properties.JwtProperties;
+import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.CustomUserDetailsService;
 import com.sefault.server.security.config.SecurityConfig;
 import com.sefault.server.security.dto.LoginRequest;

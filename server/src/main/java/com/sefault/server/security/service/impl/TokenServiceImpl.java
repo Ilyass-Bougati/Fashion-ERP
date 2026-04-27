@@ -1,6 +1,6 @@
 package com.sefault.server.security.service.impl;
 
-import com.sefault.server.properties.JwtProperties;
+import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
 import java.time.Instant;
 import java.util.stream.Collectors;
