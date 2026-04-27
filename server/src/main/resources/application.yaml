@@ -52,3 +52,9 @@ springdoc:
 
 redis:
   time-to-live: ${REDIS_TTL:1800000}
+
+jwt:
+  access-token-public-key: classpath:certs/public.pem
+  access-token-private-key: classpath:certs/private.pem
+  access-token-expiration-duration: 15m
+  refresh-token-expiration-duration: 7d
