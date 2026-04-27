@@ -1,6 +1,5 @@
 package com.sefault.server.security.filter;
 
-import com.nimbusds.jwt.JWT;
 import com.sefault.server.security.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
