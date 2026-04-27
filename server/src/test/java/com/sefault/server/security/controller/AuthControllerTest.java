@@ -75,8 +75,8 @@ class AuthControllerTest {
         Authentication mockAuth = new UsernamePasswordAuthenticationToken(request.email(), request.password());
         when(authenticationManager.authenticate(any())).thenReturn(mockAuth);
 
-        when(tokenService.generateToken(any(), eq(Duration.ofMinutes(15)))).thenReturn("mock-access-token");
-        when(tokenService.generateToken(any(), eq(Duration.ofDays(7)))).thenReturn("mock-refresh-token");
+        when(tokenService.generateToken(any())).thenReturn("mock-access-token");
+        when(tokenService.generateRefreshToken(any())).thenReturn("mock-refresh-token");
 
         when(jwtProperties.accessTokenExpirationDuration()).thenReturn(Duration.ofMinutes(15));
         when(jwtProperties.refreshTokenExpirationDuration()).thenReturn(Duration.ofDays(7));
@@ -124,8 +124,8 @@ class AuthControllerTest {
                 new User("admin@sefault.com", "password", true, true, true, true, Collections.emptyList());
         when(userDetailsService.loadUserByUsername("admin@sefault.com")).thenReturn(mockUser);
 
-        when(tokenService.generateToken(any(), eq(Duration.ofMinutes(15)))).thenReturn("mock-access-token");
-        when(tokenService.generateToken(any(), eq(Duration.ofDays(7)))).thenReturn("mock-refresh-token");
+        when(tokenService.generateToken(any())).thenReturn("mock-access-token");
+        when(tokenService.generateRefreshToken(any())).thenReturn("mock-refresh-token");
         when(jwtProperties.accessTokenExpirationDuration()).thenReturn(Duration.ofMinutes(15));
         when(jwtProperties.refreshTokenExpirationDuration()).thenReturn(Duration.ofDays(7));
         when(cookieUtil.createAccessTokenCookie(any(), anyLong()))
