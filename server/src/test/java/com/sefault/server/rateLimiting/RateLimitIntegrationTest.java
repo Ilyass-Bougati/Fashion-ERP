@@ -32,18 +32,15 @@ class RateLimitIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private JwtConfig jwtConfig;
-
     @RestController
     static class DummyRateLimitController {
-        @GetMapping("/api/test/ip-limit")
+        @GetMapping("/test/api/ip-limit")
         @RateLimit(actionName = "testIp", capacity = 2, tokensPerMinute = 2)
         public String testIpLimiting() {
             return "Success";
         }
 
-        @GetMapping("/api/test/spel-limit")
+        @GetMapping("/test/api/spel-limit")
         @RateLimit(actionName = "testSpel", capacity = 1, tokensPerMinute = 1, keyExpression = "#userId")
         public String testSpelLimiting(String userId) {
             return "Success";
@@ -61,15 +58,15 @@ class RateLimitIntegrationTest {
     @Test
     @WithMockUser(username = "test-user-1")
     void shouldAllowRequestsUnderLimitAndBlockWhenExceeded() throws Exception {
-        mockMvc.perform(get("/api/test/ip-limit").header("X-Forwarded-For", "192.168.1.1"))
+        mockMvc.perform(get("/test/api/ip-limit").header("X-Forwarded-For", "192.168.1.1"))
                 .andExpect(status().isOk())
                 .andExpect(header().exists("X-RateLimit-Limit"))
                 .andExpect(header().exists("X-RateLimit-Remaining"));
 
-        mockMvc.perform(get("/api/test/ip-limit").header("X-Forwarded-For", "192.168.1.1"))
+        mockMvc.perform(get("/test/api/ip-limit").header("X-Forwarded-For", "192.168.1.1"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/test/ip-limit").header("X-Forwarded-For", "192.168.1.1"))
+        mockMvc.perform(get("/test/api/ip-limit").header("X-Forwarded-For", "192.168.1.1"))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(header().exists("Retry-After"));
     }
@@ -77,26 +74,26 @@ class RateLimitIntegrationTest {
     @Test
     void shouldTrackDifferentIpsSeparately() throws Exception {
         SecurityContextHolder.clearContext();
-        mockMvc.perform(get("/api/test/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.1"))
+        mockMvc.perform(get("/test/api/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.1"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/test/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.1"))
+        mockMvc.perform(get("/test/api/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.1"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/test/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.1"))
+        mockMvc.perform(get("/test/api/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.1"))
                 .andExpect(status().isTooManyRequests());
 
-        mockMvc.perform(get("/api/test/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.2"))
+        mockMvc.perform(get("/test/api/ip-limit").with(anonymous()).header("X-Forwarded-For", "10.0.0.2"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(username = "test-user-3")
     void shouldEvaluateSpelExpressionCorrectly() throws Exception {
-        mockMvc.perform(get("/api/test/spel-limit").param("userId", "userA")).andExpect(status().isOk());
+        mockMvc.perform(get("/test/api/spel-limit").param("userId", "userA")).andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/test/spel-limit").param("userId", "userA")).andExpect(status().isTooManyRequests());
+        mockMvc.perform(get("/test/api/spel-limit").param("userId", "userA")).andExpect(status().isTooManyRequests());
 
-        mockMvc.perform(get("/api/test/spel-limit").param("userId", "userB")).andExpect(status().isOk());
+        mockMvc.perform(get("/test/api/spel-limit").param("userId", "userB")).andExpect(status().isOk());
     }
 }
