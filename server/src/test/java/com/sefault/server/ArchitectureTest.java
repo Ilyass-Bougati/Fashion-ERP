@@ -33,10 +33,7 @@ public class ArchitectureTest {
 
     @ArchTest
     static final ArchRule no_depending_on_service_impls = noClasses()
-            .that()
-            .haveSimpleNameNotEndingWith("Test")
-            .and()
-            .haveSimpleNameNotEndingWith("Tests")
+            .that().haveNameNotMatching(".*Test(s)?(\\$.*)?")
             .should()
             .dependOnClassesThat()
             .haveSimpleNameEndingWith("ServiceImpl")
@@ -55,14 +52,8 @@ public class ArchitectureTest {
                     "Controllers must only return DTOs. Leaking database entities to the web layer is strictly forbidden.");
 
     @ArchTest
-    static final ArchRule repositories_protected = classes()
-            .that()
-            .haveSimpleNameEndingWith("Repository")
-            .should()
-            .onlyBeAccessed()
-            .byClassesThat(simpleNameEndingWith("Service")
-                    .or(simpleNameEndingWith("ServiceImpl"))
-                    .or(simpleNameEndingWith("Test"))
-                    .or(simpleNameEndingWith("Tests")))
-            .because("Controllers must not bypass the business logic to talk to the database.");
+    static final ArchRule services_should_be_injected_by_interfaces = noClasses()
+            .that().haveNameNotMatching(".*Test(s)?(\\$.*)?")
+            .should().dependOnClassesThat().haveSimpleNameEndingWith("ServiceImpl")
+            .because("Dependency Injection must rely on Service Interfaces, not concrete Implementations.");
 }

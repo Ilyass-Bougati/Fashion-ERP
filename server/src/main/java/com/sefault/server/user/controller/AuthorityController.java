@@ -1,6 +1,7 @@
 package com.sefault.server.user.controller;
 
 import com.sefault.server.user.dto.record.AuthorityRecord;
+import com.sefault.server.user.service.AuthorityService;
 import com.sefault.server.user.service.impl.AuthorityServiceImpl;
 import io.lettuce.core.dynamic.annotation.Param;
 import java.util.List;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/authority")
 @RequiredArgsConstructor
 public class AuthorityController {
-    private final AuthorityServiceImpl authorityService;
+    private final AuthorityService authorityService;
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<AuthorityRecord>> getAuthorities(@PathVariable UUID userId) {

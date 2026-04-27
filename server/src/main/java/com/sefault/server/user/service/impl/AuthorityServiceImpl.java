@@ -10,6 +10,8 @@ import com.sefault.server.user.repository.UserAuthorityRepository;
 import com.sefault.server.user.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
+
+import com.sefault.server.user.service.AuthorityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class AuthorityServiceImpl {
+public class AuthorityServiceImpl implements AuthorityService {
     private final AuthorityRepository authorityRepository;
     private final UserAuthorityRepository userAuthorityRepository;
     private final UserRepository userRepository;

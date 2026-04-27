@@ -2,6 +2,7 @@ package com.sefault.server.user.controller;
 
 import com.sefault.server.user.dto.record.RegisterUserRecord;
 import com.sefault.server.user.dto.record.UserRecord;
+import com.sefault.server.user.service.UserService;
 import com.sefault.server.user.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<UserRecord> registerUser(@RequestBody @Valid RegisterUserRecord registerUserRecord) {
