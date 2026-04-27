@@ -11,7 +11,9 @@ public class LlmConfiguration {
     private final ChatClient.Builder chatClientBuilder;
 
     @Bean
-    public ChatClient chatClient(){
-        return chatClientBuilder.defaultSystem("You are an expert at writing reports").build();
+    public ChatClient chatClient() {
+        return chatClientBuilder
+                .defaultSystem("You are an expert at writing reports")
+                .build();
     }
 }

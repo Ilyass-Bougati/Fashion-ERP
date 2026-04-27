@@ -16,7 +16,7 @@ public class LlmTestController {
     private final LlmService llmService;
 
     @PostMapping
-    public String prompt(@RequestBody String prompt){
+    public String prompt(@RequestBody String prompt) {
         return llmService.prompt(prompt);
     }
 }

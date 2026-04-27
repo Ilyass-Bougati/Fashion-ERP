@@ -12,8 +12,6 @@ public class LlmServiceImpl implements LlmService {
 
     @Override
     public String prompt(String prompt) {
-        return chatClient.prompt(prompt)
-                .call()
-                .content();
+        return chatClient.prompt(prompt).call().content();
     }
 }
