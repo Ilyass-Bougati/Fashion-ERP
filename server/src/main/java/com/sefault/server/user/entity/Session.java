@@ -27,6 +27,9 @@ public class Session {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private UUID userId;
+
     @NotNull
     private Boolean active;
 

@@ -31,6 +31,9 @@ public class Employee {
     @JoinColumn(name = "image_id")
     private Image image;
 
+    @Column(name = "image_id", insertable = false, updatable = false)
+    private UUID imageId;
+
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Payroll> payrolls = new ArrayList<>();
 
@@ -67,8 +70,8 @@ public class Employee {
     private Double salary;
 
     @NotNull
-    @Min(0)
     @Max(1)
+    @Positive
     private Double commission;
 
     @NotNull

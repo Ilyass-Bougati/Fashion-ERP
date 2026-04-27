@@ -31,12 +31,18 @@ public class Product {
     @JoinColumn(name = "product_category_id")
     private ProductCategory productCategory;
 
+    @Column(name = "product_category_id", insertable = false, updatable = false)
+    private UUID productCategoryId;
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariation> productVariations = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "image_id")
     private Image image;
+
+    @Column(name = "image_id", insertable = false, updatable = false)
+    private UUID imageId;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vendor> vendors = new ArrayList<>();

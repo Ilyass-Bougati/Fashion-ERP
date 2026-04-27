@@ -23,6 +23,9 @@ public class Isle {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
+    @Column(name = "employee_id", insertable = false, updatable = false)
+    private UUID employeeId;
+
     @NotEmpty
     private String code;
 }

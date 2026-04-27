@@ -82,6 +82,22 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      
+      minio:
+        image: minio/minio
+        ports:
+          - "9000:9000"
+          - "9001:9001"
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: adminpassword
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
+          --health-interval 30s
+          --health-timeout 10s
+          --health-retries 10
+          --health-start-period 30s
+        command: server /data --console-address ":9001"
 
     steps:
     - uses: actions/checkout@v4
@@ -107,7 +123,7 @@ jobs:
       run: mvn test
       env:
         # Postgres Config
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/fashion-erp
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/fashion_erp
         SPRING_DATASOURCE_USERNAME: postgres
         SPRING_DATASOURCE_PASSWORD: postgres
 

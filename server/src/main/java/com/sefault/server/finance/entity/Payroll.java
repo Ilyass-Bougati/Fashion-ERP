@@ -28,9 +28,15 @@ public class Payroll {
     @JoinColumn(name = "transaction_id", referencedColumnName = "id")
     private Transaction transaction;
 
+    @Column(name = "transaction_id", insertable = false, updatable = false)
+    private UUID transactionId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
     private Employee employee;
+
+    @Column(name = "employee_id", insertable = false, updatable = false)
+    private UUID employeeId;
 
     @NotNull
     private Double commission;
