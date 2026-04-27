@@ -2,6 +2,14 @@ spring:
   application:
     name: server
 
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL}
+      chat:
+        options:
+          model: llama3:8B
+          temperature: 0.3
+
   jpa:
     hibernate:
       ddl-auto: create
@@ -52,3 +60,8 @@ springdoc:
 
 redis:
   time-to-live: ${REDIS_TTL:1800000}
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:adminpassword}
