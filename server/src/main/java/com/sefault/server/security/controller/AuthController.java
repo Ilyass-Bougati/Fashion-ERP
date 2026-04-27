@@ -41,8 +41,8 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
 
-        String accessToken = tokenService.generateToken(authentication);
-        String refreshToken = tokenService.generateRefreshToken(authentication);
+        String accessToken = tokenService.generateToken(authentication, jwtProperties.accessTokenExpirationDuration());
+        String refreshToken = tokenService.generateToken(authentication, jwtProperties.refreshTokenExpirationDuration());
 
         ResponseCookie accessCookie = cookieUtil.createAccessTokenCookie(
                 accessToken, jwtProperties.accessTokenExpirationDuration().toMillis());
@@ -87,8 +87,8 @@ public class AuthController {
             Authentication authentication =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-            String newAccessToken = tokenService.generateToken(authentication);
-            String newRefreshToken = tokenService.generateRefreshToken(authentication);
+            String newAccessToken = tokenService.generateToken(authentication, jwtProperties.accessTokenExpirationDuration());
+            String newRefreshToken = tokenService.generateToken(authentication, jwtProperties.refreshTokenExpirationDuration());
 
             ResponseCookie accessCookie = cookieUtil.createAccessTokenCookie(
                     newAccessToken,

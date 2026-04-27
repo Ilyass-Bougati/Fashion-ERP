@@ -2,6 +2,8 @@ package com.sefault.server.security.service.impl;
 
 import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
+
+import java.time.Duration;
 import java.time.Instant;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -19,34 +21,16 @@ public class TokenServiceImpl implements TokenService {
     private final JwtProperties jwtProperties;
 
     @Override
-    public String generateToken(Authentication authentication) {
+    public String generateToken(Authentication authentication, Duration expiration) {
         Instant now = Instant.now();
-
-        String scope = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("sefault-server")
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(
-                        jwtProperties.accessTokenExpirationDuration().toMillis()))
+                .expiresAt(now.plus(expiration))
                 .subject(authentication.getName())
-                .claim("scope", scope)
                 .build();
-        return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-    }
 
-    @Override
-    public String generateRefreshToken(Authentication authentication) {
-        Instant now = Instant.now();
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("sefault-server")
-                .issuedAt(now)
-                .expiresAt(now.plusMillis(
-                        jwtProperties.refreshTokenExpirationDuration().toMillis()))
-                .subject(authentication.getName())
-                .build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 }

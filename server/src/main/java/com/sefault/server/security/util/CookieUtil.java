@@ -7,32 +7,28 @@ import org.springframework.stereotype.Component;
 public class CookieUtil {
 
     public ResponseCookie createAccessTokenCookie(String token, long durationInMillis) {
-        return ResponseCookie.from("access_token", token)
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
+        return baseBuilder("access_token", token, "/")
                 .maxAge(durationInMillis / 1000)
-                .sameSite("Strict")
                 .build();
     }
 
     public ResponseCookie createRefreshTokenCookie(String token, long durationInMillis) {
-        return ResponseCookie.from("refresh_token", token)
-                .httpOnly(true)
-                .secure(false)
-                .path("/api/v1/auth/refresh")
+        return baseBuilder("refresh_token", token, "/api/v1/auth/refresh")
                 .maxAge(durationInMillis / 1000)
-                .sameSite("Strict")
                 .build();
     }
 
     public ResponseCookie clearCookie(String name) {
-        return ResponseCookie.from(name, "")
+        return baseBuilder(name, "", "/")
+                .maxAge(0)
+                .build();
+    }
+
+    private ResponseCookie.ResponseCookieBuilder baseBuilder(String name, String value, String path) {
+        return ResponseCookie.from(name, value)
                 .httpOnly(true)
                 .secure(false)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Strict")
-                .build();
+                .path(path)
+                .sameSite("Strict");
     }
 }

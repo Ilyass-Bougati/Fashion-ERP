@@ -2,8 +2,8 @@ package com.sefault.server.security.service;
 
 import org.springframework.security.core.Authentication;
 
-public interface TokenService {
-    String generateToken(Authentication authentication);
+import java.time.Duration;
 
-    String generateRefreshToken(Authentication authentication);
+public interface TokenService {
+    String generateToken(Authentication authentication, Duration expiration);
 }
