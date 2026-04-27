@@ -2,6 +2,14 @@ spring:
   application:
     name: server
 
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL}
+      chat:
+        options:
+          model: llama3:8B
+          temperature: 0.3
+
   jpa:
     hibernate:
       ddl-auto: create
