@@ -19,9 +19,7 @@ public class CookieUtil {
     }
 
     public ResponseCookie clearCookie(String name) {
-        return baseBuilder(name, "", "/")
-                .maxAge(0)
-                .build();
+        return baseBuilder(name, "", "/").maxAge(0).build();
     }
 
     private ResponseCookie.ResponseCookieBuilder baseBuilder(String name, String value, String path) {

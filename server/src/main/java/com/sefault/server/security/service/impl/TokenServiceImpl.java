@@ -2,13 +2,10 @@ package com.sefault.server.security.service.impl;
 
 import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
-
 import java.time.Duration;
 import java.time.Instant;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
