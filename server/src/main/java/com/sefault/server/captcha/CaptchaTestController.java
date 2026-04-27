@@ -1,5 +1,6 @@
 package com.sefault.server.captcha;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,13 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("dev")
 @RestController
 @RequestMapping("/api/test")
+@RequiredArgsConstructor
 public class CaptchaTestController {
 
     private final RecaptchaService recaptchaService;
-
-    public CaptchaTestController(RecaptchaServiceImpl recaptchaService) {
-        this.recaptchaService = recaptchaService;
-    }
 
     @PostMapping("/captcha")
     public ResponseEntity<String> testCaptcha(@RequestHeader("X-Captcha-Token") String token) {
