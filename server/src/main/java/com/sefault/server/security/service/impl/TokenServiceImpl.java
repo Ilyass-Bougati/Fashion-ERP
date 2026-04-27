@@ -4,7 +4,6 @@ import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
 import java.time.Instant;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

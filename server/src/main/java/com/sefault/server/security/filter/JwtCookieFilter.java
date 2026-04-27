@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,9 +52,9 @@ public class JwtCookieFilter extends OncePerRequestFilter {
                 List<SimpleGrantedAuthority> authorities = (scopeClaim == null || scopeClaim.isBlank())
                         ? List.of()
                         : Arrays.stream(scopeClaim.split(" "))
-                        .filter(s -> !s.isBlank())
-                        .map(SimpleGrantedAuthority::new)
-                        .toList();
+                                .filter(s -> !s.isBlank())
+                                .map(SimpleGrantedAuthority::new)
+                                .toList();
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(email, null, authorities);
