@@ -1,6 +1,5 @@
 package com.sefault.server;
 
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.simpleNameEndingWith;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -33,7 +32,8 @@ public class ArchitectureTest {
 
     @ArchTest
     static final ArchRule no_depending_on_service_impls = noClasses()
-            .that().haveNameNotMatching(".*Test(s)?(\\$.*)?")
+            .that()
+            .haveNameNotMatching(".*Test(s)?(\\$.*)?")
             .should()
             .dependOnClassesThat()
             .haveSimpleNameEndingWith("ServiceImpl")
@@ -53,7 +53,10 @@ public class ArchitectureTest {
 
     @ArchTest
     static final ArchRule services_should_be_injected_by_interfaces = noClasses()
-            .that().haveNameNotMatching(".*Test(s)?(\\$.*)?")
-            .should().dependOnClassesThat().haveSimpleNameEndingWith("ServiceImpl")
+            .that()
+            .haveNameNotMatching(".*Test(s)?(\\$.*)?")
+            .should()
+            .dependOnClassesThat()
+            .haveSimpleNameEndingWith("ServiceImpl")
             .because("Dependency Injection must rely on Service Interfaces, not concrete Implementations.");
 }

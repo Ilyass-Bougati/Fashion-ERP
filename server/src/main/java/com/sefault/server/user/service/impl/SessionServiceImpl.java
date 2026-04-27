@@ -4,9 +4,8 @@ import com.sefault.server.user.entity.Session;
 import com.sefault.server.user.entity.User;
 import com.sefault.server.user.repository.SessionRepository;
 import com.sefault.server.user.repository.UserRepository;
-import java.util.UUID;
-
 import com.sefault.server.user.service.SessionService;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

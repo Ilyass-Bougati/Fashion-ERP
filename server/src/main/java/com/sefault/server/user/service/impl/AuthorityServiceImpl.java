@@ -8,10 +8,9 @@ import com.sefault.server.user.mapper.AuthorityMapper;
 import com.sefault.server.user.repository.AuthorityRepository;
 import com.sefault.server.user.repository.UserAuthorityRepository;
 import com.sefault.server.user.repository.UserRepository;
+import com.sefault.server.user.service.AuthorityService;
 import java.util.List;
 import java.util.UUID;
-
-import com.sefault.server.user.service.AuthorityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

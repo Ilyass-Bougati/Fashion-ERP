@@ -3,7 +3,6 @@ package com.sefault.server.user.controller;
 import com.sefault.server.user.dto.record.RegisterUserRecord;
 import com.sefault.server.user.dto.record.UserRecord;
 import com.sefault.server.user.service.UserService;
-import com.sefault.server.user.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
