@@ -5,14 +5,13 @@ import jakarta.validation.constraints.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 
 @Getter
 @Setter
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Authority {
@@ -24,5 +23,6 @@ public class Authority {
     private List<UserAuthority> userAuthorities = new ArrayList<>();
 
     @NotEmpty
+    @Column(unique = true)
     private String name;
 }
