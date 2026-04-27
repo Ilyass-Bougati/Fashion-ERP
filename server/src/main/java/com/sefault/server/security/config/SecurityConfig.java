@@ -32,12 +32,7 @@ public class SecurityConfig {
     @Order(1)
     @Profile("dev")
     public SecurityFilterChain devSwaggerFilterChain(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher(
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/v3/api-docs/**"
-                )
+        http.securityMatcher("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 

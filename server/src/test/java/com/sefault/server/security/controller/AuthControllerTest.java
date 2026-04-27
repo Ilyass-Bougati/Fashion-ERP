@@ -9,11 +9,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.CustomUserDetailsService;
 import com.sefault.server.security.config.SecurityConfig;
 import com.sefault.server.security.dto.LoginRequest;
 import com.sefault.server.security.filter.JwtCookieFilter;
+import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
 import com.sefault.server.security.util.CookieUtil;
 import jakarta.servlet.http.Cookie;
