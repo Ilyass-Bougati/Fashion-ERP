@@ -12,6 +12,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import({RateLimitIntegrationTest.DummyRateLimitController.class, RateLimitIntegrationTest.TestExceptionHandler.class})
 @AutoConfigureMockMvc(addFilters = false)
+@WithMockUser
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class RateLimitIntegrationTest {
 
     @Autowired
@@ -50,6 +54,7 @@ class RateLimitIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "test-user-1")
     void shouldAllowRequestsUnderLimitAndBlockWhenExceeded() throws Exception {
         mockMvc.perform(get("/api/test/ip-limit").header("X-Forwarded-For", "192.168.1.1"))
                 .andExpect(status().isOk())
@@ -65,6 +70,7 @@ class RateLimitIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "test-user-2")
     void shouldTrackDifferentIpsSeparately() throws Exception {
 
         mockMvc.perform(get("/api/test/ip-limit").header("X-Forwarded-For", "10.0.0.1"))
@@ -80,6 +86,7 @@ class RateLimitIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "test-user-3")
     void shouldEvaluateSpelExpressionCorrectly() throws Exception {
         mockMvc.perform(get("/api/test/spel-limit").param("userId", "userA")).andExpect(status().isOk());
 
