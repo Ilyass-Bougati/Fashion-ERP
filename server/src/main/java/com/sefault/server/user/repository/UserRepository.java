@@ -2,10 +2,9 @@ package com.sefault.server.user.repository;
 
 import com.sefault.server.user.dto.projection.UserProjection;
 import com.sefault.server.user.entity.User;
+import io.lettuce.core.dynamic.annotation.Param;
 import java.util.Optional;
 import java.util.UUID;
-
-import io.lettuce.core.dynamic.annotation.Param;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

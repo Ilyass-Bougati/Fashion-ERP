@@ -39,14 +39,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
-        );
+                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
 
         String accessToken = tokenService.generateToken(authentication);
         String refreshToken = tokenService.generateRefreshToken(authentication);
 
-        ResponseCookie accessCookie = cookieUtil.createAccessTokenCookie(accessToken, jwtProperties.accessTokenExpirationDuration().toMillis());
-        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, jwtProperties.refreshTokenExpirationDuration().toMillis());
+        ResponseCookie accessCookie = cookieUtil.createAccessTokenCookie(
+                accessToken, jwtProperties.accessTokenExpirationDuration().toMillis());
+        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(
+                refreshToken, jwtProperties.refreshTokenExpirationDuration().toMillis());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
@@ -66,7 +67,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<String> refreshTokens(@CookieValue(name = "refresh_token", required = false) String refreshToken) {
+    public ResponseEntity<String> refreshTokens(
+            @CookieValue(name = "refresh_token", required = false) String refreshToken) {
 
         if (refreshToken == null || refreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token is missing");
@@ -82,15 +84,18 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User account is disabled");
             }
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities()
-            );
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
             String newAccessToken = tokenService.generateToken(authentication);
             String newRefreshToken = tokenService.generateRefreshToken(authentication);
 
-            ResponseCookie accessCookie = cookieUtil.createAccessTokenCookie(newAccessToken, jwtProperties.accessTokenExpirationDuration().toMillis());
-            ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(newRefreshToken, jwtProperties.refreshTokenExpirationDuration().toMillis());
+            ResponseCookie accessCookie = cookieUtil.createAccessTokenCookie(
+                    newAccessToken,
+                    jwtProperties.accessTokenExpirationDuration().toMillis());
+            ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(
+                    newRefreshToken,
+                    jwtProperties.refreshTokenExpirationDuration().toMillis());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())

@@ -1,5 +1,13 @@
 package com.sefault.server.security.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sefault.server.properties.JwtProperties;
 import com.sefault.server.security.CustomUserDetailsService;
@@ -9,6 +17,8 @@ import com.sefault.server.security.filter.JwtCookieFilter;
 import com.sefault.server.security.service.TokenService;
 import com.sefault.server.security.util.CookieUtil;
 import jakarta.servlet.http.Cookie;
+import java.time.Duration;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
@@ -28,17 +38,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Duration;
-import java.util.Collections;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @WebMvcTest(AuthController.class)
 @Import({SecurityConfig.class, JwtCookieFilter.class, JacksonAutoConfiguration.class})
 class AuthControllerTest {
@@ -49,12 +48,23 @@ class AuthControllerTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     // --- MOCKING THE ENTIRE SECURITY ENGINE ---
-    @MockitoBean private AuthenticationManager authenticationManager;
-    @MockitoBean private TokenService tokenService;
-    @MockitoBean private CookieUtil cookieUtil;
-    @MockitoBean private JwtProperties jwtProperties;
-    @MockitoBean private CustomUserDetailsService userDetailsService;
-    @MockitoBean private JwtDecoder jwtDecoder;
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
+
+    @MockitoBean
+    private TokenService tokenService;
+
+    @MockitoBean
+    private CookieUtil cookieUtil;
+
+    @MockitoBean
+    private JwtProperties jwtProperties;
+
+    @MockitoBean
+    private CustomUserDetailsService userDetailsService;
+
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
 
     // ==========================================
     // 1. LOGIN TESTS
@@ -74,9 +84,11 @@ class AuthControllerTest {
         when(jwtProperties.refreshTokenExpirationDuration()).thenReturn(Duration.ofDays(7));
 
         when(cookieUtil.createAccessTokenCookie(any(), anyLong()))
-                .thenReturn(ResponseCookie.from("access_token", "mock-access-token").build());
+                .thenReturn(
+                        ResponseCookie.from("access_token", "mock-access-token").build());
         when(cookieUtil.createRefreshTokenCookie(any(), anyLong()))
-                .thenReturn(ResponseCookie.from("refresh_token", "mock-refresh-token").build());
+                .thenReturn(ResponseCookie.from("refresh_token", "mock-refresh-token")
+                        .build());
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +122,8 @@ class AuthControllerTest {
         when(mockJwt.getSubject()).thenReturn("admin@sefault.com");
         when(jwtDecoder.decode("valid-refresh-token")).thenReturn(mockJwt);
 
-        UserDetails mockUser = new User("admin@sefault.com", "password", true, true, true, true, Collections.emptyList());
+        UserDetails mockUser =
+                new User("admin@sefault.com", "password", true, true, true, true, Collections.emptyList());
         when(userDetailsService.loadUserByUsername("admin@sefault.com")).thenReturn(mockUser);
 
         when(tokenService.generateToken(any())).thenReturn("new-access-token");
@@ -118,12 +131,13 @@ class AuthControllerTest {
         when(jwtProperties.accessTokenExpirationDuration()).thenReturn(Duration.ofMinutes(15));
         when(jwtProperties.refreshTokenExpirationDuration()).thenReturn(Duration.ofDays(7));
         when(cookieUtil.createAccessTokenCookie(any(), anyLong()))
-                .thenReturn(ResponseCookie.from("access_token", "new-access-token").build());
+                .thenReturn(
+                        ResponseCookie.from("access_token", "new-access-token").build());
         when(cookieUtil.createRefreshTokenCookie(any(), anyLong()))
-                .thenReturn(ResponseCookie.from("refresh_token", "new-refresh-token").build());
+                .thenReturn(ResponseCookie.from("refresh_token", "new-refresh-token")
+                        .build());
 
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(new Cookie("refresh_token", "valid-refresh-token")))
+        mockMvc.perform(post("/api/v1/auth/refresh").cookie(new Cookie("refresh_token", "valid-refresh-token")))
                 .andExpect(status().isOk())
                 .andExpect(cookie().value("access_token", "new-access-token"))
                 .andExpect(cookie().value("refresh_token", "new-refresh-token"))
@@ -146,8 +160,7 @@ class AuthControllerTest {
         when(cookieUtil.clearCookie("refresh_token"))
                 .thenReturn(ResponseCookie.from("refresh_token", "").maxAge(0).build());
 
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(new Cookie("refresh_token", "expired-refresh-token")))
+        mockMvc.perform(post("/api/v1/auth/refresh").cookie(new Cookie("refresh_token", "expired-refresh-token")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(cookie().maxAge("access_token", 0))
                 .andExpect(cookie().maxAge("refresh_token", 0))
@@ -160,11 +173,11 @@ class AuthControllerTest {
         when(mockJwt.getSubject()).thenReturn("banned@sefault.com");
         when(jwtDecoder.decode("valid-refresh-token")).thenReturn(mockJwt);
 
-        UserDetails disabledUser = new User("banned@sefault.com", "password", false, true, true, true, Collections.emptyList());
+        UserDetails disabledUser =
+                new User("banned@sefault.com", "password", false, true, true, true, Collections.emptyList());
         when(userDetailsService.loadUserByUsername("banned@sefault.com")).thenReturn(disabledUser);
 
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(new Cookie("refresh_token", "valid-refresh-token")))
+        mockMvc.perform(post("/api/v1/auth/refresh").cookie(new Cookie("refresh_token", "valid-refresh-token")))
                 .andExpect(status().isForbidden())
                 .andExpect(content().string("User account is disabled"));
     }

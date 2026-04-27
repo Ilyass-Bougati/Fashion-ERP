@@ -1,14 +1,13 @@
 package com.sefault.server.security.service;
 
 import com.sefault.server.properties.JwtProperties;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +20,8 @@ public class TokenService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("sefault-server")
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(jwtProperties.accessTokenExpirationDuration().toMillis()))
+                .expiresAt(now.plusMillis(
+                        jwtProperties.accessTokenExpirationDuration().toMillis()))
                 .subject(authentication.getName())
                 .build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
@@ -32,10 +32,10 @@ public class TokenService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("sefault-server")
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(jwtProperties.refreshTokenExpirationDuration().toMillis()))
+                .expiresAt(now.plusMillis(
+                        jwtProperties.refreshTokenExpirationDuration().toMillis()))
                 .subject(authentication.getName())
                 .build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
-
 }
