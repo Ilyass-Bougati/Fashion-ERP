@@ -8,11 +8,11 @@ import com.sefault.server.user.mapper.AuthorityMapper;
 import com.sefault.server.user.repository.AuthorityRepository;
 import com.sefault.server.user.repository.UserAuthorityRepository;
 import com.sefault.server.user.repository.UserRepository;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -39,5 +39,15 @@ public class AuthorityServiceImpl {
     public void saveAuthority(String name) {
         Authority authority = Authority.builder().name(name).build();
         authorityRepository.save(authority);
+    }
+
+    public void removeAuthority(UUID userId, UUID authorityId) {
+        userAuthorityRepository.deleteByUser_IdAndAuthority_Id(userId, authorityId);
+    }
+
+    public List<AuthorityRecord> getUserAuthorities(UUID userId) {
+        return authorityRepository.getAuthoritiesByUserId(userId).stream()
+                .map(authorityMapper::projectionToRecord)
+                .toList();
     }
 }

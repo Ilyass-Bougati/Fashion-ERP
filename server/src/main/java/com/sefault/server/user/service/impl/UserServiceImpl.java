@@ -7,11 +7,10 @@ import com.sefault.server.user.entity.User;
 import com.sefault.server.user.mapper.UserMapper;
 import com.sefault.server.user.repository.UserRepository;
 import com.sefault.server.user.service.UserService;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -22,7 +21,8 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     public UserRecord findUserById(UUID id) {
-        return userRepository.getUserProjectionById(id)
+        return userRepository
+                .getUserProjectionById(id)
                 .map(userMapper::projectionToRecord)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id.toString()));
     }
@@ -41,7 +41,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserRecord updateUser(UUID id, RegisterUserRecord registerUserRecord) {
-        User user = userRepository.findById(id)
+        User user = userRepository
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id.toString()));
 
         user.setFirstName(registerUserRecord.firstName());
@@ -53,7 +54,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserRecord activateUser(UUID id) {
-        User user = userRepository.findById(id)
+        User user = userRepository
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id.toString()));
 
         user.setActive(!user.getActive());

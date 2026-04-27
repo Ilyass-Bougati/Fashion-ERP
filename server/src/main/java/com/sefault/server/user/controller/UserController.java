@@ -1,15 +1,14 @@
-package com.sefault.server.user.entity.controller;
+package com.sefault.server.user.controller;
 
 import com.sefault.server.user.dto.record.RegisterUserRecord;
 import com.sefault.server.user.dto.record.UserRecord;
 import com.sefault.server.user.service.impl.UserServiceImpl;
 import jakarta.validation.Valid;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -33,7 +32,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserRecord> updateUser(@PathVariable UUID id, @RequestBody @Valid RegisterUserRecord registerUserRecord) {
+    public ResponseEntity<UserRecord> updateUser(
+            @PathVariable UUID id, @RequestBody @Valid RegisterUserRecord registerUserRecord) {
         return ResponseEntity.ok(userService.updateUser(id, registerUserRecord));
     }
 

@@ -4,7 +4,6 @@ import com.sefault.server.user.entity.id.UserAuthorityId;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import lombok.*;
 import org.hibernate.annotations.*;
 

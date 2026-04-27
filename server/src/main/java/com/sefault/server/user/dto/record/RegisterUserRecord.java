@@ -9,5 +9,4 @@ public record RegisterUserRecord(
         @NotEmpty String lastName,
         @NotEmpty @Email String email,
         @NotEmpty String password,
-        @NotEmpty @PhoneNumber String phoneNumber) {
-}
+        @NotEmpty @PhoneNumber String phoneNumber) {}
