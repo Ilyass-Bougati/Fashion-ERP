@@ -1,6 +1,6 @@
 package com.sefault.server.security.service.impl;
 
-import com.sefault.server.properties.JwtProperties;
+import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
 import java.time.Instant;
 import java.util.stream.Collectors;
@@ -29,24 +29,25 @@ public class TokenServiceImpl implements TokenService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("sefault-server")
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(
-                        jwtProperties.accessTokenExpirationDuration().toMillis()))
+                .expiresAt(now.plus(jwtProperties.accessTokenExpirationDuration()))
                 .subject(authentication.getName())
                 .claim("scope", scope)
                 .build();
+
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
     @Override
     public String generateRefreshToken(Authentication authentication) {
         Instant now = Instant.now();
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("sefault-server")
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(
-                        jwtProperties.refreshTokenExpirationDuration().toMillis()))
+                .expiresAt(now.plus(jwtProperties.refreshTokenExpirationDuration()))
                 .subject(authentication.getName())
                 .build();
+
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 }

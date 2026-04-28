@@ -74,3 +74,5 @@ minio:
   access-key: ${MINIO_ACCESS_KEY:minioadmin}
   secret-key: ${MINIO_SECRET_KEY:adminpassword}
 
+recaptcha:
+  secret-key: ${RECAPTCHA_SECRET_KEY}

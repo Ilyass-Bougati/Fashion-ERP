@@ -1,18 +1,19 @@
 package com.sefault.server.security.filter;
 
-import com.sefault.server.security.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -25,7 +26,6 @@ import org.springframework.web.util.WebUtils;
 @Component
 @RequiredArgsConstructor
 public class JwtCookieFilter extends OncePerRequestFilter {
-    private final CustomUserDetailsService userDetailsService;
     private final JwtDecoder jwtDecoder;
 
     @Override
@@ -47,10 +47,17 @@ public class JwtCookieFilter extends OncePerRequestFilter {
                 Jwt jwt = jwtDecoder.decode(cookie.getValue());
                 String email = jwt.getSubject();
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                String scopeClaim = jwt.getClaimAsString("scope");
+
+                List<SimpleGrantedAuthority> authorities = (scopeClaim == null || scopeClaim.isBlank())
+                        ? List.of()
+                        : Arrays.stream(scopeClaim.split(" "))
+                                .filter(s -> !s.isBlank())
+                                .map(SimpleGrantedAuthority::new)
+                                .toList();
 
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(email, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (JwtException e) {

@@ -1,9 +1,9 @@
 package com.sefault.server.security.controller;
 
-import com.sefault.server.properties.JwtProperties;
 import com.sefault.server.rateLimiting.RateLimit;
 import com.sefault.server.security.CustomUserDetailsService;
 import com.sefault.server.security.dto.LoginRequest;
+import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
 import com.sefault.server.security.util.CookieUtil;
 import jakarta.validation.Valid;

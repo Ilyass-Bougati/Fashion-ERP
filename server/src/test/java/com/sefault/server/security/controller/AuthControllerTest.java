@@ -1,19 +1,17 @@
 package com.sefault.server.security.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sefault.server.properties.JwtProperties;
 import com.sefault.server.security.CustomUserDetailsService;
 import com.sefault.server.security.config.SecurityConfig;
 import com.sefault.server.security.dto.LoginRequest;
 import com.sefault.server.security.filter.JwtCookieFilter;
+import com.sefault.server.security.properties.JwtProperties;
 import com.sefault.server.security.service.TokenService;
 import com.sefault.server.security.util.CookieUtil;
 import jakarta.servlet.http.Cookie;
@@ -126,8 +124,8 @@ class AuthControllerTest {
                 new User("admin@sefault.com", "password", true, true, true, true, Collections.emptyList());
         when(userDetailsService.loadUserByUsername("admin@sefault.com")).thenReturn(mockUser);
 
-        when(tokenService.generateToken(any())).thenReturn("new-access-token");
-        when(tokenService.generateRefreshToken(any())).thenReturn("new-refresh-token");
+        when(tokenService.generateToken(any())).thenReturn("mock-access-token");
+        when(tokenService.generateRefreshToken(any())).thenReturn("mock-refresh-token");
         when(jwtProperties.accessTokenExpirationDuration()).thenReturn(Duration.ofMinutes(15));
         when(jwtProperties.refreshTokenExpirationDuration()).thenReturn(Duration.ofDays(7));
         when(cookieUtil.createAccessTokenCookie(any(), anyLong()))
