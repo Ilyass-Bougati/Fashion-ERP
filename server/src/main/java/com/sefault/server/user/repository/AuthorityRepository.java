@@ -16,4 +16,6 @@ public interface AuthorityRepository extends JpaRepository<Authority, UUID> {
 
     @Query("SELECT a FROM Authority a JOIN a.userAuthorities ua WHERE ua.user.id = :userId")
     List<AuthorityProjection> getAuthoritiesByUserId(UUID userId);
+
+    boolean existsByName(String name);
 }

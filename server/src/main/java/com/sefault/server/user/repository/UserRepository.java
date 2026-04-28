@@ -21,4 +21,8 @@ public interface UserRepository extends JpaRepository<@NonNull User, @NonNull UU
             WHERE u.email = :email
     """)
     Optional<User> findUserByEmailWithAuthorities(@Param("email") String email);
+
+    User findByEmail(String mail);
+
+    boolean existsByEmail(String email);
 }

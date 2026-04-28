@@ -9,6 +9,7 @@ import com.sefault.server.user.repository.UserRepository;
 import com.sefault.server.user.service.UserService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public UserRecord findUserById(UUID id) {
@@ -32,7 +34,8 @@ public class UserServiceImpl implements UserService {
                 .firstName(registerUserRecord.firstName().trim())
                 .lastName(registerUserRecord.lastName().trim())
                 .email(registerUserRecord.email().trim().toLowerCase())
-                .password(registerUserRecord.password())
+                // TODO: Change this later
+                .password(passwordEncoder.encode(registerUserRecord.password()))
                 .phoneNumber(registerUserRecord.phoneNumber().trim())
                 .active(true)
                 .build();
