@@ -5,15 +5,13 @@ import com.sefault.server.user.dto.record.RegisterUserRecord;
 import com.sefault.server.user.entity.Authority;
 import com.sefault.server.user.entity.User;
 import com.sefault.server.user.repository.AuthorityRepository;
-
+import com.sefault.server.user.repository.UserRepository;
+import com.sefault.server.user.service.AuthorityService;
+import com.sefault.server.user.service.UserService;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.sefault.server.user.repository.UserRepository;
-import com.sefault.server.user.service.AuthorityService;
-import com.sefault.server.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -42,7 +40,8 @@ public class DefaultAuthoritiesAndAdminRunner implements CommandLineRunner {
 
         // Using reflection to create all the authorities present on the applicationAuthorities bean
         for (Method method : applicationAuthorities.getClass().getDeclaredMethods()) {
-            if (method.getName().startsWith("get") && method.getParameterCount() == 0
+            if (method.getName().startsWith("get")
+                    && method.getParameterCount() == 0
                     && method.getReturnType() == String.class) {
                 try {
                     String authorityName = (String) method.invoke(applicationAuthorities);
@@ -54,16 +53,11 @@ public class DefaultAuthoritiesAndAdminRunner implements CommandLineRunner {
         }
 
         for (Authority authority : authorities) {
-                savedAuthorities.add(authorityRepository.save(authority));
+            savedAuthorities.add(authorityRepository.save(authority));
         }
 
-        RegisterUserRecord adminUser = new RegisterUserRecord(
-                "admin",
-                "admin",
-                "admin@gmail.com",
-                "adminadmin",
-                "0000000000"
-        );
+        RegisterUserRecord adminUser =
+                new RegisterUserRecord("admin", "admin", "admin@gmail.com", "adminadmin", "0000000000");
 
         // Creating the admin user
         userService.registerUser(adminUser);

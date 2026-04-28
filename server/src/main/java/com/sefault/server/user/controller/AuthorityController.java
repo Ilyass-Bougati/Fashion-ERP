@@ -3,16 +3,12 @@ package com.sefault.server.user.controller;
 import com.sefault.server.user.dto.record.AuthorityRecord;
 import com.sefault.server.user.service.AuthorityService;
 import io.lettuce.core.dynamic.annotation.Param;
-
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,9 +25,7 @@ public class AuthorityController {
 
     @PostMapping
     public void grantAuthority(
-            Principal principal,
-            @Param("granteeId") UUID granteeId,
-            @Param("authorityId") UUID authorityId) {
+            Principal principal, @Param("granteeId") UUID granteeId, @Param("authorityId") UUID authorityId) {
         String grantorEmail = principal.getName();
         authorityService.grantAuthority(granteeId, grantorEmail, authorityId);
     }
