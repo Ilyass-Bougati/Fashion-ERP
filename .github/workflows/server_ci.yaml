@@ -109,15 +109,11 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
         cache-dependency-path: server/pom.xml
-    
-    # TODO : This might be necessary later, but not now
-    # This was copied from deepdame, so we might follow the same
-    # approach later on
 
-    # - name: Run Key Generation
-    #   run: |
-    #     chmod +x keygen.sh
-    #     ./keygen.sh
+    - name: Run Key Generation
+      run: |
+        chmod +x keygen.sh
+        ./keygen.sh
 
     - name: Run Tests
       run: mvn test

@@ -8,7 +8,6 @@ public record UserRecord(
         String firstName,
         String lastName,
         String email,
-        String password,
         String phoneNumber,
         Boolean active,
         LocalDateTime createdAt,

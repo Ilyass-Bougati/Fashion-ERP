@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserAuthorityRepository extends JpaRepository<@NonNull UserAuthority, @NonNull UUID> {
     Optional<UserAuthorityProjection> getUserAuthorityProjectionById(UUID id);
+
+    void deleteByUser_IdAndAuthority_Id(UUID userId, UUID authorityId);
 }

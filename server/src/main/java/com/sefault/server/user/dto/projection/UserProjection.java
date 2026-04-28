@@ -12,8 +12,6 @@ public interface UserProjection {
 
     String getEmail();
 
-    String getPassword();
-
     String getPhoneNumber();
 
     Boolean getActive();

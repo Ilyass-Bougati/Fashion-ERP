@@ -4,19 +4,18 @@ import com.sefault.server.user.entity.id.UserAuthorityId;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.*;
 
 @Getter
 @Setter
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserAuthority {
     @EmbeddedId
+    @Builder.Default
     private UserAuthorityId id = new UserAuthorityId();
 
     @ManyToOne(fetch = FetchType.LAZY)
