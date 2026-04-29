@@ -6,7 +6,7 @@ on:
 
 jobs:
   test-runner:
-    runs-on: ilyass-server
+    runs-on: self-hosted
 
     steps:
       - name: Print a success message
