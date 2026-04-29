@@ -1,0 +1,14 @@
+name: fashion-erp CD
+
+on:
+  push:
+    branches: [ "dev/ilyass"]
+workflow_dispatch:
+
+jobs:
+  test-runner:
+    runs-on: ilyass-server
+
+    steps:
+      - name: Print a success message
+        run: echo "Hello from $(pwd)" > ~/action-result
