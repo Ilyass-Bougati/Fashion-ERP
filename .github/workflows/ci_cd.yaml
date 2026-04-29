@@ -127,6 +127,8 @@ jobs:
       run: mvn jacoco:check
   
   deploy:
+    needs: tests
+    if: github.event_name == 'push'
     runs-on: self-hosted
 
     steps:
