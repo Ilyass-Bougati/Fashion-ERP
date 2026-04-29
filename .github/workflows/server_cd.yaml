@@ -3,7 +3,6 @@ name: fashion-erp CD
 on:
   push:
     branches: [ "dev/ilyass"]
-workflow_dispatch:
 
 jobs:
   test-runner:
