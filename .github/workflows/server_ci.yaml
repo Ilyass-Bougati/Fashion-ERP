@@ -44,7 +44,7 @@ jobs:
       - name: Run Architecture Tests (Fast Fail)
         run: mvn test -Dgroups="ArchitectureTests"
 
-  test:
+  tests:
     name: Integration & Unit Tests
     needs: style-and-compile
     runs-on: ubuntu-latest
@@ -125,3 +125,16 @@ jobs:
 
     - name: Enforce 60% Code Coverage
       run: mvn jacoco:check
+  
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Deploy the server
+        working-directory: ./server
+        run: |
+          chmod +x ./deploy.sh
+          ./deploy.sh

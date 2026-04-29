@@ -5,14 +5,15 @@ on:
     branches: [ "dev/ilyass"]
 
 jobs:
-  test-runner:
+  server-cd:
     runs-on: self-hosted
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Run the server
+      - name: Deploy the server
+        working-directory: ./server
         run: |
-          chmod +x ./server/deploy.sh
-          ./server/deploy.sh
+          chmod +x ./deploy.sh
+          ./deploy.sh

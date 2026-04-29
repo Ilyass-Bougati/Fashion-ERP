@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:17-jdk AS builder
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
