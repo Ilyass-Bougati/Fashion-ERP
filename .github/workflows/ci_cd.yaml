@@ -1,4 +1,4 @@
-name: fashion-erp CI
+name: fashion-erp CI/CD
 
 on:
   push:
