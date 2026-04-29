@@ -9,5 +9,10 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Print a success message
-        run: echo "Hello from $(pwd)" > ~/action-result
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Run the server
+        run: |
+          chmod +x ./server/deploy.sh
+          ./server/deploy.sh
