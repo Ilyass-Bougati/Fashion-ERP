@@ -46,6 +46,7 @@ class AuthorityServiceImplTest {
 
     private UUID granteeId;
     private UUID grantorId;
+    private String grantorEmail;
     private UUID authorityId;
     private UUID userId;
     private User grantee;
@@ -58,9 +59,10 @@ class AuthorityServiceImplTest {
         grantorId = UUID.randomUUID();
         authorityId = UUID.randomUUID();
         userId = UUID.randomUUID();
+        grantorEmail = "grantor@gmail.com";
 
         grantee = User.builder().id(granteeId).build();
-        grantor = User.builder().id(grantorId).build();
+        grantor = User.builder().id(grantorId).email(grantorEmail).build();
         authority = Authority.builder().id(authorityId).name("ROLE_ADMIN").build();
     }
 
@@ -76,10 +78,10 @@ class AuthorityServiceImplTest {
         @DisplayName("builds a UserAuthority from the three references and saves it")
         void shouldBuildAndSaveUserAuthority() {
             when(userRepository.getReferenceById(granteeId)).thenReturn(grantee);
-            when(userRepository.getReferenceById(grantorId)).thenReturn(grantor);
+            when(userRepository.findByEmail(grantorEmail)).thenReturn(grantor);
             when(authorityRepository.getReferenceById(authorityId)).thenReturn(authority);
 
-            authorityService.grantAuthority(granteeId, grantorId, authorityId);
+            authorityService.grantAuthority(granteeId, grantorEmail, authorityId);
 
             ArgumentCaptor<UserAuthority> captor = ArgumentCaptor.forClass(UserAuthority.class);
             verify(userAuthorityRepository).save(captor.capture());
@@ -94,13 +96,13 @@ class AuthorityServiceImplTest {
         @DisplayName("fetches references for all three IDs exactly once")
         void shouldFetchEachReferenceOnce() {
             when(userRepository.getReferenceById(granteeId)).thenReturn(grantee);
-            when(userRepository.getReferenceById(grantorId)).thenReturn(grantor);
+            when(userRepository.findByEmail(grantorEmail)).thenReturn(grantor);
             when(authorityRepository.getReferenceById(authorityId)).thenReturn(authority);
 
-            authorityService.grantAuthority(granteeId, grantorId, authorityId);
+            authorityService.grantAuthority(granteeId, grantorEmail, authorityId);
 
             verify(userRepository).getReferenceById(granteeId);
-            verify(userRepository).getReferenceById(grantorId);
+            verify(userRepository).findByEmail(grantorEmail);
             verify(authorityRepository).getReferenceById(authorityId);
             verifyNoMoreInteractions(userRepository, authorityRepository);
         }

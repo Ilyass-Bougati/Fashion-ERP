@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AuthorityService {
-    void grantAuthority(UUID granteeId, UUID grantorId, UUID authorityId);
+    void grantAuthority(UUID granteeId, String grantorEmail, UUID authorityId);
 
     void saveAuthority(String name);
 
