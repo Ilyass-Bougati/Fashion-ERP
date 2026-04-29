@@ -24,9 +24,9 @@ public class AuthorityServiceImpl implements AuthorityService {
     private final UserRepository userRepository;
     private final AuthorityMapper authorityMapper;
 
-    public void grantAuthority(UUID granteeId, UUID grantorId, UUID authorityId) {
+    public void grantAuthority(UUID granteeId, String grantorEmail, UUID authorityId) {
         User grantee = userRepository.getReferenceById(granteeId);
-        User grantor = userRepository.getReferenceById(grantorId);
+        User grantor = userRepository.findByEmail(grantorEmail);
         Authority authority = authorityRepository.getReferenceById(authorityId);
 
         UserAuthority userAuthority = UserAuthority.builder()
