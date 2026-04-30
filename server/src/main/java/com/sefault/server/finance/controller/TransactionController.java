@@ -2,7 +2,7 @@ package com.sefault.server.finance.controller;
 
 import com.sefault.server.finance.dto.record.TransactionRecord;
 import com.sefault.server.finance.enums.TransactionType;
-import com.sefault.server.finance.service.FinanceService;
+import com.sefault.server.finance.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "Finance - Transactions")
 public class TransactionController {
-    private final FinanceService financeService;
+    private final TransactionService transactionService;
 
     @Operation(
             summary = "Create a manual transaction",
@@ -37,7 +37,7 @@ public class TransactionController {
     @PreAuthorize("hasAuthority(@authorities.createTransactionAuthority)")
     public ResponseEntity<TransactionRecord> createTransactionRecord(
             @RequestBody @Valid TransactionRecord transactionRecord) {
-        return ResponseEntity.ok(financeService.createTransaction(transactionRecord));
+        return ResponseEntity.ok(transactionService.createTransaction(transactionRecord));
     }
 
     @Operation(summary = "Get transaction details", description = "Fetch a specific transaction by its UUID.")
@@ -45,7 +45,7 @@ public class TransactionController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority(@authorities.readTransactionAuthority)")
     public ResponseEntity<TransactionRecord> getTransaction(@PathVariable UUID id) {
-        return ResponseEntity.ok(financeService.getTransaction(id));
+        return ResponseEntity.ok(transactionService.getTransaction(id));
     }
 
     @Operation(
@@ -55,7 +55,7 @@ public class TransactionController {
     @PostMapping("/{id}/reverse")
     @PreAuthorize("hasAuthority(@authorities.reverseTransactionAuthority)")
     public ResponseEntity<TransactionRecord> reverseTransaction(@PathVariable UUID id) {
-        return ResponseEntity.ok(financeService.reverseTransaction(id));
+        return ResponseEntity.ok(transactionService.reverseTransaction(id));
     }
 
     @Operation(
@@ -66,8 +66,8 @@ public class TransactionController {
     public ResponseEntity<Page<TransactionRecord>> getAllTransactions(
             @RequestParam(required = false) TransactionType type, @PageableDefault(size = 20) Pageable pageable) {
         if (type != null) {
-            return ResponseEntity.ok(financeService.getTransactionsByType(type, pageable));
+            return ResponseEntity.ok(transactionService.getTransactionsByType(type, pageable));
         }
-        return ResponseEntity.ok(financeService.getAllTransactions(pageable));
+        return ResponseEntity.ok(transactionService.getAllTransactions(pageable));
     }
 }
