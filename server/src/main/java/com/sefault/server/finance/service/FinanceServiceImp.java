@@ -18,6 +18,8 @@ import com.sefault.server.hr.repository.EmployeeRepository;
 import com.sefault.server.sales.repository.SaleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class FinanceServiceImp implements FinanceService{
     private final PayrollMapper payrollMapper;
     private final FixChargeMapper fixChargeMapper;
 
+    @Override
     public TransactionRecord createTransaction(TransactionRecord transactionRecord){
         Transaction transaction = Transaction.builder()
                 .type(transactionRecord.type())
@@ -49,6 +52,46 @@ public class FinanceServiceImp implements FinanceService{
         return transactionMapper.entityToRecord(transactionRepository.save(transaction));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public TransactionRecord getTransaction(UUID transactionId){
+        return transactionRepository.getTransactionProjectionById(transactionId)
+                .map(transactionMapper::projectionToRecord)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+    }
+
+    @Override
+    public TransactionRecord reverseTransaction(UUID originalTransactionId){
+        Transaction originalTransaction = transactionRepository.findById(originalTransactionId)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+
+        TransactionType reverseType = originalTransaction.getType() == TransactionType.PAID
+                ? TransactionType.RECEIVED
+                : TransactionType.PAID;
+
+        Transaction reversal = Transaction.builder()
+                .type(reverseType)
+                .amount(originalTransaction.getAmount())
+                .sale(originalTransaction.getSale())
+                .build();
+         return transactionMapper.entityToRecord(transactionRepository.save(reversal));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TransactionRecord> getAllTransactions(Pageable pageable){
+        return transactionRepository.findAllBy(pageable)
+                .map(transactionMapper::projectionToRecord);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TransactionRecord> getTransactionsByType(TransactionType type, Pageable pageable){
+        return transactionRepository.findByType(type, pageable)
+                .map(transactionMapper::projectionToRecord);
+    }
+
+    @Override
     public PayrollRecord processPayroll(UUID employeeId, LocalDateTime startDate, LocalDateTime endDate){
         EmployeeProjection employeeProjection = employeeRepository.getEmployeeProjectionById(employeeId)
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
@@ -79,13 +122,7 @@ public class FinanceServiceImp implements FinanceService{
         return payrollMapper.entityToRecord(payrollRepository.save(payroll));
     }
 
-    @Transactional(readOnly = true)
-    public TransactionRecord getTransaction(UUID transactionId){
-        return transactionRepository.getTransactionProjectionById(transactionId)
-                .map(transactionMapper::projectionToRecord)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
-    }
-
+    @Override
     @Transactional(readOnly = true)
     public PayrollRecord getPayroll(UUID payrollId){
         return payrollRepository.getPayrollProjectionById(payrollId)
@@ -93,9 +130,65 @@ public class FinanceServiceImp implements FinanceService{
                 .orElseThrow(() -> new EntityNotFoundException("Payroll not found"));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PayrollRecord> getAllPayrolls(Pageable pageable){
+        return payrollRepository.findAllBy(pageable)
+                .map(payrollMapper::projectionToRecord);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PayrollRecord> getPayrollHistoryForEmployee(UUID employeeId, Pageable pageable){
+        return payrollRepository.findByEmployeeId(employeeId, pageable)
+                .map(payrollMapper::projectionToRecord);
+    }
+
+    @Override
     public FixChargeRecord createFixCharge(FixChargeRecord fixChargeRecord){
         FixCharge fixCharge = fixChargeMapper.toEntity(fixChargeRecord);
         fixCharge.setActive(fixChargeRecord.active() != null ?  fixChargeRecord.active() : true);
         return  fixChargeMapper.entityToRecord(fixChargeRepository.save(fixCharge));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FixChargeRecord getFixCharge(UUID chargeId){
+        return fixChargeRepository.getFixChargeProjectionById(chargeId)
+                .map(fixChargeMapper::projectionToRecord)
+                .orElseThrow(() -> new EntityNotFoundException("FixCharge not found"));
+    }
+
+    @Override
+    public FixChargeRecord updateFixCharge(FixChargeRecord fixChargeRecord){
+        FixCharge existingCharge = fixChargeRepository.findById(fixChargeRecord.id())
+                .orElseThrow(() -> new EntityNotFoundException("FixCharge not found"));
+
+        fixChargeMapper.updateEntityFromRecord(fixChargeRecord, existingCharge);
+
+        return fixChargeMapper.entityToRecord(fixChargeRepository.save(existingCharge));
+    }
+
+    @Override
+    public void toggleFixChargeStatus(UUID chargeId){
+        FixCharge existingCharge = fixChargeRepository.findById(chargeId)
+                .orElseThrow(() -> new EntityNotFoundException("FixCharge not found"));
+
+        existingCharge.setActive(!existingCharge.getActive());
+        fixChargeRepository.save(existingCharge);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FixChargeRecord> getAllFixCharges(Pageable pageable) {
+        return fixChargeRepository.findAllBy(pageable)
+                .map(fixChargeMapper::projectionToRecord);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FixChargeRecord> getActiveFixCharges(Pageable pageable) {
+        return fixChargeRepository.findByActiveTrue(pageable)
+                .map(fixChargeMapper::projectionToRecord);
     }
 }
