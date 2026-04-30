@@ -17,8 +17,9 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
     Optional<SaleProjection> getSaleProjectionById(UUID id);
 
     @Query("""
-        SELECT COALESCE(SUM(), 0)
+        SELECT COALESCE(SUM((sl.quantity * sl.saleAtPrice) * (1.0 - s.discount)), 0.0)
         FROM Sale s
+        JOIN s.saleLines sl
         WHERE s.employeeId = :employeeId
         AND s.createdAt BETWEEN :startDate AND :endDate
     """)
