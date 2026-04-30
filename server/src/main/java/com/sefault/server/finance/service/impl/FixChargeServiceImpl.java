@@ -1,5 +1,6 @@
 package com.sefault.server.finance.service.impl;
 
+import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.finance.dto.record.FixChargeRecord;
 import com.sefault.server.finance.entity.FixCharge;
 import com.sefault.server.finance.mapper.FixChargeMapper;
@@ -33,17 +34,15 @@ public class FixChargeServiceImpl implements FixChargeService {
         return fixChargeRepository
                 .getFixChargeProjectionById(chargeId)
                 .map(fixChargeMapper::projectionToRecord)
-                .orElseThrow(() -> new EntityNotFoundException("FixCharge not found"));
+                .orElseThrow(() -> new NotFoundException("FixCharge not found with id: " + chargeId.toString()));
     }
 
     @Override
     public FixChargeRecord updateFixCharge(FixChargeRecord fixChargeRecord) {
         FixCharge existingCharge = fixChargeRepository
                 .findById(fixChargeRecord.id())
-                .orElseThrow(() -> new EntityNotFoundException("FixCharge not found"));
-
+                .orElseThrow(() -> new NotFoundException("FixCharge not found with id: " + fixChargeRecord.id().toString()));
         fixChargeMapper.updateEntityFromRecord(fixChargeRecord, existingCharge);
-
         return fixChargeMapper.entityToRecord(fixChargeRepository.save(existingCharge));
     }
 
@@ -51,8 +50,7 @@ public class FixChargeServiceImpl implements FixChargeService {
     public void toggleFixChargeStatus(UUID chargeId) {
         FixCharge existingCharge = fixChargeRepository
                 .findById(chargeId)
-                .orElseThrow(() -> new EntityNotFoundException("FixCharge not found"));
-
+                .orElseThrow(() -> new NotFoundException("FixCharge not found with id: " + chargeId.toString()));
         existingCharge.setActive(!existingCharge.getActive());
         fixChargeRepository.save(existingCharge);
     }

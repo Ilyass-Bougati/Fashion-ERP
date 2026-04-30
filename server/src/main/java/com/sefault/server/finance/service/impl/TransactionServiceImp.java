@@ -1,5 +1,6 @@
 package com.sefault.server.finance.service.impl;
 
+import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.finance.dto.record.TransactionRecord;
 import com.sefault.server.finance.entity.Transaction;
 import com.sefault.server.finance.enums.TransactionType;
@@ -44,14 +45,14 @@ public class TransactionServiceImp implements TransactionService {
         return transactionRepository
                 .getTransactionProjectionById(transactionId)
                 .map(transactionMapper::projectionToRecord)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+                .orElseThrow(() -> new NotFoundException("Transaction not found with id: " + transactionId.toString()));
     }
 
     @Override
     public TransactionRecord reverseTransaction(UUID originalTransactionId) {
         Transaction originalTransaction = transactionRepository
                 .findById(originalTransactionId)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+                .orElseThrow(() -> new NotFoundException("Transaction not found with id: " + originalTransactionId.toString()));
 
         TransactionType reverseType =
                 originalTransaction.getType() == TransactionType.PAID ? TransactionType.RECEIVED : TransactionType.PAID;

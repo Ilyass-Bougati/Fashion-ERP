@@ -1,5 +1,6 @@
 package com.sefault.server.finance.service.impl;
 
+import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.finance.dto.record.PayrollRecord;
 import com.sefault.server.finance.entity.Payroll;
 import com.sefault.server.finance.entity.Transaction;
@@ -36,7 +37,7 @@ public class PayrollServiceImp implements PayrollService {
     public PayrollRecord processPayroll(UUID employeeId, LocalDateTime startDate, LocalDateTime endDate) {
         EmployeeProjection employeeProjection = employeeRepository
                 .getEmployeeProjectionById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+                .orElseThrow(() -> new NotFoundException("Employee not found with id: " + employeeId.toString()));
 
         Double employeeSalesVolume = saleRepository.sumSaleAmountByEmployeeId(employeeId, startDate, endDate);
 
@@ -66,7 +67,7 @@ public class PayrollServiceImp implements PayrollService {
         return payrollRepository
                 .getPayrollProjectionById(payrollId)
                 .map(payrollMapper::projectionToRecord)
-                .orElseThrow(() -> new EntityNotFoundException("Payroll not found"));
+                .orElseThrow(() -> new NotFoundException("Payroll not found with id: " + payrollId.toString()));
     }
 
     @Override
