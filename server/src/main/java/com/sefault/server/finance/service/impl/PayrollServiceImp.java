@@ -12,7 +12,6 @@ import com.sefault.server.finance.service.PayrollService;
 import com.sefault.server.hr.dto.projection.EmployeeProjection;
 import com.sefault.server.hr.repository.EmployeeRepository;
 import com.sefault.server.sales.repository.SaleRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

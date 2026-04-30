@@ -8,7 +8,6 @@ import com.sefault.server.finance.mapper.TransactionMapper;
 import com.sefault.server.finance.repository.TransactionRepository;
 import com.sefault.server.finance.service.TransactionService;
 import com.sefault.server.sales.repository.SaleRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

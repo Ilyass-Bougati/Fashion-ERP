@@ -6,7 +6,6 @@ import com.sefault.server.finance.entity.FixCharge;
 import com.sefault.server.finance.mapper.FixChargeMapper;
 import com.sefault.server.finance.repository.FixChargeRepository;
 import com.sefault.server.finance.service.FixChargeService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
