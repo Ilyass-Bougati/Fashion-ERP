@@ -1,4 +1,31 @@
 services:
+  server:
+    container_name: fashion-erp
+    build:
+      context: .
+    ports:
+      - '8080:8080'
+    environment:
+      SWAGGER_UI: true
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fashion_erp
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATA_REDIS_URI: redis
+      MINIO_ENDPOINT: http://minio:9000
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
   postgres:
     image: postgres:15-alpine
     container_name: fashion-erp-db-container
@@ -11,6 +38,12 @@ services:
     volumes:
       - fashion_erp_pg_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fashion_erp"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:alpine
@@ -18,7 +51,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -31,7 +64,8 @@ services:
     volumes:
       - redis_insight_data:/data
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
   minio:
     image: minio/minio:latest
@@ -46,6 +80,12 @@ services:
     volumes:
       - minio_data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   fashion_erp_pg_data:
