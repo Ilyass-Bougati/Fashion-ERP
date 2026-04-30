@@ -42,7 +42,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @WebMvcTest(FinanceController.class)
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
-@Import({SecurityConfig.class, JwtCookieFilter.class, JacksonAutoConfiguration.class, FinanceControllerTest.TestAdvice.class})
+@Import({
+    SecurityConfig.class,
+    JwtCookieFilter.class,
+    JacksonAutoConfiguration.class,
+    FinanceControllerTest.TestAdvice.class
+})
 public class FinanceControllerTest {
 
     @Autowired
@@ -125,25 +130,23 @@ public class FinanceControllerTest {
     void getTransaction_404() throws Exception {
         UUID id = UUID.randomUUID();
         when(financeService.getTransaction(id)).thenThrow(new EntityNotFoundException("Not found"));
-        mockMvc.perform(get("/api/v1/finance/transactions/{id}", id))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/finance/transactions/{id}", id)).andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(authorities = "REVERSE_TRANSACTION")
     void reverseTransaction_Success() throws Exception {
         UUID id = UUID.randomUUID();
-        when(financeService.reverseTransaction(id)).thenReturn(new TransactionRecord(id, TransactionType.RECEIVED, null, 100.0, LocalDateTime.now()));
-        mockMvc.perform(post("/api/v1/finance/transactions/{id}/reverse", id))
-                .andExpect(status().isOk());
+        when(financeService.reverseTransaction(id))
+                .thenReturn(new TransactionRecord(id, TransactionType.RECEIVED, null, 100.0, LocalDateTime.now()));
+        mockMvc.perform(post("/api/v1/finance/transactions/{id}/reverse", id)).andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(authorities = "READ_TRANSACTION")
     void getAllTransactions_Success() throws Exception {
         when(financeService.getAllTransactions(any())).thenReturn(new PageImpl<>(List.of()));
-        mockMvc.perform(get("/api/v1/finance/transactions"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/finance/transactions")).andExpect(status().isOk());
     }
 
     // --- Payroll ---
@@ -152,7 +155,8 @@ public class FinanceControllerTest {
     @WithMockUser(authorities = "PROCESS_PAYROLL")
     void processPayroll_Success() throws Exception {
         UUID empId = UUID.randomUUID();
-        PayrollRecord record = new PayrollRecord(UUID.randomUUID(), 1000.0, UUID.randomUUID(), empId, 50.0, LocalDateTime.now());
+        PayrollRecord record =
+                new PayrollRecord(UUID.randomUUID(), 1000.0, UUID.randomUUID(), empId, 50.0, LocalDateTime.now());
         when(financeService.processPayroll(eq(empId), any(), any())).thenReturn(record);
 
         mockMvc.perform(post("/api/v1/finance/payroll/process/{employeeId}", empId)
@@ -172,9 +176,10 @@ public class FinanceControllerTest {
     @WithMockUser(authorities = "READ_PAYROLL")
     void getPayroll_Success() throws Exception {
         UUID id = UUID.randomUUID();
-        when(financeService.getPayroll(id)).thenReturn(new PayrollRecord(id, 1000.0, UUID.randomUUID(), UUID.randomUUID(), 50.0, LocalDateTime.now()));
-        mockMvc.perform(get("/api/v1/finance/payroll/{id}", id))
-                .andExpect(status().isOk());
+        when(financeService.getPayroll(id))
+                .thenReturn(
+                        new PayrollRecord(id, 1000.0, UUID.randomUUID(), UUID.randomUUID(), 50.0, LocalDateTime.now()));
+        mockMvc.perform(get("/api/v1/finance/payroll/{id}", id)).andExpect(status().isOk());
     }
 
     // --- Fixed Charges ---
@@ -182,7 +187,8 @@ public class FinanceControllerTest {
     @Test
     @WithMockUser(authorities = "CREATE_FIXED_CHARGE")
     void createFixedCharge_Success() throws Exception {
-        FixChargeRecord record = new FixChargeRecord(UUID.randomUUID(), "Rent", "Office", 500.0, true, LocalDateTime.now());
+        FixChargeRecord record =
+                new FixChargeRecord(UUID.randomUUID(), "Rent", "Office", 500.0, true, LocalDateTime.now());
         when(financeService.createFixCharge(any())).thenReturn(record);
         mockMvc.perform(post("/api/v1/finance/fixed-charges")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -201,8 +207,7 @@ public class FinanceControllerTest {
     @WithMockUser(authorities = "READ_PAYROLL")
     void getAllPayrolls_Success() throws Exception {
         when(financeService.getAllPayrolls(any())).thenReturn(new PageImpl<>(List.of()));
-        mockMvc.perform(get("/api/v1/finance/payroll"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/finance/payroll")).andExpect(status().isOk());
     }
 
     @Test
@@ -219,14 +224,14 @@ public class FinanceControllerTest {
         UUID id = UUID.randomUUID();
         FixChargeRecord record = new FixChargeRecord(id, "Rent", "Office", 500.0, true, LocalDateTime.now());
         when(financeService.getFixCharge(id)).thenReturn(record);
-        mockMvc.perform(get("/api/v1/finance/fixed-charges/{id}", id))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/finance/fixed-charges/{id}", id)).andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(authorities = "UPDATE_FIXED_CHARGE")
     void updateFixedCharge_Success() throws Exception {
-        FixChargeRecord record = new FixChargeRecord(UUID.randomUUID(), "Rent", "Office", 600.0, true, LocalDateTime.now());
+        FixChargeRecord record =
+                new FixChargeRecord(UUID.randomUUID(), "Rent", "Office", 600.0, true, LocalDateTime.now());
         when(financeService.updateFixCharge(any())).thenReturn(record);
         mockMvc.perform(put("/api/v1/finance/fixed-charges")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -238,22 +243,19 @@ public class FinanceControllerTest {
     @WithMockUser(authorities = "READ_FIXED_CHARGE")
     void getAllFixCharges_Success() throws Exception {
         when(financeService.getAllFixCharges(any())).thenReturn(new PageImpl<>(List.of()));
-        mockMvc.perform(get("/api/v1/finance/fixed-charges"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/finance/fixed-charges")).andExpect(status().isOk());
     }
 
     // --- Security ---
 
     @Test
     void unauthenticated_401() throws Exception {
-        mockMvc.perform(get("/api/v1/finance/transactions"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/finance/transactions")).andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser(authorities = "WRONG_AUTHORITY")
     void unauthorized_403() throws Exception {
-        mockMvc.perform(get("/api/v1/finance/transactions"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/v1/finance/transactions")).andExpect(status().isForbidden());
     }
 }

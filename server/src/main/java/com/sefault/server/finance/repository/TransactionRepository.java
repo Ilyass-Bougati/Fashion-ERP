@@ -2,10 +2,9 @@ package com.sefault.server.finance.repository;
 
 import com.sefault.server.finance.dto.projection.TransactionProjection;
 import com.sefault.server.finance.entity.Transaction;
+import com.sefault.server.finance.enums.TransactionType;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.sefault.server.finance.enums.TransactionType;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -4,11 +4,10 @@ import com.sefault.server.finance.dto.record.FixChargeRecord;
 import com.sefault.server.finance.dto.record.PayrollRecord;
 import com.sefault.server.finance.dto.record.TransactionRecord;
 import com.sefault.server.finance.enums.TransactionType;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface FinanceService {
     // --- TRANSACTIONS ---

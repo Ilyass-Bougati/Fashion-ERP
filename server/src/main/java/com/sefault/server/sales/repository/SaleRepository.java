@@ -2,7 +2,6 @@ package com.sefault.server.sales.repository;
 
 import com.sefault.server.sales.dto.projection.SaleProjection;
 import com.sefault.server.sales.entity.Sale;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +25,5 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
     Double sumSaleAmountByEmployeeId(
             @Param("employeeId") UUID employeeId,
             @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
-    );
+            @Param("endDate") LocalDateTime endDate);
 }
