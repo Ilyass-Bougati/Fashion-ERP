@@ -2,7 +2,6 @@ package com.sefault.server.hr.repository;
 
 import com.sefault.server.hr.dto.projection.EmployeeProjection;
 import com.sefault.server.hr.entity.Employee;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,7 +22,12 @@ public interface EmployeeRepository extends JpaRepository<@NonNull Employee, @No
     List<EmployeeProjection> findAllBy();
 
     boolean existsByPhoneNumberAndIdNot(String phoneNumber, UUID id);
+
     boolean existsByCINAndIdNot(String CIN, UUID id);
+
     boolean existsByEmailAndIdNot(String email, UUID id);
 
+    boolean existsByIdAndActiveTrue(UUID id);
+
+    List<EmployeeProjection> findAllByActiveTrue();
 }
