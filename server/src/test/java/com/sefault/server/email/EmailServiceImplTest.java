@@ -1,7 +1,14 @@
 package com.sefault.server.email;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,14 +22,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("EmailServiceImpl Unit Tests")
@@ -90,8 +89,8 @@ class EmailServiceImplTest {
         emailService.sendEmail(request);
 
         Context capturedContext = contextCaptor.getValue();
-        variables.forEach((key, value) ->
-                org.assertj.core.api.Assertions.assertThat(capturedContext.getVariable(key)).isEqualTo(value));
+        variables.forEach((key, value) -> org.assertj.core.api.Assertions.assertThat(capturedContext.getVariable(key))
+                .isEqualTo(value));
     }
 
     @Test
@@ -160,9 +159,9 @@ class EmailServiceImplTest {
         when(templateEngine.process(anyString(), any(Context.class))).thenReturn(RENDERED_HTML);
         // Simulate MimeMessage setup failure
         when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
-        doThrow(new MailSendException("Messaging error",
-                new MessagingException("Bad address")))
-                .when(javaMailSender).send(any(MimeMessage.class));
+        doThrow(new MailSendException("Messaging error", new MessagingException("Bad address")))
+                .when(javaMailSender)
+                .send(any(MimeMessage.class));
 
         assertThatCode(() -> emailService.sendEmail(request)).doesNotThrowAnyException();
     }
@@ -177,8 +176,7 @@ class EmailServiceImplTest {
 
         // The RuntimeException is not caught by the service → propagates
         // Confirm send() is never reached
-        assertThatCode(() -> emailService.sendEmail(request))
-                .isInstanceOf(RuntimeException.class);
+        assertThatCode(() -> emailService.sendEmail(request)).isInstanceOf(RuntimeException.class);
 
         verify(javaMailSender, never()).send(any(MimeMessage.class));
     }
