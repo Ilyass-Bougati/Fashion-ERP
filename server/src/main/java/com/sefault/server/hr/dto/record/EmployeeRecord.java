@@ -2,10 +2,11 @@ package com.sefault.server.hr.dto.record;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.NonNull;
 
 public record EmployeeRecord(
         UUID id,
-        UUID imageId,
+        @NonNull UUID imageId,
         String firstName,
         String lastName,
         String phoneNumber,

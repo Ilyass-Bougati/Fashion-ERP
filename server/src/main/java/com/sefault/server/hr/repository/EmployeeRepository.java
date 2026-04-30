@@ -2,32 +2,27 @@ package com.sefault.server.hr.repository;
 
 import com.sefault.server.hr.dto.projection.EmployeeProjection;
 import com.sefault.server.hr.entity.Employee;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<@NonNull Employee, @NonNull UUID> {
     Optional<EmployeeProjection> getEmployeeProjectionById(UUID id);
 
-    boolean existsByPhoneNumber(String phoneNumber);
+    Page<EmployeeProjection> findAllBy(Pageable pageable);
 
-    boolean existsByCIN(String CIN);
+    Page<EmployeeProjection> findAllByActiveTrue(Pageable pageable);
 
-    boolean existsByEmail(String email);
-
-    List<EmployeeProjection> findAllBy();
-
-    boolean existsByPhoneNumberAndIdNot(String phoneNumber, UUID id);
-
-    boolean existsByCINAndIdNot(String CIN, UUID id);
-
-    boolean existsByEmailAndIdNot(String email, UUID id);
-
-    boolean existsByIdAndActiveTrue(UUID id);
-
-    List<EmployeeProjection> findAllByActiveTrue();
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Employee e SET e.active = false, e.terminatedAt = :terminatedAt WHERE e.id = :id")
+    int terminateEmployee(@Param("id") UUID id, @Param("terminatedAt") LocalDateTime terminatedAt);
 }

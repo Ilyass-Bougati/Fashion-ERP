@@ -28,5 +28,4 @@ public class ApplicationAuthorities {
     private final String deleteIsleAuthority = "DELETE_ISLE";
     private final String getIsleAuthority = "GET_ISLE";
     private final String listIslesAuthority = "LIST_ISLES";
-    private final String assignIsleAuthority = "ASSIGN_ISLE";
 }

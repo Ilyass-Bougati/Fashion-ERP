@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.hr.dto.projection.IsleProjection;
 import com.sefault.server.hr.dto.record.IsleRecord;
 import com.sefault.server.hr.entity.Isle;
@@ -12,7 +13,6 @@ import com.sefault.server.hr.mapper.IsleMapper;
 import com.sefault.server.hr.repository.EmployeeRepository;
 import com.sefault.server.hr.repository.IsleRepository;
 import com.sefault.server.hr.service.Impl.IsleServiceImpl;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +22,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class IsleServiceImplTest {
@@ -45,6 +49,7 @@ class IsleServiceImplTest {
 
     @BeforeEach
     void setUp() {
+
         isleId = UUID.randomUUID();
         employeeId = UUID.randomUUID();
 
@@ -60,23 +65,7 @@ class IsleServiceImplTest {
     // ==========================================
 
     @Test
-    void create_WithoutEmployee_Success() {
-        IsleRecord recordNoEmployee = new IsleRecord(null, null, "A1");
-        when(isleRepository.existsByCode("A1")).thenReturn(false);
-        when(isleMapper.toEntity(any())).thenReturn(isle);
-        when(isleRepository.save(any())).thenReturn(isle);
-        when(isleMapper.entityToRecord(any())).thenReturn(recordNoEmployee);
-
-        IsleRecord result = isleService.create(recordNoEmployee);
-
-        assertThat(result).isNotNull();
-        verify(employeeRepository, never()).existsByIdAndActiveTrue(any());
-    }
-
-    @Test
-    void create_WithActiveEmployee_Success() {
-        when(isleRepository.existsByCode("A1")).thenReturn(false);
-        when(employeeRepository.existsByIdAndActiveTrue(employeeId)).thenReturn(true);
+    void create_WithEmployee_Success() {
         when(isleMapper.toEntity(any())).thenReturn(isle);
         when(employeeRepository.getReferenceById(employeeId)).thenReturn(null);
         when(isleRepository.save(any())).thenReturn(isle);
@@ -86,30 +75,6 @@ class IsleServiceImplTest {
 
         assertThat(result).isNotNull();
         verify(employeeRepository).getReferenceById(employeeId);
-    }
-
-    @Test
-    void create_DuplicateCode_ThrowsException() {
-        when(isleRepository.existsByCode("A1")).thenReturn(true);
-
-        assertThatThrownBy(() -> isleService.create(isleRecord))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Isle code already exists: A1");
-
-        verify(isleRepository, never()).save(any());
-    }
-
-    @Test
-    void create_WithTerminatedEmployee_ThrowsException() {
-        when(isleRepository.existsByCode("A1")).thenReturn(false);
-        when(isleMapper.toEntity(any())).thenReturn(isle);
-        when(employeeRepository.existsByIdAndActiveTrue(employeeId)).thenReturn(false);
-
-        assertThatThrownBy(() -> isleService.create(isleRecord))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Cannot assign a terminated employee to an isle");
-
-        verify(isleRepository, never()).save(any());
     }
 
     // ==========================================
@@ -132,18 +97,26 @@ class IsleServiceImplTest {
     void getById_NotFound_ThrowsException() {
         when(isleRepository.getIsleProjectionById(isleId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> isleService.getById(isleId)).isInstanceOf(EntityNotFoundException.class);
+        assertThatThrownBy(() -> isleService.getById(isleId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Isle not found");
     }
 
     @Test
-    void getAll_ReturnsListOfRecords() {
+    void getAll_ReturnsPageOfRecords() {
+        Pageable pageable = PageRequest.of(0, 10);
         IsleProjection projection = mock(IsleProjection.class);
-        when(isleRepository.findAllBy()).thenReturn(List.of(projection));
+
+        Page<IsleProjection> projectionPage = new PageImpl<>(List.of(projection));
+
+        when(isleRepository.findAllBy(pageable)).thenReturn(projectionPage);
         when(isleMapper.projectionToRecord(projection)).thenReturn(isleRecord);
 
-        List<IsleRecord> result = isleService.getAll();
+        Page<IsleRecord> result = isleService.getAll(pageable);
 
-        assertThat(result).hasSize(1);
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).code()).isEqualTo("A1");
     }
 
     @Test
@@ -165,7 +138,6 @@ class IsleServiceImplTest {
     void update_Success_ReturnsUpdatedRecord() {
         isle.setEmployeeId(employeeId);
         when(isleRepository.findById(isleId)).thenReturn(Optional.of(isle));
-        when(isleRepository.existsByCodeAndIdNot("A1", isleId)).thenReturn(false);
         when(isleRepository.save(any())).thenReturn(isle);
         when(isleMapper.entityToRecord(any())).thenReturn(isleRecord);
 
@@ -179,87 +151,9 @@ class IsleServiceImplTest {
     void update_NotFound_ThrowsException() {
         when(isleRepository.findById(isleId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> isleService.update(isleId, isleRecord)).isInstanceOf(EntityNotFoundException.class);
-    }
-
-    @Test
-    void update_DuplicateCode_ThrowsException() {
-        when(isleRepository.findById(isleId)).thenReturn(Optional.of(isle));
-        when(isleRepository.existsByCodeAndIdNot("A1", isleId)).thenReturn(true);
-
         assertThatThrownBy(() -> isleService.update(isleId, isleRecord))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Isle code already exists: A1");
-    }
-
-    @Test
-    void update_ChangeToTerminatedEmployee_ThrowsException() {
-        UUID newEmployeeId = UUID.randomUUID();
-        isle.setEmployeeId(employeeId); // ancien employé différent
-        IsleRecord recordWithNewEmployee = new IsleRecord(isleId, newEmployeeId, "A1");
-
-        when(isleRepository.findById(isleId)).thenReturn(Optional.of(isle));
-        when(isleRepository.existsByCodeAndIdNot(any(), any())).thenReturn(false);
-        when(employeeRepository.existsByIdAndActiveTrue(newEmployeeId)).thenReturn(false);
-
-        assertThatThrownBy(() -> isleService.update(isleId, recordWithNewEmployee))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Cannot assign a terminated employee to an isle");
-    }
-
-    // ==========================================
-    // ASSIGN & UNASSIGN TESTS
-    // ==========================================
-
-    @Test
-    void assignEmployee_Success() {
-        when(isleRepository.findById(isleId)).thenReturn(Optional.of(isle));
-        when(employeeRepository.existsByIdAndActiveTrue(employeeId)).thenReturn(true);
-        when(employeeRepository.getReferenceById(employeeId)).thenReturn(null);
-        when(isleRepository.save(any())).thenReturn(isle);
-        when(isleMapper.entityToRecord(any())).thenReturn(isleRecord);
-
-        IsleRecord result = isleService.assignEmployee(isleId, employeeId);
-
-        assertThat(result).isNotNull();
-        verify(isleRepository).save(isle);
-    }
-
-    @Test
-    void assignEmployee_TerminatedEmployee_ThrowsException() {
-        when(isleRepository.findById(isleId)).thenReturn(Optional.of(isle));
-        when(employeeRepository.existsByIdAndActiveTrue(employeeId)).thenReturn(false);
-
-        assertThatThrownBy(() -> isleService.assignEmployee(isleId, employeeId))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Cannot assign a terminated employee to an isle");
-    }
-
-    @Test
-    void assignEmployee_IsleNotFound_ThrowsException() {
-        when(isleRepository.findById(isleId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> isleService.assignEmployee(isleId, employeeId))
-                .isInstanceOf(EntityNotFoundException.class);
-    }
-
-    @Test
-    void unassignEmployee_Success_SetsEmployeeNull() {
-        when(isleRepository.findById(isleId)).thenReturn(Optional.of(isle));
-        when(isleRepository.save(any())).thenReturn(isle);
-        when(isleMapper.entityToRecord(any())).thenReturn(isleRecord);
-
-        isleService.unassignEmployee(isleId);
-
-        assertThat(isle.getEmployee()).isNull();
-        verify(isleRepository).save(isle);
-    }
-
-    @Test
-    void unassignEmployee_IsleNotFound_ThrowsException() {
-        when(isleRepository.findById(isleId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> isleService.unassignEmployee(isleId)).isInstanceOf(EntityNotFoundException.class);
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Isle not found");
     }
 
     // ==========================================
@@ -268,8 +162,8 @@ class IsleServiceImplTest {
 
     @Test
     void delete_CallsRepository() {
-        when(isleRepository.findById(isleId)).thenReturn(Optional.of(isle));
         isleService.delete(isleId);
+
         verify(isleRepository).deleteById(isleId);
     }
 }

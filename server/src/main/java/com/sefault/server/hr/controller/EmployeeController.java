@@ -2,9 +2,13 @@ package com.sefault.server.hr.controller;
 
 import com.sefault.server.hr.dto.record.EmployeeRecord;
 import com.sefault.server.hr.service.EmployeeService;
-import java.util.List;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,20 +21,22 @@ public class EmployeeController {
 
     @PostMapping
     @PreAuthorize("hasAuthority(@authorities.createEmployeeAuthority)")
-    public ResponseEntity<EmployeeRecord> create(@RequestBody EmployeeRecord employeeRecord) {
+    public ResponseEntity<EmployeeRecord> create(@Valid @RequestBody EmployeeRecord employeeRecord) {
         return ResponseEntity.ok(employeeService.create(employeeRecord));
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority(@authorities.listEmployeesAuthority)")
-    public ResponseEntity<List<EmployeeRecord>> getAll() {
-        return ResponseEntity.ok(employeeService.getAll());
+    public ResponseEntity<Page<EmployeeRecord>> getAll(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(employeeService.getAll(pageable));
     }
 
     @GetMapping("/active")
     @PreAuthorize("hasAuthority(@authorities.listEmployeesAuthority)")
-    public ResponseEntity<List<EmployeeRecord>> getActive() {
-        return ResponseEntity.ok(employeeService.getActive());
+    public ResponseEntity<Page<EmployeeRecord>> getActiveEmployees(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(employeeService.getActive(pageable));
     }
 
     @GetMapping("/{id}")
@@ -41,7 +47,7 @@ public class EmployeeController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority(@authorities.updateEmployeeAuthority)")
-    public ResponseEntity<EmployeeRecord> update(@PathVariable UUID id, @RequestBody EmployeeRecord record) {
+    public ResponseEntity<EmployeeRecord> update(@PathVariable UUID id, @Valid @RequestBody EmployeeRecord record) {
         return ResponseEntity.ok(employeeService.update(id, record));
     }
 

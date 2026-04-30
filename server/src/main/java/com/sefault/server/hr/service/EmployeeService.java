@@ -1,8 +1,9 @@
 package com.sefault.server.hr.service;
 
 import com.sefault.server.hr.dto.record.EmployeeRecord;
-import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface EmployeeService {
     EmployeeRecord create(EmployeeRecord record);
@@ -11,11 +12,11 @@ public interface EmployeeService {
 
     EmployeeRecord getById(UUID id);
 
-    List<EmployeeRecord> getAll();
+    Page<EmployeeRecord> getAll(Pageable pageable);
 
     void delete(UUID id);
 
-    List<EmployeeRecord> getActive();
+    Page<EmployeeRecord> getActive(Pageable pageable);
 
     EmployeeRecord terminate(UUID id);
 }
