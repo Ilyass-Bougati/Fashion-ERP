@@ -39,8 +39,7 @@ public class FixChargeServiceImpl implements FixChargeService {
     public FixChargeRecord updateFixCharge(FixChargeRecord fixChargeRecord) {
         FixCharge existingCharge = fixChargeRepository
                 .findById(fixChargeRecord.id())
-                .orElseThrow(() -> new NotFoundException(
-                        "FixCharge not found with id: " + fixChargeRecord.id()));
+                .orElseThrow(() -> new NotFoundException("FixCharge not found with id: " + fixChargeRecord.id()));
         fixChargeMapper.updateEntityFromRecord(fixChargeRecord, existingCharge);
         return fixChargeMapper.entityToRecord(fixChargeRepository.save(existingCharge));
     }
