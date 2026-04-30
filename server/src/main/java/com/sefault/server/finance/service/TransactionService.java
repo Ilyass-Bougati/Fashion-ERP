@@ -2,10 +2,9 @@ package com.sefault.server.finance.service;
 
 import com.sefault.server.finance.dto.record.TransactionRecord;
 import com.sefault.server.finance.enums.TransactionType;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.UUID;
 
 public interface TransactionService {
     TransactionRecord createTransaction(TransactionRecord transactionRecord);

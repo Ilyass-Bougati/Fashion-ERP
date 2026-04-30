@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,9 +16,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/finance/payroll")
@@ -30,8 +29,8 @@ public class PayrollController {
             description =
                     "Calculates commissions based on sales within the specified date range and creates a secured payroll transaction.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Payroll processed successfully"),
-            @ApiResponse(responseCode = "404", description = "Employee not found")
+        @ApiResponse(responseCode = "200", description = "Payroll processed successfully"),
+        @ApiResponse(responseCode = "404", description = "Employee not found")
     })
     @PostMapping("/process/{employeeId}")
     @PreAuthorize("hasAuthority(@authorities.processPayrollAuthority)")

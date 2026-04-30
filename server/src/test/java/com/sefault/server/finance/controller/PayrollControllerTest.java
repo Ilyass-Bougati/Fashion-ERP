@@ -39,10 +39,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @WebMvcTest(PayrollController.class)
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @Import({
-        SecurityConfig.class,
-        JwtCookieFilter.class,
-        JacksonAutoConfiguration.class,
-        PayrollControllerTest.TestAdvice.class
+    SecurityConfig.class,
+    JwtCookieFilter.class,
+    JacksonAutoConfiguration.class,
+    PayrollControllerTest.TestAdvice.class
 })
 public class PayrollControllerTest {
 

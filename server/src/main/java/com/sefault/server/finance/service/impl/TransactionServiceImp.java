@@ -8,13 +8,12 @@ import com.sefault.server.finance.mapper.TransactionMapper;
 import com.sefault.server.finance.repository.TransactionRepository;
 import com.sefault.server.finance.service.TransactionService;
 import com.sefault.server.sales.repository.SaleRepository;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -51,7 +50,8 @@ public class TransactionServiceImp implements TransactionService {
     public TransactionRecord reverseTransaction(UUID originalTransactionId) {
         Transaction originalTransaction = transactionRepository
                 .findById(originalTransactionId)
-                .orElseThrow(() -> new NotFoundException("Transaction not found with id: " + originalTransactionId.toString()));
+                .orElseThrow(() ->
+                        new NotFoundException("Transaction not found with id: " + originalTransactionId.toString()));
 
         TransactionType reverseType =
                 originalTransaction.getType() == TransactionType.PAID ? TransactionType.RECEIVED : TransactionType.PAID;

@@ -25,27 +25,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @WebMvcTest(TransactionController.class)
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
-    @Import({
-        SecurityConfig.class,
-        JwtCookieFilter.class,
-        JacksonAutoConfiguration.class,
-        GlobalExceptionHandler.class
-})
+@Import({SecurityConfig.class, JwtCookieFilter.class, JacksonAutoConfiguration.class, GlobalExceptionHandler.class})
 public class TransactionControllerTest {
 
     @Autowired

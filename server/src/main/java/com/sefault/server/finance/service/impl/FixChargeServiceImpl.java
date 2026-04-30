@@ -6,13 +6,12 @@ import com.sefault.server.finance.entity.FixCharge;
 import com.sefault.server.finance.mapper.FixChargeMapper;
 import com.sefault.server.finance.repository.FixChargeRepository;
 import com.sefault.server.finance.service.FixChargeService;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -40,7 +39,8 @@ public class FixChargeServiceImpl implements FixChargeService {
     public FixChargeRecord updateFixCharge(FixChargeRecord fixChargeRecord) {
         FixCharge existingCharge = fixChargeRepository
                 .findById(fixChargeRecord.id())
-                .orElseThrow(() -> new NotFoundException("FixCharge not found with id: " + fixChargeRecord.id().toString()));
+                .orElseThrow(() -> new NotFoundException(
+                        "FixCharge not found with id: " + fixChargeRecord.id().toString()));
         fixChargeMapper.updateEntityFromRecord(fixChargeRecord, existingCharge);
         return fixChargeMapper.entityToRecord(fixChargeRepository.save(existingCharge));
     }
