@@ -40,7 +40,7 @@ public class FixChargeServiceImpl implements FixChargeService {
         FixCharge existingCharge = fixChargeRepository
                 .findById(fixChargeRecord.id())
                 .orElseThrow(() -> new NotFoundException(
-                        "FixCharge not found with id: " + fixChargeRecord.id().toString()));
+                        "FixCharge not found with id: " + fixChargeRecord.id()));
         fixChargeMapper.updateEntityFromRecord(fixChargeRecord, existingCharge);
         return fixChargeMapper.entityToRecord(fixChargeRepository.save(existingCharge));
     }
@@ -49,7 +49,7 @@ public class FixChargeServiceImpl implements FixChargeService {
     public void toggleFixChargeStatus(UUID chargeId) {
         FixCharge existingCharge = fixChargeRepository
                 .findById(chargeId)
-                .orElseThrow(() -> new NotFoundException("FixCharge not found with id: " + chargeId.toString()));
+                .orElseThrow(() -> new NotFoundException("FixCharge not found with id: " + chargeId));
         existingCharge.setActive(!existingCharge.getActive());
         fixChargeRepository.save(existingCharge);
     }

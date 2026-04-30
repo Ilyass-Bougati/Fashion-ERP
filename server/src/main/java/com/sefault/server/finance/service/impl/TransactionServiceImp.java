@@ -51,7 +51,7 @@ public class TransactionServiceImp implements TransactionService {
         Transaction originalTransaction = transactionRepository
                 .findById(originalTransactionId)
                 .orElseThrow(() ->
-                        new NotFoundException("Transaction not found with id: " + originalTransactionId.toString()));
+                        new NotFoundException("Transaction not found with id: " + originalTransactionId));
 
         TransactionType reverseType =
                 originalTransaction.getType() == TransactionType.PAID ? TransactionType.RECEIVED : TransactionType.PAID;
