@@ -53,8 +53,5 @@ build/
 
 ### IMPORTANT ###
 .env
-<<<<<<< HEAD
 *.pem
-=======
-*.pem
->>>>>>> dd9c714a38f872dc152085de6f8f4b1c967475ad
+
