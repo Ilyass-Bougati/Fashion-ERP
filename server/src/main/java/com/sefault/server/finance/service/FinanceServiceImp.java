@@ -49,7 +49,7 @@ public class FinanceServiceImp implements FinanceService{
                         : null)
                 .amount(transactionRecord.amount())
                 .build();
-        return transactionMapper.entityToRecord(transactionRepository.save(transaction));
+        return transactionMapper.entityToRecord(transactionRepository.saveAndFlush(transaction));
     }
 
     @Override
@@ -74,7 +74,7 @@ public class FinanceServiceImp implements FinanceService{
                 .amount(originalTransaction.getAmount())
                 .sale(originalTransaction.getSale())
                 .build();
-         return transactionMapper.entityToRecord(transactionRepository.save(reversal));
+         return transactionMapper.entityToRecord(transactionRepository.saveAndFlush(reversal));
     }
 
     @Override
@@ -110,7 +110,7 @@ public class FinanceServiceImp implements FinanceService{
                 .amount(officialSalary + calculatedCommission)
                 .build();
 
-        Transaction savedTransaction = transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.saveAndFlush(transaction);
 
         Payroll payroll = Payroll.builder()
                 .salary(officialSalary)
@@ -119,7 +119,7 @@ public class FinanceServiceImp implements FinanceService{
                 .employee(employeeRepository.getReferenceById(employeeId))
                 .build();
 
-        return payrollMapper.entityToRecord(payrollRepository.save(payroll));
+        return payrollMapper.entityToRecord(payrollRepository.saveAndFlush(payroll));
     }
 
     @Override
@@ -148,7 +148,7 @@ public class FinanceServiceImp implements FinanceService{
     public FixChargeRecord createFixCharge(FixChargeRecord fixChargeRecord){
         FixCharge fixCharge = fixChargeMapper.toEntity(fixChargeRecord);
         fixCharge.setActive(fixChargeRecord.active() != null ?  fixChargeRecord.active() : true);
-        return  fixChargeMapper.entityToRecord(fixChargeRepository.save(fixCharge));
+        return  fixChargeMapper.entityToRecord(fixChargeRepository.saveAndFlush(fixCharge));
     }
 
     @Override
