@@ -35,6 +35,23 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     hikari:
       connection-test-query: SELECT 1
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: "*"
 management:
   endpoints:
     web:
@@ -76,3 +93,10 @@ minio:
 
 recaptcha:
   secret-key: ${RECAPTCHA_SECRET_KEY}
+
+app:
+  async:
+    core-pool-size: 2
+    max-pool-size: 10
+    queue-capacity: 500
+    thread-name-prefix: "EmailThread-"
