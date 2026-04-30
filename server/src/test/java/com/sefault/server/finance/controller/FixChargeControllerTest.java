@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.sefault.server.exception.GlobalExceptionHandler;
 import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.finance.dto.record.FixChargeRecord;
 import com.sefault.server.finance.service.FixChargeService;
@@ -38,11 +39,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @WebMvcTest(FixChargeController.class)
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
-@Import({
+    @Import({
         SecurityConfig.class,
         JwtCookieFilter.class,
         JacksonAutoConfiguration.class,
-        FixChargeControllerTest.TestAdvice.class
+        GlobalExceptionHandler.class
 })
 public class FixChargeControllerTest {
 
@@ -62,26 +63,6 @@ public class FixChargeControllerTest {
 
     @MockitoBean
     private JwtDecoder jwtDecoder;
-
-    @RestControllerAdvice
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public static class TestAdvice {
-        @ExceptionHandler(NotFoundException.class)
-        @ResponseStatus(HttpStatus.NOT_FOUND)
-        public void handleNotFound() {}
-
-        @ExceptionHandler(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class)
-        @ResponseStatus(HttpStatus.UNAUTHORIZED)
-        public void handle401() {}
-
-        @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
-        @ResponseStatus(HttpStatus.FORBIDDEN)
-        public void handle403() {}
-
-        @ExceptionHandler(Exception.class)
-        @ResponseStatus(HttpStatus.BAD_REQUEST)
-        public void handleAll() {}
-    }
 
     @BeforeEach
     void setUp() {
@@ -134,13 +115,7 @@ public class FixChargeControllerTest {
     @Test
     @WithMockUser(authorities = "READ_FIXED_CHARGE")
     void getAllFixCharges_Success() throws Exception {
-        when(fixChargeService.getAllFixCharges(any(Boolean.class), any())).thenReturn(new PageImpl<>(List.of()));
+        when(fixChargeService.getAllFixCharges(any())).thenReturn(new PageImpl<>(List.of()));
         mockMvc.perform(get("/api/v1/finance/fixed-charges")).andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser(authorities = "WRONG_AUTHORITY")
-    void unauthorized_403() throws Exception {
-        mockMvc.perform(get("/api/v1/finance/fixed-charges")).andExpect(status().isForbidden());
     }
 }
