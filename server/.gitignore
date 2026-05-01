@@ -1,10 +1,36 @@
+# === General ===
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+!.mvn/wrapper/maven-wrapper.jar
 
-### STS ###
+# === Sécurité (CRITIQUE) ===
+# Empêche de pousser tes clés JWT locales
+src/main/resources/certs/
+# Empêche de pousser tes variables d'environnement locales
+.env
+
+# === IntelliJ IDEA ===
+# Ignore tout le dossier de configuration IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+# Ignore les fichiers de log d'indexation
+out/
+
+# === VS Code ===
+.vscode/
+
+# === Maven ===
+.mvn/
+mvnw
+mvnw.cmd
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === NetBeans & STS (Nettoyage) ===
 .apt_generated
 .classpath
 .factorypath
@@ -12,19 +38,12 @@ target/
 .settings
 .springBeans
 .sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
+
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -35,3 +54,4 @@ build/
 ### IMPORTANT ###
 .env
 *.pem
+
