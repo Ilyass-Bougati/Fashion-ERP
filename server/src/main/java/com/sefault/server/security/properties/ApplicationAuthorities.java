@@ -28,7 +28,7 @@ public class ApplicationAuthorities {
     private final String deleteIsleAuthority = "DELETE_ISLE";
     private final String getIsleAuthority = "GET_ISLE";
     private final String listIslesAuthority = "LIST_ISLES";
-  
+
     // Finance module authorities
     private final String createTransactionAuthority = "CREATE_TRANSACTION";
     private final String readTransactionAuthority = "READ_TRANSACTION";
