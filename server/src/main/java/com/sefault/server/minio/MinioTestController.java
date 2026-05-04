@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@Profile("dev")
+@Profile({"dev", "staging"})
 @RestController
 @RequestMapping("/test/api/minio")
 @RequiredArgsConstructor
