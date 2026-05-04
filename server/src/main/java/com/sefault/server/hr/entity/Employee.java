@@ -60,6 +60,7 @@ public class Employee {
 
     @Email
     @NotEmpty
+    @Column(unique = true)
     private String email;
 
     @NotNull

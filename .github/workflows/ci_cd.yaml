@@ -137,6 +137,17 @@ jobs:
       
       - name: Deploy the server
         working-directory: ./server
+        env:
+          SWAGGER_UI: ${{ vars.SWAGGER_UI }}
+          SPRING_PROFILES_ACTIVE: ${{ vars.SPRING_PROFILES_ACTIVE }}
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          SPRING_DATA_REDIS_URI: ${{ secrets.SPRING_DATA_REDIS_URI }}
+          MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
+          LOKI_URL: ${{ secrets.LOKI_URL }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         run: |
           chmod +x ./deploy.sh
           ./deploy.sh
