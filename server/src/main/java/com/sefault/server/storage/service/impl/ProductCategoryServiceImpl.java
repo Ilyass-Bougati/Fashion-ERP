@@ -1,7 +1,6 @@
 package com.sefault.server.storage.service.impl;
 
 import com.sefault.server.exception.NotFoundException;
-import com.sefault.server.storage.dto.projection.ProductCategoryProjection;
 import com.sefault.server.storage.dto.record.ProductCategoryRecord;
 import com.sefault.server.storage.entity.ProductCategory;
 import com.sefault.server.storage.mapper.ProductCategoryMapper;
@@ -21,39 +20,39 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductCategoryProjection getById(UUID id) {
+    public ProductCategoryRecord getById(UUID id) {
         return productCategoryRepository
                 .getProductCategoryProjectionById(id)
-                .orElseThrow(() -> new NotFoundException("Product category not found by id : " + id));
+                .map(productCategoryMapper::projectionToRecord)
+                .orElseThrow(() -> new NotFoundException("Product category not found with id : " + id));
     }
 
     @Override
     public ProductCategoryRecord save(ProductCategoryRecord productCategory) {
-        return productCategoryMapper.entityToRecord(productCategoryRepository.save(ProductCategory.builder()
-                .name(productCategory.name())
-                .description(productCategory.description())
-                .build()));
+        ProductCategory pc = productCategoryMapper.toEntity(productCategory);
+        ProductCategory saved = productCategoryRepository.save(pc);
+        return productCategoryMapper.entityToRecord(saved);
     }
 
     @Override
-    public ProductCategoryRecord update(ProductCategoryRecord productCategory) {
-        if (productCategory.id() == null || !productCategoryRepository.existsById(productCategory.id())) {
-            throw new NotFoundException("Product category not found by id : " + productCategory.id());
-        } else {
-            return productCategoryMapper.entityToRecord(productCategoryRepository.save(ProductCategory.builder()
-                    .id(productCategory.id())
-                    .name(productCategory.name())
-                    .description(productCategory.description())
-                    .build()));
-        }
+    public ProductCategoryRecord update(UUID id, ProductCategoryRecord productCategory) {
+        ProductCategory pc = findOrThrow(id);
+        productCategoryMapper.updateEntityFromRecord(productCategory, pc);
+        return productCategoryMapper.entityToRecord(productCategoryRepository.save(pc));
     }
 
     @Override
     public void delete(UUID id) {
-        if (productCategoryRepository.getProductCategoryProjectionById(id).isEmpty()) {
+        if (!productCategoryRepository.existsById(id)) {
             throw new NotFoundException("Product category not found by id : " + id);
         } else {
             productCategoryRepository.deleteById(id);
         }
+    }
+
+    private ProductCategory findOrThrow(UUID id) throws NotFoundException {
+        return productCategoryRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Product category not found with id : " + id));
     }
 }

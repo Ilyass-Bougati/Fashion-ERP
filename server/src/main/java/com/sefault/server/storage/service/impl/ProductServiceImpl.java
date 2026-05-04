@@ -1,9 +1,7 @@
 package com.sefault.server.storage.service.impl;
 
 import com.sefault.server.exception.NotFoundException;
-import com.sefault.server.image.entity.Image;
 import com.sefault.server.image.repository.ImageRepository;
-import com.sefault.server.storage.dto.projection.ProductProjection;
 import com.sefault.server.storage.dto.record.ProductRecord;
 import com.sefault.server.storage.entity.Product;
 import com.sefault.server.storage.mapper.ProductMapper;
@@ -27,53 +25,43 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductProjection getById(UUID id) {
+    public ProductRecord getById(UUID id) {
         return productRepository
                 .getProductProjectionById(id)
-                .orElseThrow(() -> new NotFoundException("Product not found by id : " + id));
+                .map(productMapper::projectionToRecord)
+                .orElseThrow(() -> new NotFoundException("Product not found with id : " + id));
     }
 
     @Override
     public ProductRecord save(ProductRecord product) {
-        final Image image;
-        if (product.imageId() != null && imageRepository.existsById(product.imageId())) {
-            image = imageRepository.getReferenceById(product.imageId());
-        } else {
-            image = null;
-        }
-        return productMapper.entityToRecord(productRepository.save(Product.builder()
-                .name(product.name())
-                .productCategory(productCategoryRepository.getReferenceById(product.productCategoryId()))
-                .image(image)
-                .build()));
+        Product p = productMapper.toEntity(product);
+        p.setImage(imageRepository.getReferenceById(product.imageId()));
+        p.setProductCategory(productCategoryRepository.getReferenceById(product.productCategoryId()));
+        Product saved = productRepository.save(p);
+        return productMapper.entityToRecord(saved);
     }
 
     @Override
-    public ProductRecord update(ProductRecord product) {
-        if (product.id() == null || !productRepository.existsById(product.id())) {
-            throw new NotFoundException("Product not found by id : " + product.id());
-        } else {
-            final Image image;
-            if (product.imageId() != null && imageRepository.existsById(product.imageId())) {
-                image = imageRepository.getReferenceById(product.imageId());
-            } else {
-                image = null;
-            }
-            return productMapper.entityToRecord(productRepository.save(Product.builder()
-                    .id(product.id())
-                    .name(product.name())
-                    .productCategory(productCategoryRepository.getReferenceById(product.productCategoryId()))
-                    .image(image)
-                    .build()));
-        }
+    public ProductRecord update(UUID id, ProductRecord product) {
+        Product p = findOrThrow(id);
+        productMapper.updateEntityFromRecord(product, p);
+        p.setImage(imageRepository.getReferenceById(product.imageId()));
+        p.setProductCategory(productCategoryRepository.getReferenceById(product.productCategoryId()));
+        return productMapper.entityToRecord(productRepository.save(p));
     }
 
     @Override
     public void delete(UUID id) {
-        if (productRepository.getProductProjectionById(id).isEmpty()) {
+        if (!productRepository.existsById(id)) {
             throw new NotFoundException("Product not found by id : " + id);
         } else {
             productRepository.deleteById(id);
         }
+    }
+
+    private Product findOrThrow(UUID id) throws NotFoundException {
+        return productRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Product not found with id : " + id));
     }
 }

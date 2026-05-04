@@ -5,10 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 import com.sefault.server.exception.NotFoundException;
-import com.sefault.server.storage.dto.projection.ProductCategoryProjection;
-import com.sefault.server.storage.dto.projection.ProductProjection;
-import com.sefault.server.storage.dto.projection.ProductVariationProjection;
-import com.sefault.server.storage.dto.projection.VendorProjection;
 import com.sefault.server.storage.dto.record.ProductCategoryRecord;
 import com.sefault.server.storage.dto.record.ProductRecord;
 import com.sefault.server.storage.dto.record.ProductVariationRecord;
@@ -50,7 +46,6 @@ class StorageServiceTest {
         private UUID existingId;
         private UUID nonExistingId;
 
-        // record: ProductCategoryRecord(UUID id, String name, String description)
         private ProductCategoryRecord sampleRecord;
 
         @BeforeEach
@@ -63,20 +58,16 @@ class StorageServiceTest {
         // --- getById ---
 
         @Test
-        @DisplayName("getById – returns projection with correct fields when category exists")
-        void getById_existingId_returnsProjection() {
-            ProductCategoryProjection projection = mock(ProductCategoryProjection.class);
-            when(projection.getId()).thenReturn(existingId);
-            when(projection.getName()).thenReturn("Electronics");
-            when(projection.getDescription()).thenReturn("Electronic products");
-            when(productCategoryService.getById(existingId)).thenReturn(projection);
+        @DisplayName("getById – returns record with correct fields when category exists")
+        void getById_existingId_returnsRecord() {
+            when(productCategoryService.getById(existingId)).thenReturn(sampleRecord);
 
-            ProductCategoryProjection result = productCategoryService.getById(existingId);
+            ProductCategoryRecord result = productCategoryService.getById(existingId);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(existingId);
-            assertThat(result.getName()).isEqualTo("Electronics");
-            assertThat(result.getDescription()).isEqualTo("Electronic products");
+            assertThat(result.id()).isEqualTo(existingId);
+            assertThat(result.name()).isEqualTo("Electronics");
+            assertThat(result.description()).isEqualTo("Electronic products");
             verify(productCategoryService).getById(existingId);
         }
 
@@ -84,7 +75,7 @@ class StorageServiceTest {
         @DisplayName("getById – throws NotFoundException when category does not exist")
         void getById_nonExistingId_throwsNotFoundException() {
             when(productCategoryService.getById(nonExistingId))
-                    .thenThrow(new NotFoundException("Product category not found by id : " + nonExistingId));
+                    .thenThrow(new NotFoundException("Product category not found with id : " + nonExistingId));
 
             assertThatThrownBy(() -> productCategoryService.getById(nonExistingId))
                     .isInstanceOf(NotFoundException.class)
@@ -121,35 +112,23 @@ class StorageServiceTest {
         @DisplayName("update – updates and returns record when category exists")
         void update_existingRecord_returnsUpdatedRecord() {
             ProductCategoryRecord updated = new ProductCategoryRecord(existingId, "Updated Name", "Updated Desc");
-            when(productCategoryService.update(sampleRecord)).thenReturn(updated);
+            when(productCategoryService.update(existingId, sampleRecord)).thenReturn(updated);
 
-            ProductCategoryRecord result = productCategoryService.update(sampleRecord);
+            ProductCategoryRecord result = productCategoryService.update(existingId, sampleRecord);
 
             assertThat(result.name()).isEqualTo("Updated Name");
             assertThat(result.description()).isEqualTo("Updated Desc");
-            verify(productCategoryService).update(sampleRecord);
-        }
-
-        @Test
-        @DisplayName("update – throws NotFoundException when id is null")
-        void update_nullId_throwsNotFoundException() {
-            ProductCategoryRecord noId = new ProductCategoryRecord(null, "Name", "Desc");
-            when(productCategoryService.update(noId))
-                    .thenThrow(new NotFoundException("Product category not found by id : null"));
-
-            assertThatThrownBy(() -> productCategoryService.update(noId))
-                    .isInstanceOf(NotFoundException.class)
-                    .hasMessageContaining("null");
+            verify(productCategoryService).update(existingId, sampleRecord);
         }
 
         @Test
         @DisplayName("update – throws NotFoundException when category does not exist")
         void update_nonExistingId_throwsNotFoundException() {
-            ProductCategoryRecord missing = new ProductCategoryRecord(nonExistingId, "Name", "Desc");
-            when(productCategoryService.update(missing))
-                    .thenThrow(new NotFoundException("Product category not found by id : " + nonExistingId));
+            ProductCategoryRecord updated = new ProductCategoryRecord(nonExistingId, "Name", "Desc");
+            when(productCategoryService.update(nonExistingId, updated))
+                    .thenThrow(new NotFoundException("Product category not found with id : " + nonExistingId));
 
-            assertThatThrownBy(() -> productCategoryService.update(missing))
+            assertThatThrownBy(() -> productCategoryService.update(nonExistingId, updated))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining(nonExistingId.toString());
         }
@@ -169,7 +148,7 @@ class StorageServiceTest {
         @Test
         @DisplayName("delete – throws NotFoundException when category does not exist")
         void delete_nonExistingId_throwsNotFoundException() {
-            doThrow(new NotFoundException("Product category not found by id : " + nonExistingId))
+            doThrow(new NotFoundException("Product category not found with id : " + nonExistingId))
                     .when(productCategoryService)
                     .delete(nonExistingId);
 
@@ -196,8 +175,6 @@ class StorageServiceTest {
         private UUID imageId;
         private LocalDateTime now;
 
-        // record: ProductRecord(UUID id, String name, UUID productCategoryId, UUID imageId,
-        //                       LocalDateTime createdAt, LocalDateTime updatedAt)
         private ProductRecord sampleRecord;
 
         @BeforeEach
@@ -213,26 +190,19 @@ class StorageServiceTest {
         // --- getById ---
 
         @Test
-        @DisplayName("getById – returns projection with correct fields when product exists")
-        void getById_existingId_returnsProjection() {
-            ProductProjection projection = mock(ProductProjection.class);
-            when(projection.getId()).thenReturn(existingId);
-            when(projection.getName()).thenReturn("Laptop");
-            when(projection.getProductCategoryId()).thenReturn(categoryId);
-            when(projection.getImageId()).thenReturn(imageId);
-            when(projection.getCreatedAt()).thenReturn(now);
-            when(projection.getUpdatedAt()).thenReturn(now);
-            when(productService.getById(existingId)).thenReturn(projection);
+        @DisplayName("getById – returns record with correct fields when product exists")
+        void getById_existingId_returnsRecord() {
+            when(productService.getById(existingId)).thenReturn(sampleRecord);
 
-            ProductProjection result = productService.getById(existingId);
+            ProductRecord result = productService.getById(existingId);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(existingId);
-            assertThat(result.getName()).isEqualTo("Laptop");
-            assertThat(result.getProductCategoryId()).isEqualTo(categoryId);
-            assertThat(result.getImageId()).isEqualTo(imageId);
-            assertThat(result.getCreatedAt()).isEqualTo(now);
-            assertThat(result.getUpdatedAt()).isEqualTo(now);
+            assertThat(result.id()).isEqualTo(existingId);
+            assertThat(result.name()).isEqualTo("Laptop");
+            assertThat(result.productCategoryId()).isEqualTo(categoryId);
+            assertThat(result.imageId()).isEqualTo(imageId);
+            assertThat(result.createdAt()).isEqualTo(now);
+            assertThat(result.updatedAt()).isEqualTo(now);
             verify(productService).getById(existingId);
         }
 
@@ -240,7 +210,7 @@ class StorageServiceTest {
         @DisplayName("getById – throws NotFoundException when product does not exist")
         void getById_nonExistingId_throwsNotFoundException() {
             when(productService.getById(nonExistingId))
-                    .thenThrow(new NotFoundException("Product not found by id : " + nonExistingId));
+                    .thenThrow(new NotFoundException("Product not found with id : " + nonExistingId));
 
             assertThatThrownBy(() -> productService.getById(nonExistingId))
                     .isInstanceOf(NotFoundException.class)
@@ -285,33 +255,22 @@ class StorageServiceTest {
         @DisplayName("update – updates and returns record when product exists")
         void update_existingRecord_returnsUpdatedRecord() {
             ProductRecord updated = new ProductRecord(existingId, "Gaming Laptop", categoryId, imageId, now, now);
-            when(productService.update(sampleRecord)).thenReturn(updated);
+            when(productService.update(existingId, sampleRecord)).thenReturn(updated);
 
-            ProductRecord result = productService.update(sampleRecord);
+            ProductRecord result = productService.update(existingId, sampleRecord);
 
             assertThat(result.name()).isEqualTo("Gaming Laptop");
-            verify(productService).update(sampleRecord);
-        }
-
-        @Test
-        @DisplayName("update – throws NotFoundException when id is null")
-        void update_nullId_throwsNotFoundException() {
-            ProductRecord noId = new ProductRecord(null, "Laptop", categoryId, imageId, null, null);
-            when(productService.update(noId)).thenThrow(new NotFoundException("Product not found by id : null"));
-
-            assertThatThrownBy(() -> productService.update(noId))
-                    .isInstanceOf(NotFoundException.class)
-                    .hasMessageContaining("null");
+            verify(productService).update(existingId, sampleRecord);
         }
 
         @Test
         @DisplayName("update – throws NotFoundException when product does not exist")
         void update_nonExistingId_throwsNotFoundException() {
             ProductRecord missing = new ProductRecord(nonExistingId, "Laptop", categoryId, imageId, null, null);
-            when(productService.update(missing))
-                    .thenThrow(new NotFoundException("Product not found by id : " + nonExistingId));
+            when(productService.update(nonExistingId, missing))
+                    .thenThrow(new NotFoundException("Product not found with id : " + nonExistingId));
 
-            assertThatThrownBy(() -> productService.update(missing))
+            assertThatThrownBy(() -> productService.update(nonExistingId, missing))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining(nonExistingId.toString());
         }
@@ -331,7 +290,7 @@ class StorageServiceTest {
         @Test
         @DisplayName("delete – throws NotFoundException when product does not exist")
         void delete_nonExistingId_throwsNotFoundException() {
-            doThrow(new NotFoundException("Product not found by id : " + nonExistingId))
+            doThrow(new NotFoundException("Product not found with id : " + nonExistingId))
                     .when(productService)
                     .delete(nonExistingId);
 
@@ -358,9 +317,6 @@ class StorageServiceTest {
         private UUID imageId;
         private LocalDateTime now;
 
-        // record: ProductVariationRecord(UUID id, String sku, Double price,
-        //                                UUID productId, Integer quantity,
-        //                                UUID imageId, LocalDateTime createdAt, LocalDateTime updatedAt)
         private ProductVariationRecord sampleRecord;
 
         @BeforeEach
@@ -376,30 +332,21 @@ class StorageServiceTest {
         // --- getById ---
 
         @Test
-        @DisplayName("getById – returns projection with correct fields when variation exists")
-        void getById_existingId_returnsProjection() {
-            ProductVariationProjection projection = mock(ProductVariationProjection.class);
-            when(projection.getId()).thenReturn(existingId);
-            when(projection.getSku()).thenReturn("SKU-001");
-            when(projection.getPrice()).thenReturn(299.99);
-            when(projection.getProductId()).thenReturn(productId);
-            when(projection.getQuantity()).thenReturn(50);
-            when(projection.getImageId()).thenReturn(imageId);
-            when(projection.getCreatedAt()).thenReturn(now);
-            when(projection.getUpdatedAt()).thenReturn(now);
-            when(productVariationService.getById(existingId)).thenReturn(projection);
+        @DisplayName("getById – returns record with correct fields when variation exists")
+        void getById_existingId_returnsRecord() {
+            when(productVariationService.getById(existingId)).thenReturn(sampleRecord);
 
-            ProductVariationProjection result = productVariationService.getById(existingId);
+            ProductVariationRecord result = productVariationService.getById(existingId);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(existingId);
-            assertThat(result.getSku()).isEqualTo("SKU-001");
-            assertThat(result.getPrice()).isEqualTo(299.99);
-            assertThat(result.getProductId()).isEqualTo(productId);
-            assertThat(result.getQuantity()).isEqualTo(50);
-            assertThat(result.getImageId()).isEqualTo(imageId);
-            assertThat(result.getCreatedAt()).isEqualTo(now);
-            assertThat(result.getUpdatedAt()).isEqualTo(now);
+            assertThat(result.id()).isEqualTo(existingId);
+            assertThat(result.sku()).isEqualTo("SKU-001");
+            assertThat(result.price()).isEqualTo(299.99);
+            assertThat(result.productId()).isEqualTo(productId);
+            assertThat(result.quantity()).isEqualTo(50);
+            assertThat(result.imageId()).isEqualTo(imageId);
+            assertThat(result.createdAt()).isEqualTo(now);
+            assertThat(result.updatedAt()).isEqualTo(now);
             verify(productVariationService).getById(existingId);
         }
 
@@ -407,7 +354,7 @@ class StorageServiceTest {
         @DisplayName("getById – throws NotFoundException when variation does not exist")
         void getById_nonExistingId_throwsNotFoundException() {
             when(productVariationService.getById(nonExistingId))
-                    .thenThrow(new NotFoundException("Product variation not found by id : " + nonExistingId));
+                    .thenThrow(new NotFoundException("Product variation not found with id : " + nonExistingId));
 
             assertThatThrownBy(() -> productVariationService.getById(nonExistingId))
                     .isInstanceOf(NotFoundException.class)
@@ -457,27 +404,14 @@ class StorageServiceTest {
         void update_existingRecord_returnsUpdatedRecord() {
             ProductVariationRecord updated =
                     new ProductVariationRecord(existingId, "SKU-001-V2", 349.99, productId, 30, imageId, now, now);
-            when(productVariationService.update(sampleRecord)).thenReturn(updated);
+            when(productVariationService.update(existingId, sampleRecord)).thenReturn(updated);
 
-            ProductVariationRecord result = productVariationService.update(sampleRecord);
+            ProductVariationRecord result = productVariationService.update(existingId, sampleRecord);
 
             assertThat(result.sku()).isEqualTo("SKU-001-V2");
             assertThat(result.price()).isEqualTo(349.99);
             assertThat(result.quantity()).isEqualTo(30);
-            verify(productVariationService).update(sampleRecord);
-        }
-
-        @Test
-        @DisplayName("update – throws NotFoundException when id is null")
-        void update_nullId_throwsNotFoundException() {
-            ProductVariationRecord noId =
-                    new ProductVariationRecord(null, "SKU-001", 299.99, productId, 50, imageId, null, null);
-            when(productVariationService.update(noId))
-                    .thenThrow(new NotFoundException("Product variation not found by id : null"));
-
-            assertThatThrownBy(() -> productVariationService.update(noId))
-                    .isInstanceOf(NotFoundException.class)
-                    .hasMessageContaining("null");
+            verify(productVariationService).update(existingId, sampleRecord);
         }
 
         @Test
@@ -485,10 +419,10 @@ class StorageServiceTest {
         void update_nonExistingId_throwsNotFoundException() {
             ProductVariationRecord missing =
                     new ProductVariationRecord(nonExistingId, "SKU-001", 299.99, productId, 50, imageId, null, null);
-            when(productVariationService.update(missing))
-                    .thenThrow(new NotFoundException("Product variation not found by id : " + nonExistingId));
+            when(productVariationService.update(nonExistingId, missing))
+                    .thenThrow(new NotFoundException("Product variation not found with id : " + nonExistingId));
 
-            assertThatThrownBy(() -> productVariationService.update(missing))
+            assertThatThrownBy(() -> productVariationService.update(nonExistingId, missing))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining(nonExistingId.toString());
         }
@@ -508,7 +442,7 @@ class StorageServiceTest {
         @Test
         @DisplayName("delete – throws NotFoundException when variation does not exist")
         void delete_nonExistingId_throwsNotFoundException() {
-            doThrow(new NotFoundException("Product variation not found by id : " + nonExistingId))
+            doThrow(new NotFoundException("Product variation not found with id : " + nonExistingId))
                     .when(productVariationService)
                     .delete(nonExistingId);
 
@@ -534,9 +468,6 @@ class StorageServiceTest {
         private UUID productId;
         private LocalDateTime now;
 
-        // record: VendorRecord(UUID id, String companyName, String email, String contactName,
-        //                      String phoneNumber, String paymentTerms, Boolean active,
-        //                      UUID productId, LocalDateTime createdAt, LocalDateTime updatedAt)
         private VendorRecord sampleRecord;
 
         @BeforeEach
@@ -561,34 +492,25 @@ class StorageServiceTest {
         // --- findAllPaginated ---
 
         @Test
-        @DisplayName("findAllPaginated – returns page of vendors with correct content")
+        @DisplayName("findAllPaginated – returns page of vendor records with correct content")
         void findAllPaginated_returnsPageOfVendors() {
-            VendorProjection projection = mock(VendorProjection.class);
-            when(projection.getId()).thenReturn(existingId);
-            when(projection.getCompanyName()).thenReturn("Acme Corp");
-            when(projection.getEmail()).thenReturn("contact@acme.com");
-            when(projection.getContactName()).thenReturn("John Doe");
-            when(projection.getPhoneNumber()).thenReturn("+1-555-0100");
-            when(projection.getPaymentTerms()).thenReturn("NET30");
-            when(projection.getActive()).thenReturn(true);
-            when(projection.getProductId()).thenReturn(productId);
             Pageable pageable = PageRequest.of(0, 10);
-            Page<VendorProjection> page = new PageImpl<>(List.of(projection), pageable, 1);
+            Page<VendorRecord> page = new PageImpl<>(List.of(sampleRecord), pageable, 1);
             when(vendorService.findAllPaginated(pageable)).thenReturn(page);
 
-            Page<VendorProjection> result = vendorService.findAllPaginated(pageable);
+            Page<VendorRecord> result = vendorService.findAllPaginated(pageable);
 
             assertThat(result).isNotNull();
             assertThat(result.getContent()).hasSize(1);
-            VendorProjection first = result.getContent().get(0);
-            assertThat(first.getId()).isEqualTo(existingId);
-            assertThat(first.getCompanyName()).isEqualTo("Acme Corp");
-            assertThat(first.getEmail()).isEqualTo("contact@acme.com");
-            assertThat(first.getContactName()).isEqualTo("John Doe");
-            assertThat(first.getPhoneNumber()).isEqualTo("+1-555-0100");
-            assertThat(first.getPaymentTerms()).isEqualTo("NET30");
-            assertThat(first.getActive()).isTrue();
-            assertThat(first.getProductId()).isEqualTo(productId);
+            VendorRecord first = result.getContent().get(0);
+            assertThat(first.id()).isEqualTo(existingId);
+            assertThat(first.companyName()).isEqualTo("Acme Corp");
+            assertThat(first.email()).isEqualTo("contact@acme.com");
+            assertThat(first.contactName()).isEqualTo("John Doe");
+            assertThat(first.phoneNumber()).isEqualTo("+1-555-0100");
+            assertThat(first.paymentTerms()).isEqualTo("NET30");
+            assertThat(first.active()).isTrue();
+            assertThat(first.productId()).isEqualTo(productId);
             verify(vendorService).findAllPaginated(pageable);
         }
 
@@ -598,7 +520,7 @@ class StorageServiceTest {
             Pageable pageable = PageRequest.of(0, 10);
             when(vendorService.findAllPaginated(pageable)).thenReturn(Page.empty());
 
-            Page<VendorProjection> result = vendorService.findAllPaginated(pageable);
+            Page<VendorRecord> result = vendorService.findAllPaginated(pageable);
 
             assertThat(result).isNotNull();
             assertThat(result.getContent()).isEmpty();
@@ -608,12 +530,11 @@ class StorageServiceTest {
         @Test
         @DisplayName("findAllPaginated – respects page and size parameters")
         void findAllPaginated_respectsPageSize() {
-            VendorProjection projection = mock(VendorProjection.class);
             Pageable firstPage = PageRequest.of(0, 5);
-            Page<VendorProjection> page = new PageImpl<>(List.of(projection, projection, projection), firstPage, 8);
+            Page<VendorRecord> page = new PageImpl<>(List.of(sampleRecord, sampleRecord, sampleRecord), firstPage, 8);
             when(vendorService.findAllPaginated(firstPage)).thenReturn(page);
 
-            Page<VendorProjection> result = vendorService.findAllPaginated(firstPage);
+            Page<VendorRecord> result = vendorService.findAllPaginated(firstPage);
 
             assertThat(result.getTotalElements()).isEqualTo(8);
             assertThat(result.getTotalPages()).isEqualTo(2);
@@ -623,34 +544,23 @@ class StorageServiceTest {
         // --- getById ---
 
         @Test
-        @DisplayName("getById – returns projection with all fields when vendor exists")
-        void getById_existingId_returnsProjection() {
-            VendorProjection projection = mock(VendorProjection.class);
-            when(projection.getId()).thenReturn(existingId);
-            when(projection.getCompanyName()).thenReturn("Acme Corp");
-            when(projection.getEmail()).thenReturn("contact@acme.com");
-            when(projection.getContactName()).thenReturn("John Doe");
-            when(projection.getPhoneNumber()).thenReturn("+1-555-0100");
-            when(projection.getPaymentTerms()).thenReturn("NET30");
-            when(projection.getActive()).thenReturn(true);
-            when(projection.getProductId()).thenReturn(productId);
-            when(projection.getCreatedAt()).thenReturn(now);
-            when(projection.getUpdatedAt()).thenReturn(now);
-            when(vendorService.getById(existingId)).thenReturn(projection);
+        @DisplayName("getById – returns record with all fields when vendor exists")
+        void getById_existingId_returnsRecord() {
+            when(vendorService.getById(existingId)).thenReturn(sampleRecord);
 
-            VendorProjection result = vendorService.getById(existingId);
+            VendorRecord result = vendorService.getById(existingId);
 
             assertThat(result).isNotNull();
-            assertThat(result.getId()).isEqualTo(existingId);
-            assertThat(result.getCompanyName()).isEqualTo("Acme Corp");
-            assertThat(result.getEmail()).isEqualTo("contact@acme.com");
-            assertThat(result.getContactName()).isEqualTo("John Doe");
-            assertThat(result.getPhoneNumber()).isEqualTo("+1-555-0100");
-            assertThat(result.getPaymentTerms()).isEqualTo("NET30");
-            assertThat(result.getActive()).isTrue();
-            assertThat(result.getProductId()).isEqualTo(productId);
-            assertThat(result.getCreatedAt()).isEqualTo(now);
-            assertThat(result.getUpdatedAt()).isEqualTo(now);
+            assertThat(result.id()).isEqualTo(existingId);
+            assertThat(result.companyName()).isEqualTo("Acme Corp");
+            assertThat(result.email()).isEqualTo("contact@acme.com");
+            assertThat(result.contactName()).isEqualTo("John Doe");
+            assertThat(result.phoneNumber()).isEqualTo("+1-555-0100");
+            assertThat(result.paymentTerms()).isEqualTo("NET30");
+            assertThat(result.active()).isTrue();
+            assertThat(result.productId()).isEqualTo(productId);
+            assertThat(result.createdAt()).isEqualTo(now);
+            assertThat(result.updatedAt()).isEqualTo(now);
             verify(vendorService).getById(existingId);
         }
 
@@ -658,7 +568,7 @@ class StorageServiceTest {
         @DisplayName("getById – throws NotFoundException when vendor does not exist")
         void getById_nonExistingId_throwsNotFoundException() {
             when(vendorService.getById(nonExistingId))
-                    .thenThrow(new NotFoundException("Vendor not found by id : " + nonExistingId));
+                    .thenThrow(new NotFoundException("Vendor not found with id : " + nonExistingId));
 
             assertThatThrownBy(() -> vendorService.getById(nonExistingId))
                     .isInstanceOf(NotFoundException.class)
@@ -762,36 +672,15 @@ class StorageServiceTest {
                     productId,
                     now,
                     now);
-            when(vendorService.update(sampleRecord)).thenReturn(updated);
+            when(vendorService.update(existingId, sampleRecord)).thenReturn(updated);
 
-            VendorRecord result = vendorService.update(sampleRecord);
+            VendorRecord result = vendorService.update(existingId, sampleRecord);
 
             assertThat(result.companyName()).isEqualTo("Acme Corp v2");
             assertThat(result.email()).isEqualTo("new@acme.com");
             assertThat(result.active()).isFalse();
             assertThat(result.paymentTerms()).isEqualTo("NET60");
-            verify(vendorService).update(sampleRecord);
-        }
-
-        @Test
-        @DisplayName("update – throws NotFoundException when id is null")
-        void update_nullId_throwsNotFoundException() {
-            VendorRecord noId = new VendorRecord(
-                    null,
-                    "Acme Corp",
-                    "contact@acme.com",
-                    "John Doe",
-                    "+1-555-0100",
-                    "NET30",
-                    true,
-                    productId,
-                    null,
-                    null);
-            when(vendorService.update(noId)).thenThrow(new NotFoundException("Vendor not found by id : null"));
-
-            assertThatThrownBy(() -> vendorService.update(noId))
-                    .isInstanceOf(NotFoundException.class)
-                    .hasMessageContaining("null");
+            verify(vendorService).update(existingId, sampleRecord);
         }
 
         @Test
@@ -808,10 +697,10 @@ class StorageServiceTest {
                     productId,
                     null,
                     null);
-            when(vendorService.update(missing))
-                    .thenThrow(new NotFoundException("Vendor not found by id : " + nonExistingId));
+            when(vendorService.update(nonExistingId, missing))
+                    .thenThrow(new NotFoundException("Vendor not found with id : " + nonExistingId));
 
-            assertThatThrownBy(() -> vendorService.update(missing))
+            assertThatThrownBy(() -> vendorService.update(nonExistingId, missing))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining(nonExistingId.toString());
         }
@@ -831,7 +720,7 @@ class StorageServiceTest {
         @Test
         @DisplayName("delete – throws NotFoundException when vendor does not exist")
         void delete_nonExistingId_throwsNotFoundException() {
-            doThrow(new NotFoundException("Vendor not found by id : " + nonExistingId))
+            doThrow(new NotFoundException("Vendor not found with id : " + nonExistingId))
                     .when(vendorService)
                     .delete(nonExistingId);
 

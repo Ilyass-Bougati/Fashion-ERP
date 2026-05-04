@@ -1,9 +1,7 @@
 package com.sefault.server.storage.service.impl;
 
 import com.sefault.server.exception.NotFoundException;
-import com.sefault.server.storage.dto.projection.VendorProjection;
 import com.sefault.server.storage.dto.record.VendorRecord;
-import com.sefault.server.storage.entity.Product;
 import com.sefault.server.storage.entity.Vendor;
 import com.sefault.server.storage.mapper.VendorMapper;
 import com.sefault.server.storage.repository.ProductRepository;
@@ -26,68 +24,47 @@ public class VendorServiceImpl implements VendorService {
     private final ProductRepository productRepository;
 
     @Override
-    @Transactional(readOnly = true)
-    public Page<VendorProjection> findAllPaginated(Pageable pageable) {
-        return vendorRepository.findAllBy(pageable);
+    public Page<VendorRecord> findAllPaginated(Pageable pageable) {
+        return vendorRepository.findAllBy(pageable).map(vendorMapper::projectionToRecord);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public VendorProjection getById(UUID id) {
+    public VendorRecord getById(UUID id) {
         return vendorRepository
                 .getVendorProjectionById(id)
-                .orElseThrow(() -> new NotFoundException("Vendor not found by id : " + id));
+                .map(vendorMapper::projectionToRecord)
+                .orElseThrow(() -> new NotFoundException("Vendor not found with id : " + id));
     }
 
     @Override
     public VendorRecord save(VendorRecord vendor) {
-        final Product product;
-        if (vendor.productId() != null && productRepository.existsById(vendor.productId())) {
-            product = productRepository.getReferenceById(vendor.productId());
-        } else {
-            product = null;
-        }
-        return vendorMapper.entityToRecord(vendorRepository.save(Vendor.builder()
-                .companyName(vendor.companyName())
-                .email(vendor.email())
-                .contactName(vendor.contactName())
-                .phoneNumber(vendor.phoneNumber())
-                .paymentTerms(vendor.paymentTerms())
-                .active(vendor.active())
-                .product(product)
-                .build()));
+        Vendor v = vendorMapper.toEntity(vendor);
+        v.setProduct(productRepository.getReferenceById(vendor.productId()));
+        Vendor saved = vendorRepository.save(v);
+        return vendorMapper.entityToRecord(saved);
     }
 
     @Override
-    public VendorRecord update(VendorRecord vendor) {
-        if (vendor.id() == null || !productRepository.existsById(vendor.id())) {
-            throw new NotFoundException("Vendor not found by id : " + vendor.id());
-        } else {
-            final Product product;
-            if (vendor.productId() != null && productRepository.existsById(vendor.productId())) {
-                product = productRepository.getReferenceById(vendor.productId());
-            } else {
-                product = null;
-            }
-            return vendorMapper.entityToRecord(vendorRepository.save(Vendor.builder()
-                    .id(vendor.id())
-                    .companyName(vendor.companyName())
-                    .email(vendor.email())
-                    .contactName(vendor.contactName())
-                    .phoneNumber(vendor.phoneNumber())
-                    .paymentTerms(vendor.paymentTerms())
-                    .active(vendor.active())
-                    .product(product)
-                    .build()));
-        }
+    public VendorRecord update(UUID id, VendorRecord vendor) {
+        Vendor v = findOrThrow(id);
+        vendorMapper.updateEntityFromRecord(vendor, v);
+        v.setProduct(productRepository.getReferenceById(vendor.productId()));
+        return vendorMapper.entityToRecord(vendorRepository.save(v));
     }
 
     @Override
     public void delete(UUID id) {
-        if (vendorRepository.getVendorProjectionById(id).isEmpty()) {
+        if (!vendorRepository.existsById(id)) {
             throw new NotFoundException("Vendor not found by id : " + id);
         } else {
             vendorRepository.deleteById(id);
         }
+    }
+
+    private Vendor findOrThrow(UUID id) throws NotFoundException {
+        return vendorRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Vendor not found with id : " + id));
     }
 }

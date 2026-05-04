@@ -1,11 +1,8 @@
 package com.sefault.server.storage.service.impl;
 
 import com.sefault.server.exception.NotFoundException;
-import com.sefault.server.image.entity.Image;
 import com.sefault.server.image.repository.ImageRepository;
-import com.sefault.server.storage.dto.projection.ProductVariationProjection;
 import com.sefault.server.storage.dto.record.ProductVariationRecord;
-import com.sefault.server.storage.entity.Product;
 import com.sefault.server.storage.entity.ProductVariation;
 import com.sefault.server.storage.mapper.ProductVariationMapper;
 import com.sefault.server.storage.repository.ProductRepository;
@@ -28,77 +25,43 @@ public class ProductVariationServiceImpl implements ProductVariationService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductVariationProjection getById(UUID id) {
+    public ProductVariationRecord getById(UUID id) {
         return productVariationRepository
                 .getProductVariationProjectionById(id)
-                .orElseThrow(() -> new NotFoundException("Product variation not found by id : " + id));
+                .map(productVariationMapper::projectionToRecord)
+                .orElseThrow(() -> new NotFoundException("Product variation not found with id : " + id));
     }
 
     @Override
-    public ProductVariationRecord save(ProductVariationRecord productVariation) {
-        final Product product;
-        final Image image;
-
-        if (productVariation.productId() != null
-                && productVariationRepository.existsById(productVariation.productId())) {
-            product = productRepository.getReferenceById(productVariation.productId());
-        } else {
-            product = null;
-        }
-
-        if (productVariation.imageId() != null && imageRepository.existsById(productVariation.imageId())) {
-            image = imageRepository.getReferenceById(productVariation.imageId());
-        } else {
-            image = null;
-        }
-
-        return productVariationMapper.entityToRecord(ProductVariation.builder()
-                .product(product)
-                .image(image)
-                .sku(productVariation.sku())
-                .price(productVariation.price())
-                .quantity(productVariation.quantity())
-                .build());
+    public ProductVariationRecord save(ProductVariationRecord product) {
+        ProductVariation pv = productVariationMapper.toEntity(product);
+        pv.setImage(imageRepository.getReferenceById(product.imageId()));
+        pv.setProduct(productRepository.getReferenceById(product.productId()));
+        ProductVariation saved = productVariationRepository.save(pv);
+        return productVariationMapper.entityToRecord(saved);
     }
 
     @Override
-    public ProductVariationRecord update(ProductVariationRecord productVariation) {
-        if (productVariation.id() == null || !productVariationRepository.existsById(productVariation.id())) {
-            throw new NotFoundException("Product variation not found by id : " + productVariation.id());
-        } else {
-            final Product product;
-            final Image image;
-
-            if (productVariation.productId() != null
-                    && productVariationRepository.existsById(productVariation.productId())) {
-                product = productRepository.getReferenceById(productVariation.productId());
-            } else {
-                product = null;
-            }
-
-            if (productVariation.imageId() != null && imageRepository.existsById(productVariation.imageId())) {
-                image = imageRepository.getReferenceById(productVariation.imageId());
-            } else {
-                image = null;
-            }
-
-            return productVariationMapper.entityToRecord(ProductVariation.builder()
-                    .id(productVariation.id())
-                    .product(product)
-                    .image(image)
-                    .sku(productVariation.sku())
-                    .price(productVariation.price())
-                    .quantity(productVariation.quantity())
-                    .build());
-        }
+    public ProductVariationRecord update(UUID id, ProductVariationRecord product) {
+        ProductVariation pv = findOrThrow(id);
+        productVariationMapper.updateEntityFromRecord(product, pv);
+        pv.setImage(imageRepository.getReferenceById(product.imageId()));
+        pv.setProduct(productRepository.getReferenceById(product.productId()));
+        return productVariationMapper.entityToRecord(productVariationRepository.save(pv));
     }
 
     @Override
     public void delete(UUID id) {
-        if (productVariationRepository.getProductVariationProjectionById(id).isEmpty()) {
+        if (!productVariationRepository.existsById(id)) {
             throw new NotFoundException("Product variation not found by id : " + id);
         } else {
             productVariationRepository.deleteById(id);
         }
+    }
+
+    private ProductVariation findOrThrow(UUID id) throws NotFoundException {
+        return productVariationRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Product variation not found with id : " + id));
     }
 }

@@ -1,31 +1,32 @@
 package com.sefault.server.storage.controller;
 
-import com.sefault.server.storage.dto.projection.ProductCategoryProjection;
 import com.sefault.server.storage.dto.record.ProductCategoryRecord;
 import com.sefault.server.storage.service.ProductCategoryService;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/product-categories")
+@RequestMapping("api/v1/product-categories")
 @RequiredArgsConstructor
 public class ProductCategoryController {
     private final ProductCategoryService productCategoryService;
 
     @GetMapping("/{id}")
-    public ProductCategoryProjection getById(@PathVariable UUID id) {
+    public ProductCategoryRecord getById(@PathVariable UUID id) {
         return productCategoryService.getById(id);
     }
 
     @PostMapping
-    public ProductCategoryRecord save(@RequestBody ProductCategoryRecord productCategoryRecord) {
+    public ProductCategoryRecord save(@Valid @RequestBody ProductCategoryRecord productCategoryRecord) {
         return productCategoryService.save(productCategoryRecord);
     }
 
     @PutMapping
-    public ProductCategoryRecord update(@RequestBody ProductCategoryRecord productCategoryRecord) {
-        return productCategoryService.update(productCategoryRecord);
+    public ProductCategoryRecord update(
+            @Valid @RequestBody UUID id, @Valid @RequestBody ProductCategoryRecord productCategoryRecord) {
+        return productCategoryService.update(id, productCategoryRecord);
     }
 
     @DeleteMapping("/{id}")
