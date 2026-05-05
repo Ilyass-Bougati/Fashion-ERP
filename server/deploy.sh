@@ -10,6 +10,5 @@ echo "Packaging the application"
 mvn package -DskipTests=true
 
 echo "Running the CD"
-docker compose down
-docker compose up --build -d
+docker compose up --build -d server
 docker image prune -f

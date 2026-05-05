@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(1)
-    @Profile("dev")
+    @Profile({"dev", "staging"})
     public SecurityFilterChain devSwaggerFilterChain(HttpSecurity http) throws Exception {
         http.securityMatcher("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/test/api/**")
                 .csrf(AbstractHttpConfigurer::disable)

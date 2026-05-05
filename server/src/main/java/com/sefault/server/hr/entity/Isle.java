@@ -27,5 +27,6 @@ public class Isle {
     private UUID employeeId;
 
     @NotEmpty
+    @Column(unique = true)
     private String code;
 }
