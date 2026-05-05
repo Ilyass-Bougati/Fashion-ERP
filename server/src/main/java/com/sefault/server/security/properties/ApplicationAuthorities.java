@@ -39,4 +39,15 @@ public class ApplicationAuthorities {
     private final String toggleFixedChargeAuthority = "TOGGLE_FIXED_CHARGE";
     private final String processPayrollAuthority = "PROCESS_PAYROLL";
     private final String readPayrollAuthority = "READ_PAYROLL";
+
+    // Sales module authorities
+    private final String createSaleAuthority = "CREATE_SALE";
+    private final String readSaleAuthority = "READ_SALE";
+    private final String updateSaleAuthority = "UPDATE_SALE";
+    private final String deleteSaleAuthority = "DELETE_SALE";
+
+    private final String createSaleLineAuthority = "CREATE_SALE_LINE";
+    private final String readSaleLineAuthority = "READ_SALE_LINE";
+    private final String updateSaleLineAuthority = "UPDATE_SALE_LINE";
+    private final String deleteSaleLineAuthority = "DELETE_SALE_LINE";
 }
