@@ -38,19 +38,19 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
-    public VendorRecord save(VendorRecord vendor) {
-        Vendor v = vendorMapper.toEntity(vendor);
-        v.setProduct(productRepository.getReferenceById(vendor.productId()));
-        Vendor saved = vendorRepository.save(v);
+    public VendorRecord save(VendorRecord record) {
+        Vendor vendor = vendorMapper.toEntity(record);
+        vendor.setProduct(productRepository.getReferenceById(record.productId()));
+        Vendor saved = vendorRepository.save(vendor);
         return vendorMapper.entityToRecord(saved);
     }
 
     @Override
-    public VendorRecord update(UUID id, VendorRecord vendor) {
-        Vendor v = findOrThrow(id);
-        vendorMapper.updateEntityFromRecord(vendor, v);
-        v.setProduct(productRepository.getReferenceById(vendor.productId()));
-        return vendorMapper.entityToRecord(vendorRepository.save(v));
+    public VendorRecord update(UUID id, VendorRecord record) {
+        Vendor vendor = findOrThrow(id);
+        vendorMapper.updateEntityFromRecord(record, vendor);
+        vendor.setProduct(productRepository.getReferenceById(record.productId()));
+        return vendorMapper.entityToRecord(vendorRepository.save(vendor));
     }
 
     @Override

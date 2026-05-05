@@ -33,21 +33,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductRecord save(ProductRecord product) {
-        Product p = productMapper.toEntity(product);
-        p.setImage(imageRepository.getReferenceById(product.imageId()));
-        p.setProductCategory(productCategoryRepository.getReferenceById(product.productCategoryId()));
-        Product saved = productRepository.save(p);
+    public ProductRecord save(ProductRecord record) {
+        Product product = productMapper.toEntity(record);
+        product.setImage(imageRepository.getReferenceById(record.imageId()));
+        product.setProductCategory(productCategoryRepository.getReferenceById(record.productCategoryId()));
+        Product saved = productRepository.save(product);
         return productMapper.entityToRecord(saved);
     }
 
     @Override
-    public ProductRecord update(UUID id, ProductRecord product) {
-        Product p = findOrThrow(id);
-        productMapper.updateEntityFromRecord(product, p);
-        p.setImage(imageRepository.getReferenceById(product.imageId()));
-        p.setProductCategory(productCategoryRepository.getReferenceById(product.productCategoryId()));
-        return productMapper.entityToRecord(productRepository.save(p));
+    public ProductRecord update(UUID id, ProductRecord record) {
+        Product product = findOrThrow(id);
+        productMapper.updateEntityFromRecord(record, product);
+        product.setImage(imageRepository.getReferenceById(record.imageId()));
+        product.setProductCategory(productCategoryRepository.getReferenceById(record.productCategoryId()));
+        return productMapper.entityToRecord(productRepository.save(product));
     }
 
     @Override

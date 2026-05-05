@@ -6,9 +6,9 @@ import java.util.UUID;
 public interface ProductVariationService {
     ProductVariationRecord getById(UUID id);
 
-    ProductVariationRecord save(ProductVariationRecord productVariation);
+    ProductVariationRecord save(ProductVariationRecord record);
 
-    ProductVariationRecord update(UUID id, ProductVariationRecord productVariation);
+    ProductVariationRecord update(UUID id, ProductVariationRecord record);
 
     void delete(UUID id);
 }

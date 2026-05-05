@@ -10,9 +10,9 @@ public interface VendorService {
 
     VendorRecord getById(UUID id);
 
-    VendorRecord save(VendorRecord vendor);
+    VendorRecord save(VendorRecord record);
 
-    VendorRecord update(UUID id, VendorRecord vendor);
+    VendorRecord update(UUID id, VendorRecord record);
 
     void delete(UUID id);
 }

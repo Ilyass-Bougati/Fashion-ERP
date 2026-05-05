@@ -33,21 +33,21 @@ public class ProductVariationServiceImpl implements ProductVariationService {
     }
 
     @Override
-    public ProductVariationRecord save(ProductVariationRecord product) {
-        ProductVariation pv = productVariationMapper.toEntity(product);
-        pv.setImage(imageRepository.getReferenceById(product.imageId()));
-        pv.setProduct(productRepository.getReferenceById(product.productId()));
-        ProductVariation saved = productVariationRepository.save(pv);
+    public ProductVariationRecord save(ProductVariationRecord record) {
+        ProductVariation productVariation = productVariationMapper.toEntity(record);
+        productVariation.setImage(imageRepository.getReferenceById(record.imageId()));
+        productVariation.setProduct(productRepository.getReferenceById(record.productId()));
+        ProductVariation saved = productVariationRepository.save(productVariation);
         return productVariationMapper.entityToRecord(saved);
     }
 
     @Override
-    public ProductVariationRecord update(UUID id, ProductVariationRecord product) {
-        ProductVariation pv = findOrThrow(id);
-        productVariationMapper.updateEntityFromRecord(product, pv);
-        pv.setImage(imageRepository.getReferenceById(product.imageId()));
-        pv.setProduct(productRepository.getReferenceById(product.productId()));
-        return productVariationMapper.entityToRecord(productVariationRepository.save(pv));
+    public ProductVariationRecord update(UUID id, ProductVariationRecord record) {
+        ProductVariation productVariation = findOrThrow(id);
+        productVariationMapper.updateEntityFromRecord(record, productVariation);
+        productVariation.setImage(imageRepository.getReferenceById(record.imageId()));
+        productVariation.setProduct(productRepository.getReferenceById(record.productId()));
+        return productVariationMapper.entityToRecord(productVariationRepository.save(productVariation));
     }
 
     @Override

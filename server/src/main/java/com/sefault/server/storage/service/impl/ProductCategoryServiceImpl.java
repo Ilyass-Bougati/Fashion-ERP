@@ -28,17 +28,17 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
-    public ProductCategoryRecord save(ProductCategoryRecord productCategory) {
-        ProductCategory pc = productCategoryMapper.toEntity(productCategory);
-        ProductCategory saved = productCategoryRepository.save(pc);
+    public ProductCategoryRecord save(ProductCategoryRecord record) {
+        ProductCategory productCategory = productCategoryMapper.toEntity(record);
+        ProductCategory saved = productCategoryRepository.save(productCategory);
         return productCategoryMapper.entityToRecord(saved);
     }
 
     @Override
-    public ProductCategoryRecord update(UUID id, ProductCategoryRecord productCategory) {
-        ProductCategory pc = findOrThrow(id);
-        productCategoryMapper.updateEntityFromRecord(productCategory, pc);
-        return productCategoryMapper.entityToRecord(productCategoryRepository.save(pc));
+    public ProductCategoryRecord update(UUID id, ProductCategoryRecord record) {
+        ProductCategory productCategory = findOrThrow(id);
+        productCategoryMapper.updateEntityFromRecord(record, productCategory);
+        return productCategoryMapper.entityToRecord(productCategoryRepository.save(productCategory));
     }
 
     @Override

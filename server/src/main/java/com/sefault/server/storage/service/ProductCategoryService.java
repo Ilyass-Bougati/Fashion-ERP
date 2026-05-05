@@ -6,9 +6,9 @@ import java.util.UUID;
 public interface ProductCategoryService {
     ProductCategoryRecord getById(UUID id);
 
-    ProductCategoryRecord save(ProductCategoryRecord productCategory);
+    ProductCategoryRecord save(ProductCategoryRecord record);
 
-    ProductCategoryRecord update(UUID id, ProductCategoryRecord productCategory);
+    ProductCategoryRecord update(UUID id, ProductCategoryRecord record);
 
     void delete(UUID id);
 }
