@@ -13,6 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sefault.server.finance.dto.record.TransactionRecord;
+import com.sefault.server.finance.enums.TransactionType;
+import com.sefault.server.finance.service.TransactionService;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class SaleServiceImpl implements SaleService {
     private final SaleRepository saleRepository;
     private final SaleMapper saleMapper;
     private final EmployeeRepository employeeRepository;
+    private final TransactionService transactionService;
 
     @Override
     public SaleRecord create(SaleRecord record) {
@@ -67,5 +71,30 @@ public class SaleServiceImpl implements SaleService {
 
     private Sale findEntityOrThrow(UUID id) {
         return saleRepository.findById(id).orElseThrow(() -> new NotFoundException("Sale not found with id: " + id));
+    }
+
+    @Override
+    public TransactionRecord checkout(UUID id) {
+        Sale sale = findEntityOrThrow(id);
+
+        if (sale.getTransactions() != null && !sale.getTransactions().isEmpty()) {
+            throw new RuntimeException("This sale has already been checked out.");
+        }
+
+        double totalAmount = sale.getSaleLines().stream()
+                .mapToDouble(line -> line.getQuantity() * line.getSaleAtPrice())
+                .sum();
+
+        double finalAmount = totalAmount * (1.0 - sale.getDiscount());
+
+        TransactionRecord transactionRecord = new TransactionRecord(
+                null,
+                TransactionType.RECEIVED,
+                sale.getId(),
+                finalAmount,
+                null
+        );
+
+        return transactionService.createTransaction(transactionRecord);
     }
 }

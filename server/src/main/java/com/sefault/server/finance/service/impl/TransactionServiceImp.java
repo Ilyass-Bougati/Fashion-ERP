@@ -32,6 +32,7 @@ public class TransactionServiceImp implements TransactionService {
                         transactionRecord.saleId() != null
                                 ? saleRepository.getReferenceById(transactionRecord.saleId())
                                 : null)
+                .saleId(transactionRecord.saleId())
                 .amount(transactionRecord.amount())
                 .build();
         return transactionMapper.entityToRecord(transactionRepository.saveAndFlush(transaction));

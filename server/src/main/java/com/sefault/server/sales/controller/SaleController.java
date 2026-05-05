@@ -12,6 +12,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.sefault.server.finance.dto.record.TransactionRecord;
 
 @RestController
 @RequestMapping("/api/v1/sale")
@@ -49,5 +50,11 @@ public class SaleController {
     @PreAuthorize("hasAuthority(@authorities.deleteSaleAuthority)")
     public void delete(@PathVariable UUID id) {
         saleService.delete(id);
+    }
+
+    @PostMapping("/{id}/checkout")
+    @PreAuthorize("hasAuthority(@authorities.createTransactionAuthority)")
+    public ResponseEntity<TransactionRecord> checkout(@PathVariable UUID id) {
+        return ResponseEntity.ok(saleService.checkout(id));
     }
 }

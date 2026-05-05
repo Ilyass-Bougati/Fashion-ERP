@@ -1,5 +1,6 @@
 package com.sefault.server.sales.service;
 
+import com.sefault.server.finance.dto.record.TransactionRecord;
 import com.sefault.server.sales.dto.record.SaleRecord;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -15,4 +16,6 @@ public interface SaleService {
     Page<SaleRecord> getAll(Pageable pageable);
 
     void delete(UUID id);
+
+    TransactionRecord checkout(UUID id);
 }
