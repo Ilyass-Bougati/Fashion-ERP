@@ -2,7 +2,9 @@ package com.sefault.server.stats.entity;
 
 import com.sefault.server.stats.enums.PeriodType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -13,8 +15,9 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(
-        name = "employee_performance_stat",
         uniqueConstraints = @UniqueConstraint(columnNames = {"stat_date", "period_type", "employee_cin"})
 )
 public class EmployeePerformanceStat {
