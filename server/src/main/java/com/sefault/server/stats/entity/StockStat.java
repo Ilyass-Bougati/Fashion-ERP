@@ -37,4 +37,6 @@ public class StockStat {
 
     @CreationTimestamp
     private LocalDateTime computedAt;
+
+    private LocalDateTime reconciledAt;
 }

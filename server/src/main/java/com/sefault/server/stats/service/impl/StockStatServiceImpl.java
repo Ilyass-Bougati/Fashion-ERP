@@ -71,6 +71,7 @@ public class StockStatServiceImpl implements StockStatService {
                     .avgDailyVelocity(avgDailyVelocity)
                     .daysOfStockRemaining(daysRemaining)
                     .lowStockFlag(isLowStock)
+                    .reconciledAt(LocalDateTime.now())
                     .build();
 
             statsToSave.add(stat);
