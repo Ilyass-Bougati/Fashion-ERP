@@ -11,5 +11,5 @@ import java.util.UUID;
 
 @Repository
 public interface FinancialStatRepository extends JpaRepository<@NonNull FinancialStat, @NonNull UUID> {
-    Optional<FinancialStatProjection> findByFinancialStatId(UUID id);
+    Optional<FinancialStatProjection> getFinancialStatProjectionById(UUID id);
 }
