@@ -3,9 +3,11 @@ package com.sefault.server.sales.repository;
 import com.sefault.server.sales.dto.projection.SaleProjection;
 import com.sefault.server.sales.entity.Sale;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.sefault.server.stats.dto.projection.ProductVariationVelocityProjection;
 import com.sefault.server.stats.dto.projection.RevenueAggregationProjection;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -101,4 +103,13 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    @Query("""
+        SELECT sl.productVariation.id AS productVariationId,
+               SUM(sl.quantity) AS unitsSold
+        FROM Sale s JOIN s.saleLines sl
+        WHERE s.createdAt >= :start AND s.refunded = false
+        GROUP BY sl.productVariation.id
+    """)
+    List<ProductVariationVelocityProjection> getSalesVelocitySince(@Param("start") LocalDateTime start);
 }
