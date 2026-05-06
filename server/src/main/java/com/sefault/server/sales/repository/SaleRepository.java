@@ -26,4 +26,13 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
             @Param("employeeId") UUID employeeId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+        SELECT coalesce(SUM((sl.quantity * sl.saleAtPrice) * (1.0 - s.discount)), 0.0)
+        FROM Sale s
+        JOIN s.saleLines sl
+        WHERE s.createdAt BETWEEN :startDate AND :endDate
+        AND s.refunded = false 
+    """)
+    Double calculateTotalNetRevenueForPeriod(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }
