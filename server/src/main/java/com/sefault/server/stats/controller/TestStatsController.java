@@ -1,6 +1,7 @@
 package com.sefault.server.stats.controller;
 
 import com.sefault.server.stats.enums.PeriodType;
+import com.sefault.server.stats.scheduler.StatsCronScheduler;
 import com.sefault.server.stats.service.impl.EmployeePerformanceStatServiceImpl;
 import com.sefault.server.stats.service.impl.FinancialStatsServiceImpl;
 import com.sefault.server.stats.service.impl.SalesStatsServiceImpl;
@@ -26,6 +27,7 @@ public class TestStatsController {
     private final StockStatServiceImpl stockService;
     private final EmployeePerformanceStatServiceImpl employeeService;
     private final DatabaseSeederService seederService;
+    private final StatsCronScheduler cronScheduler;
 
     @PostMapping("/run-current-month")
     public ResponseEntity<String> runCurrentMonthStats() {
@@ -50,5 +52,23 @@ public class TestStatsController {
     public ResponseEntity<String> seedDatabase() {
         seederService.seedDatabase();
         return ResponseEntity.ok("Database seeded successfully!");
+    }
+
+    @PostMapping("/trigger-daily-cron")
+    public ResponseEntity<String> triggerDailyCron() {
+        cronScheduler.runDailyReconciliation();
+        return ResponseEntity.ok("Manual trigger sent to Daily Cron Job. Check logs!");
+    }
+
+    @PostMapping("/trigger-Weekly-cron")
+    public ResponseEntity<String> triggerWeeklyCron() {
+        cronScheduler.runWeeklyReconciliation();
+        return ResponseEntity.ok("Manual trigger sent to Weekly Cron Job. Check logs!");
+    }
+
+    @PostMapping("/trigger-monthly-cron")
+    public ResponseEntity<String> triggerMonthlyCron() {
+        cronScheduler.runMonthlyReconciliation();
+        return ResponseEntity.ok("Manual trigger sent to Monthly Cron Job. Check logs!");
     }
 }
