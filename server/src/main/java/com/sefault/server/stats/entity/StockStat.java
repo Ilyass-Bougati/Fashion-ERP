@@ -15,7 +15,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"stat_date", "period_type"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"stat_date", "period_type", "product_variation_sku"}))
 public class StockStat {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
