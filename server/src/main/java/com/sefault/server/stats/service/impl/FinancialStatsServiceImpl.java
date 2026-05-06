@@ -7,7 +7,7 @@ import com.sefault.server.sales.repository.SaleRepository;
 import com.sefault.server.stats.entity.FinancialStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.FinancialStatRepository;
-import com.sefault.server.stats.service.FinancialStatService;
+import com.sefault.server.stats.service.FinancialStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FinancialStatServiceImpl implements FinancialStatService {
+public class FinancialStatsServiceImpl implements FinancialStatsService {
     private final SaleRepository saleRepository;
     private final PayrollRepository payrollRepository;
     private final FixChargeRepository fixChargeRepository;
