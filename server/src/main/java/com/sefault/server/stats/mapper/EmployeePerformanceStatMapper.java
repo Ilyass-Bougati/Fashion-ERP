@@ -14,5 +14,6 @@ public interface EmployeePerformanceStatMapper {
 
     EmployeePerformanceStat toEntity(EmployeePerformanceStatRecord record);
 
-    void updateEntityFromRecord(EmployeePerformanceStatRecord record, @MappingTarget EmployeePerformanceStat entityToUpdate);
+    void updateEntityFromRecord(
+            EmployeePerformanceStatRecord record, @MappingTarget EmployeePerformanceStat entityToUpdate);
 }
