@@ -10,6 +10,8 @@ import java.util.UUID;
 import com.sefault.server.stats.entity.SalesStat;
 import com.sefault.server.stats.enums.PeriodType;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +20,6 @@ public interface FinancialStatRepository extends JpaRepository<@NonNull Financia
     Optional<FinancialStatProjection> getFinancialStatProjectionById(UUID id);
 
     Optional<FinancialStat> findByStatDateAndPeriodType(LocalDate statDate, PeriodType periodType);
+
+    Page<FinancialStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
 }

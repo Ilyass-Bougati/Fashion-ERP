@@ -9,6 +9,8 @@ import java.util.UUID;
 
 import com.sefault.server.stats.enums.PeriodType;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +19,6 @@ public interface StockStatRepository extends JpaRepository<@NonNull StockStat, @
     Optional<StockStatProjection> getStockStatProjectionById(UUID id);
 
     Optional<StockStat> findByStatDateAndPeriodTypeAndProductVariationSku(LocalDate statDate, PeriodType periodType, String productVariationSku);
+
+    Page<StockStatProjection> findByStatDateAndPeriodType(LocalDate statDate, PeriodType periodType, Pageable pageable);
 }
