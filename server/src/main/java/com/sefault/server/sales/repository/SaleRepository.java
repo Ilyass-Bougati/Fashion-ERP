@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.sefault.server.stats.dto.projection.EmployeeSalesProjection;
 import com.sefault.server.stats.dto.projection.ProductVariationVelocityProjection;
 import com.sefault.server.stats.dto.projection.RevenueAggregationProjection;
 import lombok.NonNull;
@@ -112,4 +113,24 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         GROUP BY sl.productVariation.id
     """)
     List<ProductVariationVelocityProjection> getSalesVelocitySince(@Param("start") LocalDateTime start);
+
+    @Query("""
+        SELECT e.CIN AS cin,
+               e.firstName AS firstName,
+               e.lastName AS lastName,
+               COUNT(DISTINCT s.id) AS salesCount,
+               COALESCE(SUM(sl.quantity * sl.saleAtPrice), 0.0) AS grossSalesAmount,
+               COALESCE(SUM(sl.quantity), 0L) AS itemsSold,
+               COALESCE(AVG(s.discount), 0.0) AS avgDiscountGiven
+        FROM Sale s 
+        JOIN s.employee e 
+        JOIN s.saleLines sl
+        WHERE s.createdAt >= :start AND s.createdAt < :end
+        AND s.refunded = false
+        GROUP BY e.id, e.CIN, e.firstName, e.lastName
+    """)
+    List<EmployeeSalesProjection> aggregateSalesByEmployee(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }
