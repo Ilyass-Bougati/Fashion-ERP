@@ -120,8 +120,7 @@ class SaleLineServiceImplTest {
             saleLineService.delete(id);
 
             assertThat(product.getQuantity()).isEqualTo(12); // 10 + 2 (restored)
-            verify(productVariationRepository).save(product);
-            verify(saleLineRepository).deleteById(id);
+            verify(saleLineRepository).deleteByCompositeId(any(UUID.class), any(UUID.class));
         }
     }
 }

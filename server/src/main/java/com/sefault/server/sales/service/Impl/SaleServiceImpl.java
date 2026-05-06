@@ -1,6 +1,9 @@
 package com.sefault.server.sales.service.Impl;
 
 import com.sefault.server.exception.NotFoundException;
+import com.sefault.server.finance.dto.record.TransactionRecord;
+import com.sefault.server.finance.enums.TransactionType;
+import com.sefault.server.finance.service.TransactionService;
 import com.sefault.server.hr.repository.EmployeeRepository;
 import com.sefault.server.sales.dto.record.SaleRecord;
 import com.sefault.server.sales.entity.Sale;
@@ -13,9 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.sefault.server.finance.dto.record.TransactionRecord;
-import com.sefault.server.finance.enums.TransactionType;
-import com.sefault.server.finance.service.TransactionService;
 
 @Service
 @RequiredArgsConstructor
@@ -87,13 +87,8 @@ public class SaleServiceImpl implements SaleService {
 
         double finalAmount = totalAmount * (1.0 - sale.getDiscount());
 
-        TransactionRecord transactionRecord = new TransactionRecord(
-                null,
-                TransactionType.RECEIVED,
-                sale.getId(),
-                finalAmount,
-                null
-        );
+        TransactionRecord transactionRecord =
+                new TransactionRecord(null, TransactionType.RECEIVED, sale.getId(), finalAmount, null);
 
         return transactionService.createTransaction(transactionRecord);
     }

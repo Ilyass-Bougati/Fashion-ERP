@@ -37,23 +37,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @WebMvcTest(SaleController.class)
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @Import({
-        SecurityConfig.class,
-        JwtCookieFilter.class,
-        JacksonAutoConfiguration.class,
-        SaleControllerTest.TestAdvice.class // <-- Changement ici (on utilise le TestAdvice)
+    SecurityConfig.class,
+    JwtCookieFilter.class,
+    JacksonAutoConfiguration.class,
+    SaleControllerTest.TestAdvice.class // <-- Changement ici (on utilise le TestAdvice)
 })
 public class SaleControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @MockitoBean
     private SaleService saleService;
+
     @MockitoBean(name = "authorities")
     private ApplicationAuthorities authorities;
+
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
+
     @MockitoBean
     private JwtDecoder jwtDecoder;
 
@@ -106,8 +110,7 @@ public class SaleControllerTest {
         UUID id = UUID.randomUUID();
         when(saleService.getById(id)).thenThrow(new NotFoundException("Sale not found"));
 
-        mockMvc.perform(get("/api/v1/sale/{id}", id))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/sale/{id}", id)).andExpect(status().isNotFound());
     }
 
     @Test

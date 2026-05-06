@@ -1,5 +1,6 @@
 package com.sefault.server.sales.controller;
 
+import com.sefault.server.finance.dto.record.TransactionRecord;
 import com.sefault.server.sales.dto.record.SaleRecord;
 import com.sefault.server.sales.service.SaleService;
 import jakarta.validation.Valid;
@@ -12,7 +13,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import com.sefault.server.finance.dto.record.TransactionRecord;
 
 @RestController
 @RequestMapping("/api/v1/sale")

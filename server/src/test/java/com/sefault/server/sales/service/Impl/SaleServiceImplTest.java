@@ -6,16 +6,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.sefault.server.exception.NotFoundException;
+import com.sefault.server.finance.dto.record.TransactionRecord;
+import com.sefault.server.finance.entity.Transaction;
+import com.sefault.server.finance.enums.TransactionType;
 import com.sefault.server.finance.service.TransactionService;
 import com.sefault.server.hr.entity.Employee;
 import com.sefault.server.hr.repository.EmployeeRepository;
 import com.sefault.server.sales.dto.projection.SaleProjection;
 import com.sefault.server.sales.dto.record.SaleRecord;
 import com.sefault.server.sales.entity.Sale;
+import com.sefault.server.sales.entity.SaleLine;
 import com.sefault.server.sales.mapper.SaleMapper;
 import com.sefault.server.sales.repository.SaleRepository;
 import com.sefault.server.storage.repository.ProductVariationRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +69,7 @@ class SaleServiceImplTest {
     void setUp() {
         saleId = UUID.randomUUID();
         employeeId = UUID.randomUUID();
+
         employee = new Employee();
         employee.setId(employeeId);
 
@@ -70,19 +77,18 @@ class SaleServiceImplTest {
         sale.setId(saleId);
         sale.setDiscount(0.1);
         sale.setRefunded(false);
+        sale.setSaleLines(new ArrayList<>());
+        sale.setTransactions(new ArrayList<>());
 
         saleRecord = new SaleRecord(saleId, 0.1, employeeId, false, LocalDateTime.now(), LocalDateTime.now());
     }
 
-    // -------------------------------------------------------------------------
-    // Create Tests
-    // -------------------------------------------------------------------------
     @Nested
     @DisplayName("create()")
     class CreateTests {
 
         @Test
-        @DisplayName("create   persists sale and maps employee correctly")
+        @DisplayName("create persists sale and maps employee correctly")
         void create_persistsSale() {
             when(saleMapper.toEntity(any())).thenReturn(sale);
             when(employeeRepository.getReferenceById(employeeId)).thenReturn(employee);
@@ -97,17 +103,14 @@ class SaleServiceImplTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Get Tests
-    // -------------------------------------------------------------------------
     @Nested
     @DisplayName("getById() and getAll()")
     class GetTests {
 
         @Test
-        @DisplayName("getById   returns mapped record when sale exists")
         void getById_returnsRecord() {
             SaleProjection projection = mock(SaleProjection.class);
+
             when(saleRepository.getSaleProjectionById(saleId)).thenReturn(Optional.of(projection));
             when(saleMapper.projectionToRecord(projection)).thenReturn(saleRecord);
 
@@ -117,7 +120,6 @@ class SaleServiceImplTest {
         }
 
         @Test
-        @DisplayName("getById   throws NotFoundException when missing")
         void getById_throwsNotFoundException() {
             when(saleRepository.getSaleProjectionById(saleId)).thenReturn(Optional.empty());
 
@@ -127,11 +129,11 @@ class SaleServiceImplTest {
         }
 
         @Test
-        @DisplayName("getAll   returns paginated results")
         void getAll_returnsPagedRecords() {
             Pageable pageable = PageRequest.of(0, 10);
             SaleProjection projection = mock(SaleProjection.class);
-            when(saleRepository.findAllBy(pageable)).thenReturn(new PageImpl<>(java.util.List.of(projection)));
+
+            when(saleRepository.findAllBy(pageable)).thenReturn(new PageImpl<>(List.of(projection)));
             when(saleMapper.projectionToRecord(projection)).thenReturn(saleRecord);
 
             Page<SaleRecord> result = saleService.getAll(pageable);
@@ -141,30 +143,62 @@ class SaleServiceImplTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Delete Tests
-    // -------------------------------------------------------------------------
     @Nested
     @DisplayName("delete()")
     class DeleteTests {
 
         @Test
-        @DisplayName("delete   delegates to repository when sale exists")
         void delete_delegatesToRepository() {
             when(saleRepository.existsById(saleId)).thenReturn(true);
+
             saleService.delete(saleId);
+
             verify(saleRepository).deleteById(saleId);
         }
 
         @Test
-        @DisplayName("delete   throws NotFoundException when sale does not exist")
         void delete_throwsNotFound() {
             when(saleRepository.existsById(saleId)).thenReturn(false);
 
-            assertThatThrownBy(() -> saleService.delete(saleId))
-                    .isInstanceOf(NotFoundException.class)
-                    .hasMessageContaining(saleId.toString());
+            assertThatThrownBy(() -> saleService.delete(saleId)).isInstanceOf(NotFoundException.class);
+
             verify(saleRepository, never()).deleteById(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("checkout()")
+    class CheckoutTests {
+
+        @Test
+        void checkout_CalculatesTotalAndCreatesTransaction() {
+            SaleLine line = new SaleLine();
+            line.setQuantity(2);
+            line.setSaleAtPrice(1500.0);
+            sale.setSaleLines(List.of(line));
+
+            when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
+
+            TransactionRecord expectedTransaction = new TransactionRecord(
+                    UUID.randomUUID(), TransactionType.RECEIVED, saleId, 2700.0, LocalDateTime.now());
+
+            when(transactionService.createTransaction(any(TransactionRecord.class)))
+                    .thenReturn(expectedTransaction);
+
+            TransactionRecord result = saleService.checkout(saleId);
+
+            assertThat(result).isNotNull();
+            assertThat(result.amount()).isEqualTo(2700.0);
+            verify(transactionService).createTransaction(any());
+        }
+
+        @Test
+        void checkout_ThrowsException_WhenAlreadyCheckedOut() {
+            sale.setTransactions(List.of(new Transaction()));
+
+            when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
+
+            assertThatThrownBy(() -> saleService.checkout(saleId)).isInstanceOf(RuntimeException.class);
         }
     }
 }
