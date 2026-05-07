@@ -71,4 +71,15 @@ public class TestStatsController {
         cronScheduler.runMonthlyReconciliation();
         return ResponseEntity.ok("Manual trigger sent to Monthly Cron Job. Check logs!");
     }
+
+    @PostMapping("/run-today-stats")
+    public ResponseEntity<String> runTodayStats() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+        salesService.saveSalesStats(startOfDay, endOfDay, today, PeriodType.DAILY);
+        employeeService.saveEmployeeStats(startOfDay, endOfDay, today, PeriodType.DAILY);
+        stockService.saveStockStats(today, PeriodType.DAILY);
+        return ResponseEntity.ok("Calculated DAILY stats for TODAY! Check your database tables.");
+    }
 }
