@@ -6,12 +6,11 @@ import com.sefault.server.stats.entity.SalesStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.SalesStatRepository;
 import com.sefault.server.stats.service.SalesStatsService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor

@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 

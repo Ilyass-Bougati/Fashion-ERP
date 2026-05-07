@@ -5,16 +5,15 @@ import com.sefault.server.stats.service.impl.EmployeePerformanceStatServiceImpl;
 import com.sefault.server.stats.service.impl.FinancialStatsServiceImpl;
 import com.sefault.server.stats.service.impl.SalesStatsServiceImpl;
 import com.sefault.server.stats.service.impl.StockStatServiceImpl;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.temporal.TemporalAdjusters;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -75,7 +74,11 @@ public class StatsCronScheduler {
             employeeService.saveEmployeeStats(startOfMonth, endOfMonth, firstDayOfLastMonth, PeriodType.MONTHLY);
             log.info("Monthly Stats Reconciliation Complete.");
         } catch (Exception e) {
-            log.error("Failed to process monthly stats for month starting {}: {}", firstDayOfLastMonth, e.getMessage(), e);
+            log.error(
+                    "Failed to process monthly stats for month starting {}: {}",
+                    firstDayOfLastMonth,
+                    e.getMessage(),
+                    e);
         }
     }
 }

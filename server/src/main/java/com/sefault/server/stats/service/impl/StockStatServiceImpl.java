@@ -8,10 +8,6 @@ import com.sefault.server.stats.repository.StockStatRepository;
 import com.sefault.server.stats.service.StockStatService;
 import com.sefault.server.storage.entity.ProductVariation;
 import com.sefault.server.storage.repository.ProductVariationRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +34,7 @@ public class StockStatServiceImpl implements StockStatService {
         Map<UUID, Long> velocityMap = velocities.stream()
                 .collect(Collectors.toMap(
                         ProductVariationVelocityProjection::getProductVariationId,
-                        ProductVariationVelocityProjection::getUnitsSold
-                ));
+                        ProductVariationVelocityProjection::getUnitsSold));
 
         List<ProductVariation> allVariations = productVariationRepository.findAllWithProductAndCategory();
         List<StockStat> statsToSave = new ArrayList<>();

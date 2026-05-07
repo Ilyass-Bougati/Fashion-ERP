@@ -1,5 +1,8 @@
 package com.sefault.server.stats.service.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
 import com.sefault.server.finance.repository.PayrollRepository;
 import com.sefault.server.sales.repository.SaleRepository;
 import com.sefault.server.stats.dto.projection.EmployeeCommissionProjection;
@@ -7,6 +10,10 @@ import com.sefault.server.stats.dto.projection.EmployeeSalesProjection;
 import com.sefault.server.stats.entity.EmployeePerformanceStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.EmployeePerformanceStatRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,20 +21,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class EmployeePerformanceStatServiceImplTest {
 
-    @Mock private SaleRepository saleRepository;
-    @Mock private PayrollRepository payrollRepository;
-    @Mock private EmployeePerformanceStatRepository statRepository;
+    @Mock
+    private SaleRepository saleRepository;
+
+    @Mock
+    private PayrollRepository payrollRepository;
+
+    @Mock
+    private EmployeePerformanceStatRepository statRepository;
 
     @InjectMocks
     private EmployeePerformanceStatServiceImpl service;
@@ -55,7 +59,8 @@ class EmployeePerformanceStatServiceImplTest {
 
         when(saleRepository.aggregateSalesByEmployee(start, end)).thenReturn(List.of(salesProj));
         when(payrollRepository.aggregateCommissionByEmployee(start, end)).thenReturn(List.of(commProj));
-        when(statRepository.findByStatDateAndPeriodTypeAndEmployeeCin(anchor, PeriodType.DAILY, testCin)).thenReturn(Optional.empty());
+        when(statRepository.findByStatDateAndPeriodTypeAndEmployeeCin(anchor, PeriodType.DAILY, testCin))
+                .thenReturn(Optional.empty());
 
         // Execute
         service.saveEmployeeStats(start, end, anchor, PeriodType.DAILY);

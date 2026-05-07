@@ -1,5 +1,9 @@
 package com.sefault.server.stats.service.impl;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.sefault.server.sales.repository.SaleRepository;
 import com.sefault.server.stats.dto.projection.ProductVariationVelocityProjection;
 import com.sefault.server.stats.entity.StockStat;
@@ -9,6 +13,10 @@ import com.sefault.server.storage.entity.Product;
 import com.sefault.server.storage.entity.ProductCategory;
 import com.sefault.server.storage.entity.ProductVariation;
 import com.sefault.server.storage.repository.ProductVariationRepository;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,21 +24,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class StockStatServiceImplTest {
 
-    @Mock private ProductVariationRepository variationRepository;
-    @Mock private SaleRepository saleRepository;
-    @Mock private StockStatRepository stockStatRepository;
+    @Mock
+    private ProductVariationRepository variationRepository;
+
+    @Mock
+    private SaleRepository saleRepository;
+
+    @Mock
+    private StockStatRepository stockStatRepository;
 
     @InjectMocks
     private StockStatServiceImpl service;
@@ -44,7 +48,12 @@ class StockStatServiceImplTest {
         ProductCategory cat = ProductCategory.builder().name("Category").build();
         Product prod = Product.builder().name("Product").productCategory(cat).build();
         ProductVariation pv = ProductVariation.builder()
-                .id(pvId).sku("SKU-TEST").product(prod).quantity(10).price(5.0).build();
+                .id(pvId)
+                .sku("SKU-TEST")
+                .product(prod)
+                .quantity(10)
+                .price(5.0)
+                .build();
 
         ProductVariationVelocityProjection velProj = mock(ProductVariationVelocityProjection.class);
         when(velProj.getProductVariationId()).thenReturn(pvId);
@@ -52,7 +61,9 @@ class StockStatServiceImplTest {
 
         when(saleRepository.getSalesVelocitySince(any())).thenReturn(List.of(velProj));
         when(variationRepository.findAllWithProductAndCategory()).thenReturn(List.of(pv));
-        when(stockStatRepository.findByStatDateAndPeriodTypeAndProductVariationSku(anchor, PeriodType.DAILY, "SKU-TEST")).thenReturn(Optional.empty());
+        when(stockStatRepository.findByStatDateAndPeriodTypeAndProductVariationSku(
+                        anchor, PeriodType.DAILY, "SKU-TEST"))
+                .thenReturn(Optional.empty());
 
         service.saveStockStats(anchor, PeriodType.DAILY);
 

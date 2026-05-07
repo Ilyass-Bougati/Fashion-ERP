@@ -8,14 +8,13 @@ import com.sefault.server.stats.entity.EmployeePerformanceStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.EmployeePerformanceStatRepository;
 import com.sefault.server.stats.service.EmployeePerformanceStatService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +29,11 @@ public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceSt
         List<EmployeeSalesProjection> salesAgg = saleRepository.aggregateSalesByEmployee(start, end);
         List<EmployeeCommissionProjection> commAgg = payrollRepository.aggregateCommissionByEmployee(start, end);
 
-        Map<String, EmployeeSalesProjection> salesMap = salesAgg.stream()
-                .collect(Collectors.toMap(EmployeeSalesProjection::getCin, proj -> proj));
+        Map<String, EmployeeSalesProjection> salesMap =
+                salesAgg.stream().collect(Collectors.toMap(EmployeeSalesProjection::getCin, proj -> proj));
 
-        Map<String, EmployeeCommissionProjection> commissionMap = commAgg.stream()
-                .collect(Collectors.toMap(EmployeeCommissionProjection::getCin, proj -> proj));
+        Map<String, EmployeeCommissionProjection> commissionMap =
+                commAgg.stream().collect(Collectors.toMap(EmployeeCommissionProjection::getCin, proj -> proj));
 
         Set<String> activeCins = new HashSet<>();
         activeCins.addAll(salesMap.keySet());
@@ -68,7 +67,7 @@ public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceSt
                     .itemsSold(sData != null ? sData.getItemsSold().intValue() : 0)
                     .avgDiscountGiven(sData != null ? sData.getAvgDiscountGiven() : 0.0)
                     .commissionEarned(commissionEarned)
-                     .reconciledAt(LocalDateTime.now())
+                    .reconciledAt(LocalDateTime.now())
                     .build();
 
             statsToSave.add(stat);

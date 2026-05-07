@@ -7,15 +7,14 @@ import com.sefault.server.stats.service.impl.FinancialStatsServiceImpl;
 import com.sefault.server.stats.service.impl.SalesStatsServiceImpl;
 import com.sefault.server.stats.service.impl.StockStatServiceImpl;
 import com.sefault.server.stats.service.test.DatabaseSeederService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
 
 @RestController
 @RequestMapping("/api/v1/test/stats")

@@ -1,5 +1,8 @@
 package com.sefault.server.stats.controller;
 
+import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
+
 import com.sefault.server.stats.dto.projection.EmployeePerformanceStatProjection;
 import com.sefault.server.stats.dto.projection.FinancialStatProjection;
 import com.sefault.server.stats.dto.projection.SalesStatProjection;
@@ -10,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,25 +22,23 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-
-import static org.springframework.data.domain.Sort.Direction.ASC;
-import static org.springframework.data.domain.Sort.Direction.DESC;
-
 @RestController
 @RequestMapping("/api/v1/stats")
 @RequiredArgsConstructor
-@Tag(name = "Statistics - Dashboards", description = "Endpoints for retrieving aggregated ERP statistics, leaderboards, and historical snapshots.")
+@Tag(
+        name = "Statistics - Dashboards",
+        description = "Endpoints for retrieving aggregated ERP statistics, leaderboards, and historical snapshots.")
 public class StatsController {
 
     private final StatsQueryService statsQueryService;
 
     @Operation(
             summary = "Get financial statistics",
-            description = "Fetch paginated financial summaries (revenue, payroll, fixed charges, net profit). Note: Financial stats are typically only available for MONTHLY and YEARLY periods.")
+            description =
+                    "Fetch paginated financial summaries (revenue, payroll, fixed charges, net profit). Note: Financial stats are typically only available for MONTHLY and YEARLY periods.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Financial statistics retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid period type requested")
+        @ApiResponse(responseCode = "200", description = "Financial statistics retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid period type requested")
     })
     @GetMapping("/financial")
     public ResponseEntity<Page<FinancialStatProjection>> getFinancialStats(
@@ -48,7 +50,8 @@ public class StatsController {
 
     @Operation(
             summary = "Get sales statistics",
-            description = "Fetch paginated sales aggregations (transaction counts, gross/net revenue, total discounts, and top-performing categories/products) filtered by period type.")
+            description =
+                    "Fetch paginated sales aggregations (transaction counts, gross/net revenue, total discounts, and top-performing categories/products) filtered by period type.")
     @ApiResponse(responseCode = "200", description = "Sales statistics retrieved successfully")
     @GetMapping("/sales")
     public ResponseEntity<Page<SalesStatProjection>> getSalesStats(
@@ -60,7 +63,8 @@ public class StatsController {
 
     @Operation(
             summary = "Get employee performance leaderboard",
-            description = "Fetch paginated employee performance metrics (sales volume, total transactions, commissions earned). By default, this endpoint sorts by grossSalesAmount DESC to act as an instant leaderboard.")
+            description =
+                    "Fetch paginated employee performance metrics (sales volume, total transactions, commissions earned). By default, this endpoint sorts by grossSalesAmount DESC to act as an instant leaderboard.")
     @ApiResponse(responseCode = "200", description = "Employee performance statistics retrieved successfully")
     @GetMapping("/employees")
     public ResponseEntity<Page<EmployeePerformanceStatProjection>> getEmployeePerformanceStats(
@@ -72,10 +76,11 @@ public class StatsController {
 
     @Operation(
             summary = "Get stock snapshot statistics",
-            description = "Fetch a paginated snapshot of stock levels, values, and 30-day velocity for a specific historical date. By default, this sorts by quantityOnHand ASC to immediately highlight low-stock items.")
+            description =
+                    "Fetch a paginated snapshot of stock levels, values, and 30-day velocity for a specific historical date. By default, this sorts by quantityOnHand ASC to immediately highlight low-stock items.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Stock statistics retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid date format or period type")
+        @ApiResponse(responseCode = "200", description = "Stock statistics retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid date format or period type")
     })
     @GetMapping("/stock")
     public ResponseEntity<Page<StockStatProjection>> getStockStats(

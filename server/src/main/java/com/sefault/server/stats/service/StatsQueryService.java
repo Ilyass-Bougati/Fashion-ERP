@@ -5,10 +5,9 @@ import com.sefault.server.stats.dto.projection.FinancialStatProjection;
 import com.sefault.server.stats.dto.projection.SalesStatProjection;
 import com.sefault.server.stats.dto.projection.StockStatProjection;
 import com.sefault.server.stats.enums.PeriodType;
+import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.time.LocalDate;
 
 public interface StatsQueryService {
     Page<FinancialStatProjection> getFinancialStats(PeriodType periodType, Pageable pageable);

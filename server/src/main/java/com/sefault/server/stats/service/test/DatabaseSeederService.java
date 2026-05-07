@@ -12,16 +12,15 @@ import com.sefault.server.sales.entity.id.SaleLineId;
 import com.sefault.server.sales.repository.SaleRepository;
 import com.sefault.server.storage.entity.*;
 import com.sefault.server.storage.repository.*;
-import lombok.RequiredArgsConstructor;
-import net.datafaker.Faker;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import net.datafaker.Faker;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -139,7 +138,7 @@ public class DatabaseSeederService {
             saleRepository.flush();
 
             double lineTotal = line.getQuantity() * line.getSaleAtPrice();
-            double netTotal  = lineTotal * (1.0 - sale.getDiscount());
+            double netTotal = lineTotal * (1.0 - sale.getDiscount());
 
             Transaction tx = Transaction.builder()
                     .type(TransactionType.PAID)

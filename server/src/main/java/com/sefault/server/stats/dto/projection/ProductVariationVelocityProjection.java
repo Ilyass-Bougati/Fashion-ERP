@@ -4,5 +4,6 @@ import java.util.UUID;
 
 public interface ProductVariationVelocityProjection {
     UUID getProductVariationId();
+
     Long getUnitsSold();
 }

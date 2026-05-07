@@ -10,13 +10,12 @@ import com.sefault.server.stats.repository.FinancialStatRepository;
 import com.sefault.server.stats.repository.SalesStatRepository;
 import com.sefault.server.stats.repository.StockStatRepository;
 import com.sefault.server.stats.service.StatsQueryService;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +35,8 @@ public class StatsQueryServiceImpl implements StatsQueryService {
         return salesRepo.findByPeriodType(periodType, pageable);
     }
 
-    public Page<EmployeePerformanceStatProjection> getEmployeePerformanceStats(PeriodType periodType, Pageable pageable) {
+    public Page<EmployeePerformanceStatProjection> getEmployeePerformanceStats(
+            PeriodType periodType, Pageable pageable) {
         return employeeRepo.findByPeriodType(periodType, pageable);
     }
 

@@ -8,12 +8,11 @@ import com.sefault.server.stats.entity.FinancialStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.FinancialStatRepository;
 import com.sefault.server.stats.service.FinancialStatsService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +24,8 @@ public class FinancialStatsServiceImpl implements FinancialStatsService {
     private final EmployeeRepository employeeRepository;
     private final FinancialStatRepository financialStatRepository;
 
-    public void saveFinancialStats(LocalDateTime start, LocalDateTime end, LocalDate anchorDate, PeriodType periodType) {
+    public void saveFinancialStats(
+            LocalDateTime start, LocalDateTime end, LocalDate anchorDate, PeriodType periodType) {
         if (periodType == PeriodType.DAILY || periodType == PeriodType.WEEKLY) {
             throw new IllegalArgumentException("Financial stats are only calculated for MONTHLY or YEARLY periods.");
         }
@@ -63,5 +63,4 @@ public class FinancialStatsServiceImpl implements FinancialStatsService {
 
         financialStatRepository.save(financialStat);
     }
-
 }

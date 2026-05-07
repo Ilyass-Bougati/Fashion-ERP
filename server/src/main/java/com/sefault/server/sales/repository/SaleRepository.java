@@ -2,14 +2,13 @@ package com.sefault.server.sales.repository;
 
 import com.sefault.server.sales.dto.projection.SaleProjection;
 import com.sefault.server.sales.entity.Sale;
+import com.sefault.server.stats.dto.projection.EmployeeSalesProjection;
+import com.sefault.server.stats.dto.projection.ProductVariationVelocityProjection;
+import com.sefault.server.stats.dto.projection.RevenueAggregationProjection;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import com.sefault.server.stats.dto.projection.EmployeeSalesProjection;
-import com.sefault.server.stats.dto.projection.ProductVariationVelocityProjection;
-import com.sefault.server.stats.dto.projection.RevenueAggregationProjection;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,7 +39,8 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         WHERE s.createdAt BETWEEN :startDate AND :endDate
         AND s.refunded = false
         """)
-    Double calculateTotalNetRevenueForPeriod(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    Double calculateTotalNetRevenueForPeriod(
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     @Query("""
             SELECT COUNT(s)
@@ -48,10 +48,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
             WHERE s.createdAt between :startDate AND :endDate
             AND s.refunded = false
     """)
-    Long countValidTransactions(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
-    );
+    Long countValidTransactions(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     @Query("""
             SELECT COUNT(s)
@@ -59,10 +56,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
             WHERE s.createdAt between :startDate AND :endDate
             AND s.refunded = true
     """)
-    Long countRefundedTransactions(
-            @Param("startDate") LocalDateTime start,
-            @Param("endDate") LocalDateTime end
-    );
+    Long countRefundedTransactions(@Param("startDate") LocalDateTime start, @Param("endDate") LocalDateTime end);
 
     @Query("""
         SELECT
@@ -75,9 +69,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         AND s.refunded = false
         """)
     RevenueAggregationProjection calculateRevenueAndUnits(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
-    );
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     @Query("""
         SELECT pc.name
@@ -88,9 +80,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         LIMIT 1
     """)
     String findTopCategoryNameForPeriod(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
-    );
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     @Query("""
         SELECT pv.sku
@@ -101,9 +91,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         LIMIT 1
     """)
     String findTopProductSkuForPeriod(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
-    );
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     @Query("""
         SELECT sl.productVariation.id AS productVariationId,
@@ -122,15 +110,13 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
                COALESCE(SUM(sl.quantity * sl.saleAtPrice), 0.0) AS grossSalesAmount,
                COALESCE(SUM(sl.quantity), 0L) AS itemsSold,
                COALESCE(AVG(s.discount), 0.0) AS avgDiscountGiven
-        FROM Sale s 
-        JOIN s.employee e 
+        FROM Sale s
+        JOIN s.employee e
         JOIN s.saleLines sl
         WHERE s.createdAt >= :start AND s.createdAt < :end
         AND s.refunded = false
         GROUP BY e.id, e.CIN, e.firstName, e.lastName
     """)
     List<EmployeeSalesProjection> aggregateSalesByEmployee(
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
-    );
+            @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
