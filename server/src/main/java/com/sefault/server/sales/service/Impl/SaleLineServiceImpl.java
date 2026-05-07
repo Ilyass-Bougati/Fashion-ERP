@@ -1,5 +1,6 @@
 package com.sefault.server.sales.service.Impl;
 
+import com.sefault.server.exception.InsufficientStockException;
 import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.sales.dto.record.SaleLineRecord;
 import com.sefault.server.sales.entity.SaleLine;
@@ -33,7 +34,7 @@ public class SaleLineServiceImpl implements SaleLineService {
                 .orElseThrow(() -> new NotFoundException("Product variation not found"));
 
         if (product.getQuantity() < record.quantity()) {
-            throw new RuntimeException("Insufficient stock for product variation");
+            throw new InsufficientStockException("Insufficient stock for product variation");
         }
 
         product.setQuantity(product.getQuantity() - record.quantity());
@@ -51,7 +52,7 @@ public class SaleLineServiceImpl implements SaleLineService {
         return saleLineRepository
                 .getSaleLineProjectionById(id)
                 .map(saleLineMapper::projectionToRecord)
-                .orElseThrow(() -> new NotFoundException("SaleLine not found"));
+                .orElseThrow(() -> new NotFoundException("SaleLine not found with id: " + id.toString()));
     }
 
     @Override
@@ -72,7 +73,7 @@ public class SaleLineServiceImpl implements SaleLineService {
 
         int quantityDifference = record.quantity() - saleLine.getQuantity();
         if (quantityDifference > 0 && product.getQuantity() < quantityDifference) {
-            throw new RuntimeException("Insufficient stock for update");
+            throw new InsufficientStockException("Insufficient stock for update");
         }
 
         product.setQuantity(product.getQuantity() - quantityDifference);
@@ -87,8 +88,7 @@ public class SaleLineServiceImpl implements SaleLineService {
         SaleLine saleLine = findEntityOrThrow(id);
 
         ProductVariation product = saleLine.getProductVariation();
-        product.setQuantity(product.getQuantity() + saleLine.getQuantity());
-        productVariationRepository.save(product);
+        productVariationRepository.incrementStock(product.getId(), saleLine.getQuantity());
 
         saleLineRepository.deleteByCompositeId(id.getSaleId(), id.getProductVariationId());
     }

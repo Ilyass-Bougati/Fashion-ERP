@@ -18,4 +18,6 @@ public interface SaleService {
     void delete(UUID id);
 
     TransactionRecord checkout(UUID id);
+
+    TransactionRecord refund(UUID id);
 }

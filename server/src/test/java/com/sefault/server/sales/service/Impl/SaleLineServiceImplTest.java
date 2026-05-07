@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.sefault.server.exception.InsufficientStockException;
 import com.sefault.server.sales.dto.record.SaleLineRecord;
 import com.sefault.server.sales.entity.Sale;
 import com.sefault.server.sales.entity.SaleLine;
@@ -58,7 +59,7 @@ class SaleLineServiceImplTest {
 
         product = new ProductVariation();
         product.setId(productId);
-        product.setQuantity(10); // Stock initial
+        product.setQuantity(10);
         product.setSku("TEST-SKU");
 
         sale = new Sale();
@@ -77,7 +78,6 @@ class SaleLineServiceImplTest {
     class CreateTests {
 
         @Test
-        @DisplayName("create   decrements stock successfully and persists")
         void create_success() {
             when(productVariationRepository.findById(id.getProductVariationId()))
                     .thenReturn(Optional.of(product));
@@ -89,20 +89,18 @@ class SaleLineServiceImplTest {
             SaleLineRecord result = saleLineService.create(record);
 
             assertThat(result).isNotNull();
-            assertThat(product.getQuantity()).isEqualTo(8); // 10 - 2
+            assertThat(product.getQuantity()).isEqualTo(8);
             verify(productVariationRepository).save(product);
         }
 
         @Test
-        @DisplayName("create   throws Exception if stock is insufficient")
         void create_insufficientStock() {
             SaleLineRecord massiveOrder = new SaleLineRecord(id, 20, id.getSaleId(), id.getProductVariationId(), 50.0);
             when(productVariationRepository.findById(id.getProductVariationId()))
                     .thenReturn(Optional.of(product));
 
             assertThatThrownBy(() -> saleLineService.create(massiveOrder))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("Insufficient stock");
+                    .isInstanceOf(InsufficientStockException.class);
 
             verify(productVariationRepository, never()).save(any());
         }
@@ -113,13 +111,12 @@ class SaleLineServiceImplTest {
     class DeleteTests {
 
         @Test
-        @DisplayName("delete   restores stock quantity upon deletion")
         void delete_restoresStock() {
             when(saleLineRepository.findById(id)).thenReturn(Optional.of(saleLine));
 
             saleLineService.delete(id);
 
-            assertThat(product.getQuantity()).isEqualTo(12); // 10 + 2 (restored)
+            verify(productVariationRepository).incrementStock(product.getId(), 2);
             verify(saleLineRepository).deleteByCompositeId(any(UUID.class), any(UUID.class));
         }
     }

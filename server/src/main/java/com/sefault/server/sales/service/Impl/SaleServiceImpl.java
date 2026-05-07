@@ -7,9 +7,12 @@ import com.sefault.server.finance.service.TransactionService;
 import com.sefault.server.hr.repository.EmployeeRepository;
 import com.sefault.server.sales.dto.record.SaleRecord;
 import com.sefault.server.sales.entity.Sale;
+import com.sefault.server.sales.entity.SaleLine;
 import com.sefault.server.sales.mapper.SaleMapper;
 import com.sefault.server.sales.repository.SaleRepository;
 import com.sefault.server.sales.service.SaleService;
+import com.sefault.server.storage.repository.ProductVariationRepository;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +29,7 @@ public class SaleServiceImpl implements SaleService {
     private final SaleMapper saleMapper;
     private final EmployeeRepository employeeRepository;
     private final TransactionService transactionService;
+    private final ProductVariationRepository productVariationRepository;
 
     @Override
     public SaleRecord create(SaleRecord record) {
@@ -91,5 +95,39 @@ public class SaleServiceImpl implements SaleService {
                 new TransactionRecord(null, TransactionType.RECEIVED, sale.getId(), finalAmount, null);
 
         return transactionService.createTransaction(transactionRecord);
+    }
+
+    @Override
+    public TransactionRecord refund(UUID id) {
+        Sale sale = findEntityOrThrow(id);
+
+        if (Boolean.TRUE.equals(sale.getRefunded())) {
+            throw new RuntimeException("This sale has already been refunded.");
+        }
+
+        boolean hasBeenPaid = sale.getTransactions() != null
+                && sale.getTransactions().stream().anyMatch(t -> t.getType() == TransactionType.RECEIVED);
+
+        if (!hasBeenPaid) {
+            throw new RuntimeException("Cannot refund a sale that has not been checked out yet.");
+        }
+
+        double totalAmount = sale.getSaleLines().stream()
+                .mapToDouble(line -> line.getQuantity() * line.getSaleAtPrice())
+                .sum();
+
+        double amountToRefund = totalAmount * (1.0 - sale.getDiscount());
+
+        for (SaleLine line : sale.getSaleLines()) {
+            productVariationRepository.incrementStock(line.getProductVariation().getId(), line.getQuantity());
+        }
+
+        sale.setRefunded(true);
+        saleRepository.save(sale);
+
+        TransactionRecord refundTransaction =
+                new TransactionRecord(null, TransactionType.PAID, sale.getId(), amountToRefund, LocalDateTime.now());
+
+        return transactionService.createTransaction(refundTransaction);
     }
 }

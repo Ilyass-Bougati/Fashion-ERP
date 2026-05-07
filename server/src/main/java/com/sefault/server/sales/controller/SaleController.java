@@ -57,4 +57,9 @@ public class SaleController {
     public ResponseEntity<TransactionRecord> checkout(@PathVariable UUID id) {
         return ResponseEntity.ok(saleService.checkout(id));
     }
+
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<TransactionRecord> refund(@PathVariable UUID id) {
+        return ResponseEntity.ok(saleService.refund(id));
+    }
 }

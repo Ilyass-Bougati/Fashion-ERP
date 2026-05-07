@@ -18,6 +18,7 @@ import com.sefault.server.sales.entity.Sale;
 import com.sefault.server.sales.entity.SaleLine;
 import com.sefault.server.sales.mapper.SaleMapper;
 import com.sefault.server.sales.repository.SaleRepository;
+import com.sefault.server.storage.entity.ProductVariation;
 import com.sefault.server.storage.repository.ProductVariationRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -88,7 +89,6 @@ class SaleServiceImplTest {
     class CreateTests {
 
         @Test
-        @DisplayName("create persists sale and maps employee correctly")
         void create_persistsSale() {
             when(saleMapper.toEntity(any())).thenReturn(sale);
             when(employeeRepository.getReferenceById(employeeId)).thenReturn(employee);
@@ -199,6 +199,63 @@ class SaleServiceImplTest {
             when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
 
             assertThatThrownBy(() -> saleService.checkout(saleId)).isInstanceOf(RuntimeException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("refund()")
+    class RefundTests {
+
+        @Test
+        void refund_CalculatesTotalRestoresStockAndCreatesTransaction() {
+            ProductVariation product = new ProductVariation();
+            product.setId(UUID.randomUUID());
+
+            SaleLine line = new SaleLine();
+            line.setQuantity(2);
+            line.setSaleAtPrice(1500.0);
+            line.setProductVariation(product);
+            sale.setSaleLines(List.of(line));
+
+            Transaction paymentTransaction = new Transaction();
+            paymentTransaction.setType(TransactionType.RECEIVED);
+            sale.setTransactions(List.of(paymentTransaction));
+
+            when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
+
+            TransactionRecord expectedTransaction =
+                    new TransactionRecord(UUID.randomUUID(), TransactionType.PAID, saleId, 2700.0, LocalDateTime.now());
+
+            when(transactionService.createTransaction(any(TransactionRecord.class)))
+                    .thenReturn(expectedTransaction);
+
+            TransactionRecord result = saleService.refund(saleId);
+
+            assertThat(result).isNotNull();
+            assertThat(result.amount()).isEqualTo(2700.0);
+            assertThat(sale.getRefunded()).isTrue();
+
+            verify(productVariationRepository).incrementStock(product.getId(), 2);
+            verify(saleRepository).save(sale);
+            verify(transactionService).createTransaction(any());
+        }
+
+        @Test
+        void refund_ThrowsException_WhenAlreadyRefunded() {
+            sale.setRefunded(true);
+
+            when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
+
+            assertThatThrownBy(() -> saleService.refund(saleId)).isInstanceOf(RuntimeException.class);
+        }
+
+        @Test
+        void refund_ThrowsException_WhenNotCheckedOut() {
+            sale.setTransactions(new ArrayList<>());
+
+            when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
+
+            assertThatThrownBy(() -> saleService.refund(saleId)).isInstanceOf(RuntimeException.class);
         }
     }
 }
