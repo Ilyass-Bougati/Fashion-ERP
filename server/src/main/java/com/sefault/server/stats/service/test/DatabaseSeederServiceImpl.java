@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class DatabaseSeederServiceImpl implements DatabaseSeederService{
+public class DatabaseSeederServiceImpl implements DatabaseSeederService {
 
     private final ImageRepository imageRepository;
     private final EmployeeRepository employeeRepository;
