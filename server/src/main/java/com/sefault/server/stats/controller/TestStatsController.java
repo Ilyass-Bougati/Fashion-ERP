@@ -2,10 +2,10 @@ package com.sefault.server.stats.controller;
 
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.scheduler.StatsCronScheduler;
-import com.sefault.server.stats.service.impl.EmployeePerformanceStatServiceImpl;
-import com.sefault.server.stats.service.impl.FinancialStatsServiceImpl;
-import com.sefault.server.stats.service.impl.SalesStatsServiceImpl;
-import com.sefault.server.stats.service.impl.StockStatServiceImpl;
+import com.sefault.server.stats.service.EmployeePerformanceStatService;
+import com.sefault.server.stats.service.FinancialStatsService;
+import com.sefault.server.stats.service.SalesStatsService;
+import com.sefault.server.stats.service.StockStatService;
 import com.sefault.server.stats.service.test.DatabaseSeederService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TestStatsController {
 
-    private final FinancialStatsServiceImpl financialService;
-    private final SalesStatsServiceImpl salesService;
-    private final StockStatServiceImpl stockService;
-    private final EmployeePerformanceStatServiceImpl employeeService;
+    private final FinancialStatsService financialService;
+    private final SalesStatsService salesService;
+    private final StockStatService stockService;
+    private final EmployeePerformanceStatService employeeService;
     private final DatabaseSeederService seederService;
     private final StatsCronScheduler cronScheduler;
 
