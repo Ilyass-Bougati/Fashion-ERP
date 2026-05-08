@@ -86,8 +86,6 @@ public class SaleControllerTest {
     void setUp() {
         when(authorities.getCreateSaleAuthority()).thenReturn("CREATE_SALE");
         when(authorities.getReadSaleAuthority()).thenReturn("READ_SALE");
-        when(authorities.getUpdateSaleAuthority()).thenReturn("UPDATE_SALE");
-        when(authorities.getDeleteSaleAuthority()).thenReturn("DELETE_SALE");
     }
 
     @Test

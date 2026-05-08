@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.sefault.server.exception.InsufficientStockException;
+import com.sefault.server.sales.SaleStatus;
 import com.sefault.server.sales.dto.record.SaleLineRecord;
 import com.sefault.server.sales.entity.Sale;
 import com.sefault.server.sales.entity.SaleLine;
@@ -64,6 +65,7 @@ class SaleLineServiceImplTest {
 
         sale = new Sale();
         sale.setId(saleId);
+        sale.setStatus(SaleStatus.PENDING);
 
         saleLine = new SaleLine();
         saleLine.setId(id);
@@ -79,6 +81,7 @@ class SaleLineServiceImplTest {
 
         @Test
         void create_success() {
+            when(saleRepository.findById(id.getSaleId())).thenReturn(Optional.of(sale));
             when(productVariationRepository.findById(id.getProductVariationId()))
                     .thenReturn(Optional.of(product));
             when(saleLineMapper.toEntity(any())).thenReturn(saleLine);
@@ -95,6 +98,7 @@ class SaleLineServiceImplTest {
 
         @Test
         void create_insufficientStock() {
+            when(saleRepository.findById(id.getSaleId())).thenReturn(Optional.of(sale));
             SaleLineRecord massiveOrder = new SaleLineRecord(id, 20, id.getSaleId(), id.getProductVariationId(), 50.0);
             when(productVariationRepository.findById(id.getProductVariationId()))
                     .thenReturn(Optional.of(product));
@@ -112,6 +116,7 @@ class SaleLineServiceImplTest {
 
         @Test
         void delete_restoresStock() {
+            when(saleRepository.findById(id.getSaleId())).thenReturn(Optional.of(sale));
             when(saleLineRepository.findById(id)).thenReturn(Optional.of(saleLine));
 
             saleLineService.delete(id);

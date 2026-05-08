@@ -9,13 +9,9 @@ import org.springframework.data.domain.Pageable;
 public interface SaleService {
     SaleRecord create(SaleRecord record);
 
-    SaleRecord update(UUID id, SaleRecord record);
-
     SaleRecord getById(UUID id);
 
     Page<SaleRecord> getAll(Pageable pageable);
-
-    void delete(UUID id);
 
     TransactionRecord checkout(UUID id);
 

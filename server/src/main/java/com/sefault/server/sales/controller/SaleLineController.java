@@ -46,7 +46,7 @@ public class SaleLineController {
     }
 
     @DeleteMapping("/{saleId}/{productVariationId}")
-    @PreAuthorize("hasAuthority(@authorities.getDeleteSaleLineAuthority())")
+    @PreAuthorize("hasAuthority(@authorities.deleteSaleLineAuthority)")
     public void delete(@PathVariable UUID saleId, @PathVariable UUID productVariationId) {
         saleLineService.delete(new SaleLineId(saleId, productVariationId));
     }

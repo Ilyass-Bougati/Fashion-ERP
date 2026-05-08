@@ -2,6 +2,7 @@ package com.sefault.server.sales.entity;
 
 import com.sefault.server.finance.entity.Transaction;
 import com.sefault.server.hr.entity.Employee;
+import com.sefault.server.sales.SaleStatus;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.validation.constraints.*;
@@ -53,4 +54,7 @@ public class Sale {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    private SaleStatus status = SaleStatus.PENDING;
 }

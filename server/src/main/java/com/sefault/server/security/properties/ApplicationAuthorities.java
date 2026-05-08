@@ -43,8 +43,7 @@ public class ApplicationAuthorities {
     // Sales module authorities
     private final String createSaleAuthority = "CREATE_SALE";
     private final String readSaleAuthority = "READ_SALE";
-    private final String updateSaleAuthority = "UPDATE_SALE";
-    private final String deleteSaleAuthority = "DELETE_SALE";
+    private final String refundSaleAuthority = "REFUND_SALE";
 
     private final String createSaleLineAuthority = "CREATE_SALE_LINE";
     private final String readSaleLineAuthority = "READ_SALE_LINE";

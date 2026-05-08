@@ -2,7 +2,9 @@ package com.sefault.server.sales.service.Impl;
 
 import com.sefault.server.exception.InsufficientStockException;
 import com.sefault.server.exception.NotFoundException;
+import com.sefault.server.sales.SaleStatus;
 import com.sefault.server.sales.dto.record.SaleLineRecord;
+import com.sefault.server.sales.entity.Sale;
 import com.sefault.server.sales.entity.SaleLine;
 import com.sefault.server.sales.entity.id.SaleLineId;
 import com.sefault.server.sales.mapper.SaleLineMapper;
@@ -29,6 +31,8 @@ public class SaleLineServiceImpl implements SaleLineService {
 
     @Override
     public SaleLineRecord create(SaleLineRecord record) {
+        validateSaleIsPending(record.saleId());
+
         ProductVariation product = productVariationRepository
                 .findById(record.productVariationId())
                 .orElseThrow(() -> new NotFoundException("Product variation not found"));
@@ -52,7 +56,7 @@ public class SaleLineServiceImpl implements SaleLineService {
         return saleLineRepository
                 .getSaleLineProjectionById(id)
                 .map(saleLineMapper::projectionToRecord)
-                .orElseThrow(() -> new NotFoundException("SaleLine not found with id: " + id.toString()));
+                .orElseThrow(() -> new NotFoundException("SaleLine not found with id: " + id));
     }
 
     @Override
@@ -65,6 +69,8 @@ public class SaleLineServiceImpl implements SaleLineService {
 
     @Override
     public SaleLineRecord update(SaleLineId id, SaleLineRecord record) {
+        validateSaleIsPending(id.getSaleId());
+
         SaleLine saleLine = findEntityOrThrow(id);
 
         ProductVariation product = productVariationRepository
@@ -85,6 +91,8 @@ public class SaleLineServiceImpl implements SaleLineService {
 
     @Override
     public void delete(SaleLineId id) {
+        validateSaleIsPending(id.getSaleId());
+
         SaleLine saleLine = findEntityOrThrow(id);
 
         ProductVariation product = saleLine.getProductVariation();
@@ -94,6 +102,18 @@ public class SaleLineServiceImpl implements SaleLineService {
     }
 
     private SaleLine findEntityOrThrow(SaleLineId id) {
-        return saleLineRepository.findById(id).orElseThrow(() -> new NotFoundException("SaleLine not found"));
+        return saleLineRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("SaleLine not found with id: " + id));
+    }
+
+    private void validateSaleIsPending(UUID saleId) {
+        Sale sale = saleRepository
+                .findById(saleId)
+                .orElseThrow(() -> new NotFoundException("Sale not found with id: " + saleId));
+
+        if (sale.getStatus() != SaleStatus.PENDING) {
+            throw new IllegalStateException("Cannot modify SaleLines of a sale that is already " + sale.getStatus());
+        }
     }
 }

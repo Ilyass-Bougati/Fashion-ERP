@@ -40,18 +40,6 @@ public class SaleController {
         return ResponseEntity.ok(saleService.getById(id));
     }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority(@authorities.updateSaleAuthority)")
-    public ResponseEntity<SaleRecord> update(@PathVariable UUID id, @Valid @RequestBody SaleRecord record) {
-        return ResponseEntity.ok(saleService.update(id, record));
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority(@authorities.deleteSaleAuthority)")
-    public void delete(@PathVariable UUID id) {
-        saleService.delete(id);
-    }
-
     @PostMapping("/{id}/checkout")
     @PreAuthorize("hasAuthority(@authorities.createTransactionAuthority)")
     public ResponseEntity<TransactionRecord> checkout(@PathVariable UUID id) {
@@ -59,6 +47,7 @@ public class SaleController {
     }
 
     @PostMapping("/{id}/refund")
+    @PreAuthorize("hasAuthority(@authorities.refundSaleAuthority)")
     public ResponseEntity<TransactionRecord> refund(@PathVariable UUID id) {
         return ResponseEntity.ok(saleService.refund(id));
     }

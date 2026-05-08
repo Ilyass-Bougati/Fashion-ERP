@@ -7,11 +7,11 @@ import static org.mockito.Mockito.*;
 
 import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.finance.dto.record.TransactionRecord;
-import com.sefault.server.finance.entity.Transaction;
 import com.sefault.server.finance.enums.TransactionType;
 import com.sefault.server.finance.service.TransactionService;
 import com.sefault.server.hr.entity.Employee;
 import com.sefault.server.hr.repository.EmployeeRepository;
+import com.sefault.server.sales.SaleStatus;
 import com.sefault.server.sales.dto.projection.SaleProjection;
 import com.sefault.server.sales.dto.record.SaleRecord;
 import com.sefault.server.sales.entity.Sale;
@@ -77,7 +77,7 @@ class SaleServiceImplTest {
         sale = new Sale();
         sale.setId(saleId);
         sale.setDiscount(0.1);
-        sale.setRefunded(false);
+        sale.setStatus(SaleStatus.PENDING);
         sale.setSaleLines(new ArrayList<>());
         sale.setTransactions(new ArrayList<>());
 
@@ -144,29 +144,6 @@ class SaleServiceImplTest {
     }
 
     @Nested
-    @DisplayName("delete()")
-    class DeleteTests {
-
-        @Test
-        void delete_delegatesToRepository() {
-            when(saleRepository.existsById(saleId)).thenReturn(true);
-
-            saleService.delete(saleId);
-
-            verify(saleRepository).deleteById(saleId);
-        }
-
-        @Test
-        void delete_throwsNotFound() {
-            when(saleRepository.existsById(saleId)).thenReturn(false);
-
-            assertThatThrownBy(() -> saleService.delete(saleId)).isInstanceOf(NotFoundException.class);
-
-            verify(saleRepository, never()).deleteById(any());
-        }
-    }
-
-    @Nested
     @DisplayName("checkout()")
     class CheckoutTests {
 
@@ -189,16 +166,17 @@ class SaleServiceImplTest {
 
             assertThat(result).isNotNull();
             assertThat(result.amount()).isEqualTo(2700.0);
+            assertThat(sale.getStatus()).isEqualTo(SaleStatus.COMPLETED);
             verify(transactionService).createTransaction(any());
         }
 
         @Test
-        void checkout_ThrowsException_WhenAlreadyCheckedOut() {
-            sale.setTransactions(List.of(new Transaction()));
+        void checkout_ThrowsException_WhenNotPending() {
+            sale.setStatus(SaleStatus.COMPLETED);
 
             when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
 
-            assertThatThrownBy(() -> saleService.checkout(saleId)).isInstanceOf(RuntimeException.class);
+            assertThatThrownBy(() -> saleService.checkout(saleId)).isInstanceOf(IllegalStateException.class);
         }
     }
 
@@ -208,6 +186,8 @@ class SaleServiceImplTest {
 
         @Test
         void refund_CalculatesTotalRestoresStockAndCreatesTransaction() {
+            sale.setStatus(SaleStatus.COMPLETED);
+
             ProductVariation product = new ProductVariation();
             product.setId(UUID.randomUUID());
 
@@ -216,10 +196,6 @@ class SaleServiceImplTest {
             line.setSaleAtPrice(1500.0);
             line.setProductVariation(product);
             sale.setSaleLines(List.of(line));
-
-            Transaction paymentTransaction = new Transaction();
-            paymentTransaction.setType(TransactionType.RECEIVED);
-            sale.setTransactions(List.of(paymentTransaction));
 
             when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
 
@@ -233,7 +209,7 @@ class SaleServiceImplTest {
 
             assertThat(result).isNotNull();
             assertThat(result.amount()).isEqualTo(2700.0);
-            assertThat(sale.getRefunded()).isTrue();
+            assertThat(sale.getStatus()).isEqualTo(SaleStatus.REFUNDED);
 
             verify(productVariationRepository).incrementStock(product.getId(), 2);
             verify(saleRepository).save(sale);
@@ -242,20 +218,20 @@ class SaleServiceImplTest {
 
         @Test
         void refund_ThrowsException_WhenAlreadyRefunded() {
-            sale.setRefunded(true);
+            sale.setStatus(SaleStatus.REFUNDED);
 
             when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
 
-            assertThatThrownBy(() -> saleService.refund(saleId)).isInstanceOf(RuntimeException.class);
+            assertThatThrownBy(() -> saleService.refund(saleId)).isInstanceOf(IllegalStateException.class);
         }
 
         @Test
-        void refund_ThrowsException_WhenNotCheckedOut() {
-            sale.setTransactions(new ArrayList<>());
+        void refund_ThrowsException_WhenPending() {
+            sale.setStatus(SaleStatus.PENDING);
 
             when(saleRepository.findById(saleId)).thenReturn(Optional.of(sale));
 
-            assertThatThrownBy(() -> saleService.refund(saleId)).isInstanceOf(RuntimeException.class);
+            assertThatThrownBy(() -> saleService.refund(saleId)).isInstanceOf(IllegalStateException.class);
         }
     }
 }

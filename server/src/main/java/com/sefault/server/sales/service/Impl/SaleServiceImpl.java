@@ -5,6 +5,7 @@ import com.sefault.server.finance.dto.record.TransactionRecord;
 import com.sefault.server.finance.enums.TransactionType;
 import com.sefault.server.finance.service.TransactionService;
 import com.sefault.server.hr.repository.EmployeeRepository;
+import com.sefault.server.sales.SaleStatus;
 import com.sefault.server.sales.dto.record.SaleRecord;
 import com.sefault.server.sales.entity.Sale;
 import com.sefault.server.sales.entity.SaleLine;
@@ -55,24 +56,6 @@ public class SaleServiceImpl implements SaleService {
         return saleRepository.findAllBy(pageable).map(saleMapper::projectionToRecord);
     }
 
-    @Override
-    public SaleRecord update(UUID id, SaleRecord record) {
-        Sale sale = findEntityOrThrow(id);
-        saleMapper.updateEntityFromRecord(record, sale);
-        if (record.employeeId() != null) {
-            sale.setEmployee(employeeRepository.getReferenceById(record.employeeId()));
-        }
-        return saleMapper.entityToRecord(saleRepository.save(sale));
-    }
-
-    @Override
-    public void delete(UUID id) {
-        if (!saleRepository.existsById(id)) {
-            throw new NotFoundException("Sale not found with id: " + id);
-        }
-        saleRepository.deleteById(id);
-    }
-
     private Sale findEntityOrThrow(UUID id) {
         return saleRepository.findById(id).orElseThrow(() -> new NotFoundException("Sale not found with id: " + id));
     }
@@ -81,8 +64,8 @@ public class SaleServiceImpl implements SaleService {
     public TransactionRecord checkout(UUID id) {
         Sale sale = findEntityOrThrow(id);
 
-        if (sale.getTransactions() != null && !sale.getTransactions().isEmpty()) {
-            throw new RuntimeException("This sale has already been checked out.");
+        if (sale.getStatus() != SaleStatus.PENDING) {
+            throw new IllegalStateException("This sale is already completed or refunded.");
         }
 
         double totalAmount = sale.getSaleLines().stream()
@@ -94,6 +77,9 @@ public class SaleServiceImpl implements SaleService {
         TransactionRecord transactionRecord =
                 new TransactionRecord(null, TransactionType.RECEIVED, sale.getId(), finalAmount, null);
 
+        sale.setStatus(SaleStatus.COMPLETED);
+        saleRepository.save(sale);
+
         return transactionService.createTransaction(transactionRecord);
     }
 
@@ -101,15 +87,11 @@ public class SaleServiceImpl implements SaleService {
     public TransactionRecord refund(UUID id) {
         Sale sale = findEntityOrThrow(id);
 
-        if (Boolean.TRUE.equals(sale.getRefunded())) {
-            throw new RuntimeException("This sale has already been refunded.");
+        if (sale.getStatus() == SaleStatus.REFUNDED) {
+            throw new IllegalStateException("This sale has already been refunded.");
         }
-
-        boolean hasBeenPaid = sale.getTransactions() != null
-                && sale.getTransactions().stream().anyMatch(t -> t.getType() == TransactionType.RECEIVED);
-
-        if (!hasBeenPaid) {
-            throw new RuntimeException("Cannot refund a sale that has not been checked out yet.");
+        if (sale.getStatus() == SaleStatus.PENDING) {
+            throw new IllegalStateException("Cannot refund a sale that is still pending (not checked out).");
         }
 
         double totalAmount = sale.getSaleLines().stream()
@@ -122,7 +104,7 @@ public class SaleServiceImpl implements SaleService {
             productVariationRepository.incrementStock(line.getProductVariation().getId(), line.getQuantity());
         }
 
-        sale.setRefunded(true);
+        sale.setStatus(SaleStatus.REFUNDED);
         saleRepository.save(sale);
 
         TransactionRecord refundTransaction =
