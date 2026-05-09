@@ -2,10 +2,16 @@ package com.sefault.server.sales.repository;
 
 import com.sefault.server.sales.dto.projection.SaleProjection;
 import com.sefault.server.sales.entity.Sale;
+import com.sefault.server.stats.dto.projection.EmployeeSalesProjection;
+import com.sefault.server.stats.dto.projection.ProductVariationVelocityProjection;
+import com.sefault.server.stats.dto.projection.RevenueAggregationProjection;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,11 +25,102 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         SELECT COALESCE(SUM((sl.quantity * sl.saleAtPrice) * (1.0 - s.discount)), 0.0)
         FROM Sale s
         JOIN s.saleLines sl
-        WHERE s.employeeId = :employeeId
+        WHERE s.employee.id = :employeeId
         AND s.createdAt BETWEEN :startDate AND :endDate
+        AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
     """)
     Double sumSaleAmountByEmployeeId(
             @Param("employeeId") UUID employeeId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
+    Page<SaleProjection> findAllBy(Pageable pageable);
+
+    @Query("""
+        SELECT coalesce(SUM((sl.quantity * sl.saleAtPrice) * (1.0 - s.discount)), 0.0)
+        FROM Sale s
+        JOIN s.saleLines sl
+        WHERE s.createdAt BETWEEN :startDate AND :endDate
+        AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
+        """)
+    Double calculateTotalNetRevenueForPeriod(
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+            SELECT COUNT(s)
+            FROM Sale s
+            WHERE s.createdAt between :startDate AND :endDate
+            AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
+    """)
+    Long countValidTransactions(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+            SELECT COUNT(s)
+            FROM Sale s
+            WHERE s.createdAt between :startDate AND :endDate
+            AND s.status = com.sefault.server.sales.SaleStatus.REFUNDED
+    """)
+    Long countRefundedTransactions(@Param("startDate") LocalDateTime start, @Param("endDate") LocalDateTime end);
+
+    @Query("""
+        SELECT
+                coalesce(SUM(sl.quantity * sl.saleAtPrice), 0.0) AS grossRevenue,
+                coalesce(SUM(sl.quantity * sl.saleAtPrice * (1.0 - s.discount)), 0.0) AS netRevenue,
+                coalesce(SUM(sl.quantity), 0) AS unitsSold
+        FROM Sale s
+        JOIN s.saleLines sl
+        WHERE s.createdAt BETWEEN :startDate AND :endDate
+        AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
+        """)
+    RevenueAggregationProjection calculateRevenueAndUnits(
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+        SELECT pc.name
+        FROM Sale s JOIN s.saleLines sl JOIN sl.productVariation pv JOIN pv.product p JOIN p.productCategory pc
+        WHERE s.createdAt BETWEEN :startDate AND :endDate AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
+        GROUP BY pc.id, pc.name
+        ORDER BY SUM(sl.quantity) DESC
+        LIMIT 1
+    """)
+    String findTopCategoryNameForPeriod(
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+        SELECT pv.sku
+        FROM Sale s JOIN s.saleLines sl JOIN sl.productVariation pv
+        WHERE s.createdAt BETWEEN :startDate AND :endDate AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
+        GROUP BY pv.id, pv.sku
+        ORDER BY SUM(sl.quantity) DESC
+        LIMIT 1
+    """)
+    String findTopProductSkuForPeriod(
+            @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+        SELECT sl.productVariation.id AS productVariationId,
+               SUM(sl.quantity) AS unitsSold
+        FROM Sale s JOIN s.saleLines sl
+        WHERE s.createdAt >= :start AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
+        GROUP BY sl.productVariation.id
+    """)
+    List<ProductVariationVelocityProjection> getSalesVelocitySince(@Param("start") LocalDateTime start);
+
+    @Query("""
+        SELECT e.CIN AS cin,
+               e.firstName AS firstName,
+               e.lastName AS lastName,
+               COUNT(DISTINCT s.id) AS salesCount,
+               COALESCE(SUM(sl.quantity * sl.saleAtPrice), 0.0) AS grossSalesAmount,
+               COALESCE(SUM(sl.quantity), 0L) AS itemsSold,
+               COALESCE(AVG(s.discount), 0.0) AS avgDiscountGiven
+        FROM Sale s
+        JOIN s.employee e
+        JOIN s.saleLines sl
+        WHERE s.createdAt >= :start AND s.createdAt < :end
+        AND s.status = com.sefault.server.sales.SaleStatus.COMPLETED
+        GROUP BY e.id, e.CIN, e.firstName, e.lastName
+    """)
+    List<EmployeeSalesProjection> aggregateSalesByEmployee(
+            @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
