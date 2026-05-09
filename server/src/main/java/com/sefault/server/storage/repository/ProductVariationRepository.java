@@ -2,6 +2,7 @@ package com.sefault.server.storage.repository;
 
 import com.sefault.server.storage.dto.projection.ProductVariationProjection;
 import com.sefault.server.storage.entity.ProductVariation;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
@@ -18,4 +19,7 @@ public interface ProductVariationRepository extends JpaRepository<@NonNull Produ
     @Modifying
     @Query("UPDATE ProductVariation p SET p.quantity = p.quantity + :amount WHERE p.id = :id")
     void incrementStock(@Param("id") UUID id, @Param("amount") int amount);
+
+    @Query("SELECT pv FROM ProductVariation pv JOIN FETCH pv.product p JOIN FETCH p.productCategory")
+    List<ProductVariation> findAllWithProductAndCategory();
 }
