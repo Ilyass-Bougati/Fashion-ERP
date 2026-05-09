@@ -6,8 +6,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,6 +26,4 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
             @Param("employeeId") UUID employeeId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
-
-    Page<SaleProjection> findAllBy(Pageable pageable);
 }
