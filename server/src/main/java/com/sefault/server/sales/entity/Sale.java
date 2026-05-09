@@ -44,9 +44,6 @@ public class Sale {
     @Column(name = "employee_id", insertable = false, updatable = false)
     private UUID employeeId;
 
-    @NotNull
-    private Boolean refunded = false;
-
     @CreationTimestamp
     @Immutable
     @Column(updatable = false)

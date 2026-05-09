@@ -121,7 +121,6 @@ public class DatabaseSeederServiceImpl implements DatabaseSeederService {
             Sale sale = new Sale();
             sale.setEmployee(randomEmp);
             sale.setDiscount(random.nextDouble() > 0.8 ? 0.10 : 0.0);
-            sale.setRefunded(false);
             sale = saleRepository.save(sale);
             saleRepository.flush();
 
