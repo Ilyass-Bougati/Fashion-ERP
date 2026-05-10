@@ -1,0 +1,54 @@
+package com.sefault.server.sales.controller;
+
+import com.sefault.server.finance.dto.record.TransactionRecord;
+import com.sefault.server.sales.dto.record.SaleRecord;
+import com.sefault.server.sales.service.SaleService;
+import jakarta.validation.Valid;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/sale")
+@RequiredArgsConstructor
+public class SaleController {
+
+    private final SaleService saleService;
+
+    @PostMapping
+    @PreAuthorize("hasAuthority(@authorities.createSaleAuthority)")
+    public ResponseEntity<SaleRecord> create(@Valid @RequestBody SaleRecord record) {
+        return ResponseEntity.ok(saleService.create(record));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAuthority(@authorities.readSaleAuthority)")
+    public ResponseEntity<Page<SaleRecord>> getAll(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(saleService.getAll(pageable));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority(@authorities.readSaleAuthority)")
+    public ResponseEntity<SaleRecord> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(saleService.getById(id));
+    }
+
+    @PostMapping("/{id}/checkout")
+    @PreAuthorize("hasAuthority(@authorities.createTransactionAuthority)")
+    public ResponseEntity<TransactionRecord> checkout(@PathVariable UUID id) {
+        return ResponseEntity.ok(saleService.checkout(id));
+    }
+
+    @PostMapping("/{id}/refund")
+    @PreAuthorize("hasAuthority(@authorities.refundSaleAuthority)")
+    public ResponseEntity<TransactionRecord> refund(@PathVariable UUID id) {
+        return ResponseEntity.ok(saleService.refund(id));
+    }
+}
