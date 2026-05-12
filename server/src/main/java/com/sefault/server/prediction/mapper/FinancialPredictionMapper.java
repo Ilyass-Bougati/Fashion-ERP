@@ -12,6 +12,5 @@ public interface FinancialPredictionMapper {
 
     FinancialPrediction toEntity(FinancialPredictionRecord record);
 
-    void updateEntityFromRecord(
-            FinancialPredictionRecord record, @MappingTarget FinancialPrediction entityToUpdate);
+    void updateEntityFromRecord(FinancialPredictionRecord record, @MappingTarget FinancialPrediction entityToUpdate);
 }

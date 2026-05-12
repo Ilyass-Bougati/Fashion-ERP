@@ -9,14 +9,13 @@ import com.sefault.server.prediction.service.StockPredictionService;
 import com.sefault.server.stats.entity.StockStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.StockStatRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +37,8 @@ public class StockPredictionServiceImpl implements StockPredictionService {
             List<StockStat> history = statRepo.findTop30ByProductVariationSkuOrderByStatDateDesc(sku);
             if (history.size() < 10) continue;
 
-            List<Double> qtyHistory = new ArrayList<>(history.stream().map(s -> (double) s.getQuantityOnHand()).toList());
+            List<Double> qtyHistory = new ArrayList<>(
+                    history.stream().map(s -> (double) s.getQuantityOnHand()).toList());
             Collections.reverse(qtyHistory);
 
             batchPayload.add(qtyHistory);
@@ -54,16 +54,19 @@ public class StockPredictionServiceImpl implements StockPredictionService {
 
             for (int day = 0; day < 7; day++) {
                 LocalDate target = LocalDate.now().plusDays(day + 1);
-                StockPrediction pred = predRepo
-                        .findByTargetDateAndPeriodTypeAndProductVariationSkuAndModelVersion(target, PeriodType.DAILY, sku, response.model_version())
+                StockPrediction pred = predRepo.findByTargetDateAndPeriodTypeAndProductVariationSkuAndModelVersion(
+                                target, PeriodType.DAILY, sku, response.model_version())
                         .orElse(new StockPrediction());
 
                 pred.setTargetDate(target);
                 pred.setPeriodType(PeriodType.DAILY);
                 pred.setProductVariationSku(sku);
-                pred.setPredictedQuantity(Math.max(0, response.predictions().get(skuIdx).get(day).intValue()));
-                pred.setQuantityLowerBound(Math.max(0, response.lower_bounds().get(skuIdx).get(day).intValue()));
-                pred.setQuantityUpperBound(Math.max(0, response.upper_bounds().get(skuIdx).get(day).intValue()));
+                pred.setPredictedQuantity(
+                        Math.max(0, response.predictions().get(skuIdx).get(day).intValue()));
+                pred.setQuantityLowerBound(
+                        Math.max(0, response.lower_bounds().get(skuIdx).get(day).intValue()));
+                pred.setQuantityUpperBound(
+                        Math.max(0, response.upper_bounds().get(skuIdx).get(day).intValue()));
                 pred.setModelVersion(response.model_version());
 
                 predRepo.save(pred);

@@ -12,6 +12,5 @@ public interface StockPredictionMapper {
 
     StockPrediction toEntity(StockPredictionRecord record);
 
-    void updateEntityFromRecord(
-            StockPredictionRecord record, @MappingTarget StockPrediction entityToUpdate);
+    void updateEntityFromRecord(StockPredictionRecord record, @MappingTarget StockPrediction entityToUpdate);
 }

@@ -3,12 +3,11 @@ package com.sefault.server.prediction.entity;
 import com.sefault.server.stats.enums.PeriodType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter
@@ -16,7 +15,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"target_date", "period_type", "employee_cin", "model_version"}))
+@Table(
+        uniqueConstraints =
+                @UniqueConstraint(columnNames = {"target_date", "period_type", "employee_cin", "model_version"}))
 public class EmployeePerformancePrediction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -30,6 +31,7 @@ public class EmployeePerformancePrediction {
 
     @NotNull
     private String employeeCin;
+
     private String employeeFullName;
 
     private Double predictedGrossSales;

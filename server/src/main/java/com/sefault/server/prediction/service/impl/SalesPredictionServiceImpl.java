@@ -9,15 +9,14 @@ import com.sefault.server.prediction.service.SalesPredictionService;
 import com.sefault.server.stats.entity.SalesStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.SalesStatRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -45,9 +44,14 @@ public class SalesPredictionServiceImpl implements SalesPredictionService {
             return;
         }
 
-        List<Double> revenueHistory = chronologicalHistory.stream().map(SalesStat::getNetRevenue).toList();
-        List<Double> unitsHistory = chronologicalHistory.stream().map(s -> (double) s.getUnitsSold()).toList();
-        List<Double> transactionsHistory = chronologicalHistory.stream().map(s -> (double) s.getTotalTransactions()).toList();
+        List<Double> revenueHistory =
+                chronologicalHistory.stream().map(SalesStat::getNetRevenue).toList();
+        List<Double> unitsHistory = chronologicalHistory.stream()
+                .map(s -> (double) s.getUnitsSold())
+                .toList();
+        List<Double> transactionsHistory = chronologicalHistory.stream()
+                .map(s -> (double) s.getTotalTransactions())
+                .toList();
 
         List<List<Double>> batchData = List.of(revenueHistory, unitsHistory, transactionsHistory);
         BatchForecastRequest request = new BatchForecastRequest(batchData, HORIZON_DAYS);
@@ -79,7 +83,8 @@ public class SalesPredictionServiceImpl implements SalesPredictionService {
             Double upperTrans = response.upper_bounds().get(2).get(i);
 
             SalesPrediction existing = salesPredictionRepository
-                    .findByTargetDateAndPeriodTypeAndModelVersion(targetDate, PeriodType.DAILY, response.model_version())
+                    .findByTargetDateAndPeriodTypeAndModelVersion(
+                            targetDate, PeriodType.DAILY, response.model_version())
                     .orElse(new SalesPrediction());
 
             existing.setTargetDate(targetDate);

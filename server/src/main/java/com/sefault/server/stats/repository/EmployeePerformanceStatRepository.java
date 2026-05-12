@@ -27,5 +27,6 @@ public interface EmployeePerformanceStatRepository
     @Query("SELECT DISTINCT e.employeeCin FROM EmployeePerformanceStat e")
     List<String> findDistinctEmployeeCins();
 
-    List<EmployeePerformanceStat> findTop30ByEmployeeCinAndPeriodTypeOrderByStatDateDesc(String cin, PeriodType periodType);
+    List<EmployeePerformanceStat> findTop30ByEmployeeCinAndPeriodTypeOrderByStatDateDesc(
+            String cin, PeriodType periodType);
 }

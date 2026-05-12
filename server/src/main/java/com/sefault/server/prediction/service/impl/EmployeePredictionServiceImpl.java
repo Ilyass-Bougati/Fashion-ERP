@@ -9,14 +9,13 @@ import com.sefault.server.prediction.service.EmployeePredictionService;
 import com.sefault.server.stats.entity.EmployeePerformanceStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.EmployeePerformanceStatRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,20 +30,25 @@ public class EmployeePredictionServiceImpl implements EmployeePredictionService 
         List<String> activeCins = statRepo.findDistinctEmployeeCins();
 
         for (String cin : activeCins) {
-            List<EmployeePerformanceStat> history = statRepo.findTop30ByEmployeeCinAndPeriodTypeOrderByStatDateDesc(cin, PeriodType.DAILY);
+            List<EmployeePerformanceStat> history =
+                    statRepo.findTop30ByEmployeeCinAndPeriodTypeOrderByStatDateDesc(cin, PeriodType.DAILY);
             if (history.size() < 10) continue;
 
-            List<Double> salesHistory = history.stream().map(EmployeePerformanceStat::getGrossSalesAmount).toList();
+            List<Double> salesHistory = history.stream()
+                    .map(EmployeePerformanceStat::getGrossSalesAmount)
+                    .toList();
             List<Double> chronological = new ArrayList<>(salesHistory);
             Collections.reverse(chronological);
 
-            BatchForecastResponse response = client.fetchBatchForecast(new BatchForecastRequest(List.of(chronological), 7));
+            BatchForecastResponse response =
+                    client.fetchBatchForecast(new BatchForecastRequest(List.of(chronological), 7));
 
             for (int i = 0; i < 7; i++) {
                 LocalDate target = LocalDate.now().plusDays(i + 1);
-                EmployeePerformancePrediction pred = predRepo
-                        .findByTargetDateAndPeriodTypeAndEmployeeCinAndModelVersion(target, PeriodType.DAILY, cin, response.model_version())
-                        .orElse(new EmployeePerformancePrediction());
+                EmployeePerformancePrediction pred =
+                        predRepo.findByTargetDateAndPeriodTypeAndEmployeeCinAndModelVersion(
+                                        target, PeriodType.DAILY, cin, response.model_version())
+                                .orElse(new EmployeePerformancePrediction());
 
                 pred.setTargetDate(target);
                 pred.setPeriodType(PeriodType.DAILY);

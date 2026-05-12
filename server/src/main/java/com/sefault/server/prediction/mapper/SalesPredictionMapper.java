@@ -12,6 +12,5 @@ public interface SalesPredictionMapper {
 
     SalesPrediction toEntity(SalesPredictionRecord record);
 
-    void updateEntityFromRecord(
-            SalesPredictionRecord record, @MappingTarget SalesPrediction entityToUpdate);
+    void updateEntityFromRecord(SalesPredictionRecord record, @MappingTarget SalesPrediction entityToUpdate);
 }

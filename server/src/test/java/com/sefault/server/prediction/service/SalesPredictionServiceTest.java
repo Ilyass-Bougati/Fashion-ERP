@@ -1,5 +1,9 @@
 package com.sefault.server.prediction.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import com.sefault.server.prediction.client.PredictionClient;
 import com.sefault.server.prediction.dto.api.BatchForecastRequest;
 import com.sefault.server.prediction.dto.api.BatchForecastResponse;
@@ -9,6 +13,10 @@ import com.sefault.server.prediction.service.impl.SalesPredictionServiceImpl;
 import com.sefault.server.stats.entity.SalesStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.SalesStatRepository;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,21 +24,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class SalesPredictionServiceTest {
 
-    @Mock private SalesStatRepository salesStatRepository;
-    @Mock private SalesPredictionRepository salesPredictionRepository;
-    @Mock private PredictionClient predictionClient;
+    @Mock
+    private SalesStatRepository salesStatRepository;
+
+    @Mock
+    private SalesPredictionRepository salesPredictionRepository;
+
+    @Mock
+    private PredictionClient predictionClient;
 
     @InjectMocks
     private SalesPredictionServiceImpl service;
@@ -38,7 +42,8 @@ class SalesPredictionServiceTest {
     @Test
     void generateDailySalesForecast_AbortsIfLessThan10DaysData() {
         List<SalesStat> shortHistory = createMockHistory(5);
-        when(salesStatRepository.findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType.DAILY)).thenReturn(shortHistory);
+        when(salesStatRepository.findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType.DAILY))
+                .thenReturn(shortHistory);
 
         service.generateDailySalesForecast();
 
@@ -49,7 +54,8 @@ class SalesPredictionServiceTest {
     @Test
     void generateDailySalesForecast_AbortsGracefullyOnApiError() {
         List<SalesStat> history = createMockHistory(15);
-        when(salesStatRepository.findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType.DAILY)).thenReturn(history);
+        when(salesStatRepository.findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType.DAILY))
+                .thenReturn(history);
 
         when(predictionClient.fetchBatchForecast(any())).thenThrow(new RuntimeException("API Down"));
 
@@ -61,7 +67,8 @@ class SalesPredictionServiceTest {
     @Test
     void generateDailySalesForecast_Success_SavesPredictions() {
         List<SalesStat> history = createMockHistory(12);
-        when(salesStatRepository.findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType.DAILY)).thenReturn(history);
+        when(salesStatRepository.findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType.DAILY))
+                .thenReturn(history);
 
         BatchForecastResponse mockResponse = createMockResponse();
         when(predictionClient.fetchBatchForecast(any())).thenReturn(mockResponse);
@@ -97,7 +104,6 @@ class SalesPredictionServiceTest {
         assertEquals(0, day1.getPredictedUnitsSold());
     }
 
-
     private List<SalesStat> createMockHistory(int days) {
         List<SalesStat> list = new ArrayList<>();
         for (int i = 0; i < days; i++) {
@@ -128,7 +134,6 @@ class SalesPredictionServiceTest {
                 List.of(revPred, unitPred, transPred),
                 List.of(revLow, unitLow, transLow),
                 List.of(revHigh, unitHigh, transHigh),
-                "timesfm-2.5"
-        );
+                "timesfm-2.5");
     }
 }
