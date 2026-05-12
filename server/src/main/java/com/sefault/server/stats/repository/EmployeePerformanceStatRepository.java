@@ -4,6 +4,7 @@ import com.sefault.server.stats.dto.projection.EmployeePerformanceStatProjection
 import com.sefault.server.stats.entity.EmployeePerformanceStat;
 import com.sefault.server.stats.enums.PeriodType;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
@@ -21,4 +22,8 @@ public interface EmployeePerformanceStatRepository
             LocalDate statDate, PeriodType periodType, String employeeCin);
 
     Page<EmployeePerformanceStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
+
+    List<String> findDistinctEmployeeCins();
+
+    List<EmployeePerformanceStat> findTop30ByEmployeeCinAndPeriodTypeOrderByStatDateDesc(String cin, PeriodType periodType);
 }

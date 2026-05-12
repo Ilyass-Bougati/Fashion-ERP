@@ -4,6 +4,7 @@ import com.sefault.server.stats.dto.projection.StockStatProjection;
 import com.sefault.server.stats.entity.StockStat;
 import com.sefault.server.stats.enums.PeriodType;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
@@ -20,4 +21,8 @@ public interface StockStatRepository extends JpaRepository<@NonNull StockStat, @
             LocalDate statDate, PeriodType periodType, String productVariationSku);
 
     Page<StockStatProjection> findByStatDateAndPeriodType(LocalDate statDate, PeriodType periodType, Pageable pageable);
+
+    List<String> findDistinctProductVariationSkus();
+
+    List<StockStat> findTop30ByProductVariationSkuOrderByStatDateDesc(String sku);
 }
