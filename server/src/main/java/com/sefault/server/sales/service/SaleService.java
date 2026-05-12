@@ -1,0 +1,19 @@
+package com.sefault.server.sales.service;
+
+import com.sefault.server.finance.dto.record.TransactionRecord;
+import com.sefault.server.sales.dto.record.SaleRecord;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+public interface SaleService {
+    SaleRecord create(SaleRecord record);
+
+    SaleRecord getById(UUID id);
+
+    Page<SaleRecord> getAll(Pageable pageable);
+
+    TransactionRecord checkout(UUID id);
+
+    TransactionRecord refund(UUID id);
+}

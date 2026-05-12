@@ -1,0 +1,84 @@
+package com.sefault.server.stats.controller;
+
+import com.sefault.server.stats.enums.PeriodType;
+import com.sefault.server.stats.scheduler.StatsCronScheduler;
+import com.sefault.server.stats.service.EmployeePerformanceStatService;
+import com.sefault.server.stats.service.FinancialStatsService;
+import com.sefault.server.stats.service.SalesStatsService;
+import com.sefault.server.stats.service.StockStatService;
+import com.sefault.server.stats.service.test.DatabaseSeederService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/test/stats")
+@RequiredArgsConstructor
+public class TestStatsController {
+
+    private final FinancialStatsService financialService;
+    private final SalesStatsService salesService;
+    private final StockStatService stockService;
+    private final EmployeePerformanceStatService employeeService;
+    private final DatabaseSeederService seederService;
+    private final StatsCronScheduler cronScheduler;
+
+    @PostMapping("/run-current-month")
+    public ResponseEntity<String> runCurrentMonthStats() {
+
+        YearMonth currentMonth = YearMonth.now();
+        LocalDate firstDay = currentMonth.atDay(1);
+        LocalDateTime startOfMonth = firstDay.atStartOfDay();
+        LocalDateTime endOfMonth = currentMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+        financialService.saveFinancialStats(startOfMonth, endOfMonth, firstDay, PeriodType.MONTHLY);
+
+        salesService.saveSalesStats(startOfMonth, endOfMonth, firstDay, PeriodType.MONTHLY);
+
+        stockService.saveStockStats(LocalDate.now(), PeriodType.DAILY);
+
+        employeeService.saveEmployeeStats(startOfMonth, endOfMonth, firstDay, PeriodType.MONTHLY);
+
+        return ResponseEntity.ok("All stats successfully calculated and saved to the database. Check your tables!");
+    }
+
+    @PostMapping("/seed-database")
+    public ResponseEntity<String> seedDatabase() {
+        seederService.seedDatabase();
+        return ResponseEntity.ok("Database seeded successfully!");
+    }
+
+    @PostMapping("/trigger-daily-cron")
+    public ResponseEntity<String> triggerDailyCron() {
+        cronScheduler.runDailyReconciliation();
+        return ResponseEntity.ok("Manual trigger sent to Daily Cron Job. Check logs!");
+    }
+
+    @PostMapping("/trigger-Weekly-cron")
+    public ResponseEntity<String> triggerWeeklyCron() {
+        cronScheduler.runWeeklyReconciliation();
+        return ResponseEntity.ok("Manual trigger sent to Weekly Cron Job. Check logs!");
+    }
+
+    @PostMapping("/trigger-monthly-cron")
+    public ResponseEntity<String> triggerMonthlyCron() {
+        cronScheduler.runMonthlyReconciliation();
+        return ResponseEntity.ok("Manual trigger sent to Monthly Cron Job. Check logs!");
+    }
+
+    @PostMapping("/run-today-stats")
+    public ResponseEntity<String> runTodayStats() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+        salesService.saveSalesStats(startOfDay, endOfDay, today, PeriodType.DAILY);
+        employeeService.saveEmployeeStats(startOfDay, endOfDay, today, PeriodType.DAILY);
+        stockService.saveStockStats(today, PeriodType.DAILY);
+        return ResponseEntity.ok("Calculated DAILY stats for TODAY! Check your database tables.");
+    }
+}
