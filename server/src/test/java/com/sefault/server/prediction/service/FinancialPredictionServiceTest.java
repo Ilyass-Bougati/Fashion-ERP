@@ -3,6 +3,7 @@ package com.sefault.server.prediction.service;
 import com.sefault.server.prediction.client.PredictionClient;
 import com.sefault.server.prediction.dto.api.BatchForecastResponse;
 import com.sefault.server.prediction.repository.FinancialPredictionRepository;
+import com.sefault.server.prediction.service.impl.FinancialPredictionServiceImpl;
 import com.sefault.server.stats.entity.FinancialStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.FinancialStatRepository;
@@ -25,7 +26,7 @@ class FinancialPredictionServiceTest {
     @Mock private PredictionClient client;
 
     @InjectMocks
-    private FinancialPredictionService service;
+    private FinancialPredictionServiceImpl service;
 
     @Test
     void generateMonthlyFinancialForecast_SavesCorrectHorizon() {

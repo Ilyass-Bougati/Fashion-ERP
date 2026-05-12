@@ -5,6 +5,7 @@ import com.sefault.server.prediction.dto.api.BatchForecastRequest;
 import com.sefault.server.prediction.dto.api.BatchForecastResponse;
 import com.sefault.server.prediction.entity.SalesPrediction;
 import com.sefault.server.prediction.repository.SalesPredictionRepository;
+import com.sefault.server.prediction.service.impl.SalesPredictionServiceImpl;
 import com.sefault.server.stats.entity.SalesStat;
 import com.sefault.server.stats.enums.PeriodType;
 import com.sefault.server.stats.repository.SalesStatRepository;
@@ -32,7 +33,7 @@ class SalesPredictionServiceTest {
     @Mock private PredictionClient predictionClient;
 
     @InjectMocks
-    private SalesPredictionService service;
+    private SalesPredictionServiceImpl service;
 
     @Test
     void generateDailySalesForecast_AbortsIfLessThan10DaysData() {

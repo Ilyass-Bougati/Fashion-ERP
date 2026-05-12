@@ -5,6 +5,7 @@ import com.sefault.server.prediction.dto.api.BatchForecastRequest;
 import com.sefault.server.prediction.dto.api.BatchForecastResponse;
 import com.sefault.server.prediction.entity.StockPrediction;
 import com.sefault.server.prediction.repository.StockPredictionRepository;
+import com.sefault.server.prediction.service.impl.StockPredictionServiceImpl;
 import com.sefault.server.stats.entity.StockStat;
 import com.sefault.server.stats.repository.StockStatRepository;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ class StockPredictionServiceTest {
     @Mock private PredictionClient client;
 
     @InjectMocks
-    private StockPredictionService service;
+    private StockPredictionServiceImpl service;
 
     @Test
     void generateStockForecasts_BatchesMultipleSkusCorrectly() {

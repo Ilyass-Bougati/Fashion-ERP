@@ -3,6 +3,7 @@ package com.sefault.server.prediction.service;
 import com.sefault.server.prediction.client.PredictionClient;
 import com.sefault.server.prediction.dto.api.BatchForecastResponse;
 import com.sefault.server.prediction.repository.EmployeePerformancePredictionRepository;
+import com.sefault.server.prediction.service.impl.EmployeePredictionServiceImpl;
 import com.sefault.server.stats.entity.EmployeePerformanceStat;
 import com.sefault.server.stats.repository.EmployeePerformanceStatRepository;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class EmployeePredictionServiceTest {
     @Mock private PredictionClient client;
 
     @InjectMocks
-    private EmployeePredictionService service;
+    private EmployeePredictionServiceImpl service;
 
     @Test
     void generateEmployeeForecasts_IteratesAllActiveEmployees() {
