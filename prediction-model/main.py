@@ -24,7 +24,6 @@ async def lifespan(app: FastAPI):
     )
 
     tfm_model = tfm_model.to(device).eval()
-
     yield
 
 
@@ -41,30 +40,36 @@ async def forecast_series(request: ForecastRequest):
         raise HTTPException(status_code=503, detail="Model is still loading...")
 
     try:
-        past_values = torch.tensor([request.historical_data], dtype=torch.float32, device=device)
+        past_values = torch.tensor(request.historical_data, dtype=torch.float32, device=device)
+
         with torch.no_grad():
             outputs = tfm_model(
                 past_values=past_values,
                 return_dict=True
             )
 
-        point_forecast = outputs.mean_predictions[0][:request.horizon].cpu().tolist()
+        batch_point_forecast = outputs.mean_predictions[:, :request.horizon].cpu().tolist()
+        quantiles = outputs.full_predictions[:, :request.horizon, :].cpu()
 
-        quantiles = outputs.full_predictions[0][:request.horizon].cpu()
+        if quantiles.shape[-1] >= 10:
+            batch_lower_bounds = quantiles[:, :, 1].tolist()
+            batch_upper_bounds = quantiles[:, :, -2].tolist()
+        else:
+            batch_lower_bounds = quantiles.min(dim=-1).values.tolist()
+            batch_upper_bounds = quantiles.max(dim=-1).values.tolist()
 
-        lower_bounds = quantiles[:, 1].tolist() if quantiles.shape[-1] >= 10 else quantiles.min(dim=-1).values.tolist()
-        upper_bounds = quantiles[:, -2].tolist() if quantiles.shape[-1] >= 10 else quantiles.max(dim=-1).values.tolist()
-
-        point_forecast = [max(0.0, val) for val in point_forecast]
-        lower_bounds = [max(0.0, val) for val in lower_bounds]
-        upper_bounds = [max(0.0, val) for val in upper_bounds]
+        batch_point_forecast = [[max(0.0, val) for val in series] for series in batch_point_forecast]
+        batch_lower_bounds = [[max(0.0, val) for val in series] for series in batch_lower_bounds]
+        batch_upper_bounds = [[max(0.0, val) for val in series] for series in batch_upper_bounds]
 
         return ForecastResponse(
-            predictions=point_forecast,
-            lower_bounds=lower_bounds,
-            upper_bounds=upper_bounds,
+            predictions=batch_point_forecast,
+            lower_bounds=batch_lower_bounds,
+            upper_bounds=batch_upper_bounds,
             model_version="google/timesfm-2.5-200m-transformers"
         )
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
