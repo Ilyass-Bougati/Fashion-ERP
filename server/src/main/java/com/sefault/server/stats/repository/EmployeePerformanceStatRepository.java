@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,6 +24,7 @@ public interface EmployeePerformanceStatRepository
 
     Page<EmployeePerformanceStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
 
+    @Query("SELECT DISTINCT e.employeeCin FROM EmployeePerformanceStat e")
     List<String> findDistinctEmployeeCins();
 
     List<EmployeePerformanceStat> findTop30ByEmployeeCinAndPeriodTypeOrderByStatDateDesc(String cin, PeriodType periodType);
