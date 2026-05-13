@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, UserX, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, UserX, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -32,7 +32,7 @@ const emptyForm: EmployeeForm = {
   CIN: '', salary: '', commission: '', hiredAt: ''
 }
 
-type ConfirmState = { action: 'delete' | 'terminate'; id: string; name: string } | null
+type ConfirmState = { action: 'terminate'; id: string; name: string } | null
 
 export default function HRPage() {
   const [employees, setEmployees]   = useState<Employee[]>([])
@@ -109,16 +109,11 @@ export default function HRPage() {
   async function executeConfirmed() {
     if (!confirm) return
     try {
-      if (confirm.action === 'terminate') {
-        await hr.employees.terminate(confirm.id)
-        toast('Employee terminated', 'success')
-      } else {
-        await hr.employees.remove(confirm.id)
-        toast('Employee deleted', 'success')
-      }
+      await hr.employees.terminate(confirm.id)
+      toast('Employee terminated', 'success')
       load()
     } catch {
-      toast(confirm.action === 'terminate' ? 'Failed to terminate' : 'Delete failed', 'error')
+      toast('Failed to terminate', 'error')
     } finally {
       setConfirm(null)
     }
@@ -188,24 +183,21 @@ export default function HRPage() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-[var(--destructive)]" />
-              {confirm?.action === 'terminate' ? 'Terminate Employee' : 'Delete Employee'}
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Terminate Employee
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-[var(--muted-foreground)]">
-            {confirm?.action === 'terminate'
-              ? <>Are you sure you want to terminate <strong>{confirm.name}</strong>? This will mark them as inactive.</>
-              : <>Are you sure you want to permanently delete <strong>{confirm?.name}</strong>? This action cannot be undone.</>
-            }
+            Are you sure you want to terminate <strong>{confirm?.name}</strong>? This will mark them as inactive.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirm(null)}>Cancel</Button>
             <Button
-              variant={confirm?.action === 'terminate' ? 'outline' : 'destructive'}
-              className={confirm?.action === 'terminate' ? 'border-amber-500 text-amber-500 hover:bg-amber-50' : ''}
+              variant="outline"
+              className="border-amber-500 text-amber-500 hover:bg-amber-50"
               onClick={executeConfirmed}
             >
-              {confirm?.action === 'terminate' ? 'Terminate' : 'Delete'}
+              Terminate
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -269,12 +261,6 @@ export default function HRPage() {
                             <UserX className="h-4 w-4" />
                           </Button>
                         )}
-                        <Button
-                          variant="ghost" size="icon" className="text-[var(--destructive)]"
-                          onClick={() => setConfirm({ action: 'delete', id: emp.id, name: `${emp.firstName} ${emp.lastName}` })}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

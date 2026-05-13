@@ -2,29 +2,55 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Eye, CreditCard, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Eye, CreditCard, RotateCcw, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { ToastContainer, useToast } from '@/components/ui/toast'
-import { sales } from '@/lib/api'
+import { BarChart } from '@/components/charts/bar-chart'
+import { sales, stats } from '@/lib/api'
 import type { Sale } from '@/types'
 
 function truncate(id: string) {
   return id.slice(0, 8) + '…'
 }
 
+type ConfirmState = { action: 'checkout' | 'refund'; id: string } | null
+
 export default function SalesPage() {
   const [data, setData] = useState<Sale[]>([])
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [confirm, setConfirm] = useState<ConfirmState>(null)
+  const [chartData, setChartData] = useState<Array<{ day: string; sales: number }>>([])
   const { toasts, toast, removeToast } = useToast()
+
+  useEffect(() => {
+    loadChart()
+  }, [])
 
   useEffect(() => {
     load()
   }, [page])
+
+  async function loadChart() {
+    try {
+      const res = await stats.sales('DAILY', 0, 30)
+      const sorted = [...res.content].sort((a, b) => a.period.localeCompare(b.period))
+      setChartData(sorted.map(s => ({ day: s.period, sales: s.transactionCount })))
+    } catch {
+      // chart is non-critical; silently ignore
+    }
+  }
 
   async function load() {
     setLoading(true)
@@ -39,23 +65,21 @@ export default function SalesPage() {
     }
   }
 
-  async function handleCheckout(id: string) {
+  async function executeConfirmed() {
+    if (!confirm) return
     try {
-      await sales.checkout(id)
-      toast('Sale checked out successfully', 'success')
+      if (confirm.action === 'checkout') {
+        await sales.checkout(confirm.id)
+        toast('Sale checked out successfully', 'success')
+      } else {
+        await sales.refund(confirm.id)
+        toast('Sale refunded successfully', 'success')
+      }
       load()
     } catch {
-      toast('Failed to checkout sale', 'error')
-    }
-  }
-
-  async function handleRefund(id: string) {
-    try {
-      await sales.refund(id)
-      toast('Sale refunded successfully', 'success')
-      load()
-    } catch {
-      toast('Failed to refund sale', 'error')
+      toast(confirm.action === 'checkout' ? 'Failed to checkout sale' : 'Failed to refund sale', 'error')
+    } finally {
+      setConfirm(null)
     }
   }
 
@@ -73,6 +97,51 @@ export default function SalesPage() {
           </Link>
         </Button>
       </div>
+
+      {chartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Daily Sales</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BarChart
+              data={chartData}
+              xKey="day"
+              yKey="sales"
+              color="#6366f1"
+              yTickFormatter={(v) => String(v)}
+              tooltipFormatter={(v) => [String(v), 'Sales']}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Checkout / Refund confirmation dialog */}
+      <Dialog open={confirm !== null} onOpenChange={v => { if (!v) setConfirm(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-[var(--destructive)]" />
+              {confirm?.action === 'checkout' ? 'Confirm Checkout' : 'Confirm Refund'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            {confirm?.action === 'checkout'
+              ? 'Are you sure you want to checkout this sale?'
+              : 'Are you sure you want to refund this sale? This action cannot be undone.'
+            }
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirm(null)}>Cancel</Button>
+            <Button
+              variant={confirm?.action === 'refund' ? 'destructive' : 'default'}
+              onClick={executeConfirmed}
+            >
+              {confirm?.action === 'checkout' ? 'Checkout' : 'Refund'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
@@ -125,7 +194,7 @@ export default function SalesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleCheckout(sale.id)}
+                              onClick={() => setConfirm({ action: 'checkout', id: sale.id })}
                               title="Checkout"
                             >
                               <CreditCard className="h-4 w-4" />
@@ -133,7 +202,7 @@ export default function SalesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleRefund(sale.id)}
+                              onClick={() => setConfirm({ action: 'refund', id: sale.id })}
                               title="Refund"
                               className="text-[var(--destructive)]"
                             >

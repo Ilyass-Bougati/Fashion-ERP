@@ -8,18 +8,24 @@ import com.sefault.server.stats.dto.projection.FinancialStatProjection;
 import com.sefault.server.stats.dto.projection.SalesStatProjection;
 import com.sefault.server.stats.dto.projection.StockStatProjection;
 import com.sefault.server.stats.enums.PeriodType;
+import com.sefault.server.stats.service.EmployeePerformanceStatService;
+import com.sefault.server.stats.service.FinancialStatsService;
+import com.sefault.server.stats.service.SalesStatsService;
 import com.sefault.server.stats.service.StatsQueryService;
+import com.sefault.server.stats.service.StockStatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,6 +37,10 @@ import org.springframework.web.bind.annotation.*;
 public class StatsController {
 
     private final StatsQueryService statsQueryService;
+    private final SalesStatsService salesStatsService;
+    private final StockStatService stockStatService;
+    private final EmployeePerformanceStatService employeePerformanceStatService;
+    private final FinancialStatsService financialStatsService;
 
     @Operation(
             summary = "Get financial statistics",
@@ -89,5 +99,36 @@ public class StatsController {
             @PageableDefault(sort = "quantityOnHand", direction = ASC) Pageable pageable) {
 
         return ResponseEntity.ok(statsQueryService.getStockStats(statDate, periodType, pageable));
+    }
+
+    @Operation(
+            summary = "Trigger stats calculation",
+            description =
+                    "Manually trigger statistics calculation for a given period type and date range. "
+                            + "DAILY/WEEKLY compute sales, stock, and employee stats. MONTHLY/YEARLY also include financial stats.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Stats calculated and saved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid parameters")
+    })
+    @PreAuthorize("hasAuthority(@authorities.manageAuthoritiesAuthority)")
+    @PostMapping("/calculate")
+    public ResponseEntity<String> calculateStats(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam PeriodType periodType) {
+
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.plusDays(1).atStartOfDay();
+
+        salesStatsService.saveSalesStats(start, end, startDate, periodType);
+        stockStatService.saveStockStats(startDate, periodType);
+        employeePerformanceStatService.saveEmployeeStats(start, end, startDate, periodType);
+
+        if (periodType == PeriodType.MONTHLY || periodType == PeriodType.YEARLY) {
+            financialStatsService.saveFinancialStats(start, end, startDate, periodType);
+        }
+
+        return ResponseEntity.ok(
+                "Stats calculated successfully for period %s from %s to %s.".formatted(periodType, startDate, endDate));
     }
 }
