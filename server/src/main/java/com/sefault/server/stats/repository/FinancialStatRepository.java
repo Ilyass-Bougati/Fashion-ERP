@@ -4,6 +4,7 @@ import com.sefault.server.stats.dto.projection.FinancialStatProjection;
 import com.sefault.server.stats.entity.FinancialStat;
 import com.sefault.server.stats.enums.PeriodType;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
@@ -19,4 +20,6 @@ public interface FinancialStatRepository extends JpaRepository<@NonNull Financia
     Optional<FinancialStat> findByStatDateAndPeriodType(LocalDate statDate, PeriodType periodType);
 
     Page<FinancialStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
+
+    List<FinancialStat> findTop24ByPeriodTypeOrderByStatDateDesc(PeriodType periodType);
 }
