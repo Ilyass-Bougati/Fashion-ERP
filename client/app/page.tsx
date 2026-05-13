@@ -1,10 +1,5 @@
-import { Analytics } from "@vercel/analytics/next"
+import { redirect } from 'next/navigation'
 
-export default function Home() {
-  return (
-    <>
-      <div>Welcome to Fashion ERP</div>
-      <Analytics />
-    </>
-  );
+export default function Root() {
+  redirect('/login')
 }
