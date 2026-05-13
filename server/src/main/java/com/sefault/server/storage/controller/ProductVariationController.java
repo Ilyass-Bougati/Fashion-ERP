@@ -5,6 +5,11 @@ import com.sefault.server.storage.service.ProductVariationService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProductVariationController {
     private final ProductVariationService productVariationService;
+
+    @GetMapping
+    public ResponseEntity<Page<ProductVariationRecord>> getAll(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(productVariationService.getAll(pageable));
+    }
 
     @GetMapping("/{id}")
     public ProductVariationRecord getById(@PathVariable UUID id) {

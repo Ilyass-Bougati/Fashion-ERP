@@ -18,5 +18,7 @@ public interface EmployeeService {
 
     Page<EmployeeRecord> getActive(Pageable pageable);
 
+    Page<EmployeeRecord> getTerminated(Pageable pageable);
+
     EmployeeRecord terminate(UUID id);
 }

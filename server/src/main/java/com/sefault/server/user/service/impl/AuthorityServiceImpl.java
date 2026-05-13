@@ -46,6 +46,12 @@ public class AuthorityServiceImpl implements AuthorityService {
         userAuthorityRepository.deleteByUser_IdAndAuthority_Id(userId, authorityId);
     }
 
+    public List<AuthorityRecord> getAllAuthorities() {
+        return authorityRepository.findAll().stream()
+                .map(a -> new AuthorityRecord(a.getId(), a.getName()))
+                .toList();
+    }
+
     public List<AuthorityRecord> getUserAuthorities(UUID userId) {
         return authorityRepository.getAuthoritiesByUserId(userId).stream()
                 .map(authorityMapper::projectionToRecord)

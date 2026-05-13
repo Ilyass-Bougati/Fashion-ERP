@@ -22,6 +22,8 @@ public interface EmployeeRepository extends JpaRepository<@NonNull Employee, @No
 
     Page<EmployeeProjection> findAllByActiveTrue(Pageable pageable);
 
+    Page<EmployeeProjection> findAllByActiveFalse(Pageable pageable);
+
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Employee e SET e.active = false, e.terminatedAt = :terminatedAt WHERE e.id = :id")
     int terminateEmployee(@Param("id") UUID id, @Param("terminatedAt") LocalDateTime terminatedAt);

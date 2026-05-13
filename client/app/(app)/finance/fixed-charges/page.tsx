@@ -35,7 +35,7 @@ export default function FixedChargesPage() {
   async function load() {
     setLoading(true)
     try {
-      setCharges(await finance.fixedCharges.list())
+      setCharges((await finance.fixedCharges.list()).content)
     } catch {
       toast('Failed to load fixed charges', 'error')
     } finally {

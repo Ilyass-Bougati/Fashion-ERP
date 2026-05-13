@@ -33,7 +33,7 @@ export default function CategoriesPage() {
   async function load() {
     setLoading(true)
     try {
-      setCategories(await inventory.categories.list())
+      setCategories((await inventory.categories.list()).content)
     } catch {
       toast('Failed to load categories', 'error')
     } finally {

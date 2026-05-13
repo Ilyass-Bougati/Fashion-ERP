@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, UserX, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, UserX, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,8 @@ import { ToastContainer, useToast } from '@/components/ui/toast'
 import { hr } from '@/lib/api'
 import type { Employee } from '@/types'
 
+type Filter = 'all' | 'active' | 'terminated'
+
 type EmployeeForm = {
   firstName: string; lastName: string; email: string; phoneNumber: string;
   CIN: string; salary: string; commission: string; hiredAt: string
@@ -29,23 +32,31 @@ const emptyForm: EmployeeForm = {
   CIN: '', salary: '', commission: '', hiredAt: ''
 }
 
+type ConfirmState = { action: 'delete' | 'terminate'; id: string; name: string } | null
+
 export default function HRPage() {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [page, setPage] = useState(0)
+  const [employees, setEmployees]   = useState<Employee[]>([])
+  const [filter, setFilter]         = useState<Filter>('all')
+  const [page, setPage]             = useState(0)
   const [totalPages, setTotalPages] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<Employee | null>(null)
-  const [form, setForm] = useState<EmployeeForm>(emptyForm)
+  const [loading, setLoading]       = useState(true)
+  const [open, setOpen]             = useState(false)
+  const [editing, setEditing]       = useState<Employee | null>(null)
+  const [form, setForm]             = useState<EmployeeForm>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [confirm, setConfirm]       = useState<ConfirmState>(null)
   const { toasts, toast, removeToast } = useToast()
 
-  useEffect(() => { load() }, [page])
+  useEffect(() => { load() }, [page, filter])
 
   async function load() {
     setLoading(true)
     try {
-      const res = await hr.employees.list(page, 20)
+      const fetcher =
+        filter === 'active'     ? hr.employees.listActive(page, 20) :
+        filter === 'terminated' ? hr.employees.listTerminated(page, 20) :
+                                  hr.employees.list(page, 20)
+      const res = await fetcher
       setEmployees(res.content)
       setTotalPages(res.totalPages)
     } catch {
@@ -53,6 +64,11 @@ export default function HRPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function changeFilter(f: Filter) {
+    setFilter(f)
+    setPage(0)
   }
 
   function openNew() { setEditing(null); setForm(emptyForm); setOpen(true) }
@@ -73,11 +89,7 @@ export default function HRPage() {
     e.preventDefault()
     setSubmitting(true)
     try {
-      const payload = {
-        ...form,
-        salary: parseFloat(form.salary),
-        commission: parseFloat(form.commission),
-      }
+      const payload = { ...form, salary: parseFloat(form.salary), commission: parseFloat(form.commission) }
       if (editing) {
         await hr.employees.update(editing.id, payload)
         toast('Employee updated', 'success')
@@ -94,23 +106,21 @@ export default function HRPage() {
     }
   }
 
-  async function handleTerminate(id: string) {
+  async function executeConfirmed() {
+    if (!confirm) return
     try {
-      await hr.employees.terminate(id)
-      toast('Employee terminated', 'success')
+      if (confirm.action === 'terminate') {
+        await hr.employees.terminate(confirm.id)
+        toast('Employee terminated', 'success')
+      } else {
+        await hr.employees.remove(confirm.id)
+        toast('Employee deleted', 'success')
+      }
       load()
     } catch {
-      toast('Failed to terminate', 'error')
-    }
-  }
-
-  async function handleDelete(id: string) {
-    try {
-      await hr.employees.remove(id)
-      toast('Employee deleted', 'success')
-      load()
-    } catch {
-      toast('Delete failed', 'error')
+      toast(confirm.action === 'terminate' ? 'Failed to terminate' : 'Delete failed', 'error')
+    } finally {
+      setConfirm(null)
     }
   }
 
@@ -124,6 +134,7 @@ export default function HRPage() {
         <Button onClick={openNew}><Plus className="mr-2 h-4 w-4" />Add Employee</Button>
       </div>
 
+      {/* Edit / Create dialog */}
       <Dialog open={open} onOpenChange={v => { if (!v) close() }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -172,8 +183,45 @@ export default function HRPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Confirmation dialog */}
+      <Dialog open={confirm !== null} onOpenChange={v => { if (!v) setConfirm(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-[var(--destructive)]" />
+              {confirm?.action === 'terminate' ? 'Terminate Employee' : 'Delete Employee'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            {confirm?.action === 'terminate'
+              ? <>Are you sure you want to terminate <strong>{confirm.name}</strong>? This will mark them as inactive.</>
+              : <>Are you sure you want to permanently delete <strong>{confirm?.name}</strong>? This action cannot be undone.</>
+            }
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirm(null)}>Cancel</Button>
+            <Button
+              variant={confirm?.action === 'terminate' ? 'outline' : 'destructive'}
+              className={confirm?.action === 'terminate' ? 'border-amber-500 text-amber-500 hover:bg-amber-50' : ''}
+              onClick={executeConfirmed}
+            >
+              {confirm?.action === 'terminate' ? 'Terminate' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Card>
-        <CardHeader><CardTitle>All Employees</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle>Employees</CardTitle>
+          <Tabs value={filter} onValueChange={v => changeFilter(v as Filter)}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="terminated">Terminated</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardHeader>
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center h-40">
@@ -213,13 +261,18 @@ export default function HRPage() {
                           <Pencil className="h-4 w-4" />
                         </Button>
                         {emp.active && (
-                          <Button variant="ghost" size="icon" className="text-amber-500"
-                            onClick={() => handleTerminate(emp.id)} title="Terminate">
+                          <Button
+                            variant="ghost" size="icon" className="text-amber-500"
+                            title="Terminate"
+                            onClick={() => setConfirm({ action: 'terminate', id: emp.id, name: `${emp.firstName} ${emp.lastName}` })}
+                          >
                             <UserX className="h-4 w-4" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" className="text-[var(--destructive)]"
-                          onClick={() => handleDelete(emp.id)}>
+                        <Button
+                          variant="ghost" size="icon" className="text-[var(--destructive)]"
+                          onClick={() => setConfirm({ action: 'delete', id: emp.id, name: `${emp.firstName} ${emp.lastName}` })}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
