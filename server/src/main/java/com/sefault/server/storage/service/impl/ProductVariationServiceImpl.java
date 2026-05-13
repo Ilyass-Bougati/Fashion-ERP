@@ -10,6 +10,8 @@ import com.sefault.server.storage.repository.ProductVariationRepository;
 import com.sefault.server.storage.service.ProductVariationService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,12 @@ public class ProductVariationServiceImpl implements ProductVariationService {
 
     private final ProductRepository productRepository;
     private final ImageRepository imageRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductVariationRecord> getAll(Pageable pageable) {
+        return productVariationRepository.findAllBy(pageable).map(productVariationMapper::projectionToRecord);
+    }
 
     @Override
     @Transactional(readOnly = true)

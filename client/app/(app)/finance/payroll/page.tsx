@@ -40,7 +40,7 @@ export default function PayrollPage() {
 
   useEffect(() => { load() }, [page])
   useEffect(() => {
-    hr.employees.listActive().then(setEmployees).catch(() => {})
+    hr.employees.listActive().then(res => setEmployees(res.content)).catch(() => {})
   }, [])
 
   async function load() {

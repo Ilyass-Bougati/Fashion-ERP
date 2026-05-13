@@ -46,7 +46,7 @@ export default function IslesPage() {
         hr.employees.listActive(),
       ])
       setIsles(islesRes.content)
-      setEmployees(empsRes)
+      setEmployees(empsRes.content)
     } catch {
       toast('Failed to load isles', 'error')
     } finally {

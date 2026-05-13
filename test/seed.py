@@ -81,7 +81,10 @@ class Seeder:
         resp = self.s.post(f"{self.base}{path}", **kwargs)
         if not resp.ok:
             raise RuntimeError(f"POST {path} → {resp.status_code}: {resp.text[:200]}")
-        return resp.json() if resp.text else {}
+        try:
+            return resp.json()
+        except ValueError:
+            return {}
 
     def _get(self, path: str, **kwargs):
         resp = self.s.get(f"{self.base}{path}", **kwargs)
@@ -93,7 +96,17 @@ class Seeder:
 
     def login(self):
         section("1 · Authentication")
-        self._post("/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+        resp = self.s.post(
+            f"{self.base}/auth/login",
+            json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+        )
+        if not resp.ok:
+            raise RuntimeError(f"Login → {resp.status_code}: {resp.text[:200]}")
+        # http.cookiejar drops cookies whose domain has no dot (i.e. 'localhost').
+        # resp.cookies is populated straight from Set-Cookie headers and bypasses
+        # that policy, so copy them into the session jar explicitly.
+        for cookie in resp.cookies:
+            self.s.cookies.set(cookie.name, cookie.value)
         ok(f"Logged in as {ADMIN_EMAIL}")
 
     # ── images ───────────────────────────────────────────────────────────────
@@ -171,7 +184,7 @@ class Seeder:
     SIZES  = ["XS", "S", "M", "L", "XL", "XXL"]
     COLORS = ["BLACK", "WHITE", "NAVY", "RED", "GREEN", "GREY", "BEIGE", "BLUE", "KHAKI", "BROWN"]
 
-    def create_variations(self, product_ids: list[str]) -> list[dict]:
+    def create_variations(self, product_ids: list[str], image_pool: list[str]) -> list[dict]:
         section("5 · Product variations")
         variations = []
         sku_n = 1000
@@ -199,6 +212,7 @@ class Seeder:
                     "price":     price,
                     "productId": pid,
                     "quantity":  qty,
+                    "imageId":   random.choice(image_pool),
                 })
                 variations.append({
                     "id":    d["id"],
@@ -256,7 +270,7 @@ class Seeder:
         "Bouazza",   "Hajji",   "El Amri", "Slaoui", "Idrissi", "Lahlou",
     ]
 
-    def create_employees(self, count: int = 15) -> list[dict]:
+    def create_employees(self, count: int = 15, image_pool: list[str] = []) -> list[dict]:
         section("7 · Employees")
         employees = []
         used_emails: set[str] = set()
@@ -287,6 +301,7 @@ class Seeder:
                 "salary":     round(random.uniform(2800.0, 9500.0), 2),
                 "commission": round(random.uniform(0.02, 0.18), 4),
                 "hiredAt":    dt_str(hired_at),
+                "imageId":    random.choice(image_pool) if image_pool else None,
             })
             employees.append({"id": d["id"], "name": f"{first} {last}"})
             ok(f"Employee: {first} {last}  (CIN {cin})")
@@ -378,6 +393,10 @@ class Seeder:
                 sale_price = max(sale_price, 0.01)
                 try:
                     self._post("/sale-line", json={
+                        "id": {
+                            "saleId":             sale_id,
+                            "productVariationId": var["id"],
+                        },
                         "saleId":             sale_id,
                         "productVariationId": var["id"],
                         "quantity":           qty,
@@ -510,9 +529,9 @@ class Seeder:
         image_pool  = self.upload_images(count=20)
         cat_ids     = self.create_categories()
         product_ids = self.create_products(cat_ids, image_pool)
-        variations  = self.create_variations(product_ids)
+        variations  = self.create_variations(product_ids, image_pool)
         self.create_vendors(product_ids)
-        employees   = self.create_employees(count=15)
+        employees   = self.create_employees(count=15, image_pool=image_pool)
         self.create_isles(employees)
         self.create_fixed_charges()
         completed, pending = self.create_sales(employees, variations, count=80)

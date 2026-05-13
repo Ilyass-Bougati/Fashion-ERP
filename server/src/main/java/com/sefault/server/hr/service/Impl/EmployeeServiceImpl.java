@@ -72,6 +72,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public Page<EmployeeRecord> getTerminated(Pageable pageable) {
+        return employeeRepository.findAllByActiveFalse(pageable).map(employeeMapper::projectionToRecord);
+    }
+
+    @Override
     public EmployeeRecord terminate(UUID id) {
         int updatedRows = employeeRepository.terminateEmployee(id, LocalDateTime.now());
         if (updatedRows == 0) {

@@ -9,6 +9,8 @@ import com.sefault.server.user.repository.UserRepository;
 import com.sefault.server.user.service.UserService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    @Transactional(readOnly = true)
+    public Page<UserRecord> findAllUsers(Pageable pageable) {
+        return userRepository.findAllBy(pageable).map(userMapper::projectionToRecord);
+    }
 
     @Transactional(readOnly = true)
     public UserRecord findUserById(UUID id) {
