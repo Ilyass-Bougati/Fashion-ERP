@@ -2,6 +2,7 @@ package com.sefault.server.user.repository;
 
 import com.sefault.server.user.dto.projection.ReportCategoryProjection;
 import com.sefault.server.user.entity.ReportCategory;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.NonNull;
@@ -10,5 +11,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReportCategoryRepository extends JpaRepository<@NonNull ReportCategory, @NonNull UUID> {
+    List<ReportCategoryProjection> findAllBy();
+
     Optional<ReportCategoryProjection> getReportCategoryProjectionById(UUID id);
 }
