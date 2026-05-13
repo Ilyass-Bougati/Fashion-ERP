@@ -240,6 +240,7 @@ export const users = {
   activate: (id: string) => request<void>(`/user/${id}/activate`, { method: 'POST' }),
   remove: (id: string) => request<void>(`/user/${id}`, { method: 'DELETE' }),
   authorities: {
+    listAll: () => request<Authority[]>('/authority'),
     list: (userId: string) =>
       request<Authority[]>(`/authority/${userId}`),
     grant: (granteeId: string, authorityId: string) =>
