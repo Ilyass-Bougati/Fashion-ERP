@@ -7,11 +7,13 @@ import type {
   Page
 } from '@/types'
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+
 async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const res = await fetch(`/api/v1${path}`, {
+  const res = await fetch(`${BASE_URL}/api/v1${path}`, {
     ...options,
     credentials: 'include',
     headers: {
@@ -21,11 +23,11 @@ async function request<T>(
   })
   if (!res.ok) {
     if (res.status === 401 && path !== '/auth/login') {
-      const refreshed = await fetch(`/api/v1/auth/refresh`, {
+      const refreshed = await fetch(`${BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST', credentials: 'include'
       })
       if (refreshed.ok) {
-        const retry = await fetch(`/api/v1${path}`, {
+        const retry = await fetch(`${BASE_URL}/api/v1${path}`, {
           ...options, credentials: 'include',
           headers: { 'Content-Type': 'application/json', ...options.headers }
         })
@@ -42,15 +44,8 @@ async function request<T>(
 
 // Auth
 export const auth = {
-  login: async (data: LoginRequest): Promise<void> => {
-    const res = await fetch(`/api/v1/auth/login`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!res.ok) throw new Error('UNAUTHORIZED')
-  },
+  login: (data: LoginRequest) =>
+    request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   refresh: () => request('/auth/refresh', { method: 'POST' }),
 }
@@ -151,7 +146,7 @@ export const hr = {
   employees: {
     list: (page = 0, size = 20) =>
       request<Page<Employee>>(`/employee?page=${page}&size=${size}`),
-    listActive: (page = 0, size = 100) => request<Page<Employee>>(`/employee/active?page=${page}&size=${size}`),
+    listActive: () => request<Employee[]>('/employee/active'),
     get: (id: string) => request<Employee>(`/employee/${id}`),
     create: (data: Partial<Employee>) =>
       request<Employee>('/employee', { method: 'POST', body: JSON.stringify(data) }),
@@ -182,7 +177,7 @@ export const hr = {
 export const finance = {
   transactions: {
     list: (type?: 'PAID' | 'RECEIVED') =>
-      request<Page<Transaction>>(`/finance/transactions${type ? `?type=${type}` : ''}`),
+      request<Transaction[]>(`/finance/transactions${type ? `?type=${type}` : ''}`),
     get: (id: string) => request<Transaction>(`/finance/transactions/${id}`),
     create: (data: { type: 'PAID' | 'RECEIVED'; amount: number; saleId?: string }) =>
       request<Transaction>('/finance/transactions', {
@@ -192,7 +187,7 @@ export const finance = {
   },
   fixedCharges: {
     list: (activeOnly?: boolean) =>
-      request<Page<FixedCharge>>(
+      request<FixedCharge[]>(
         `/finance/fixed-charges${activeOnly !== undefined ? `?activeOnly=${activeOnly}` : ''}`
       ),
     get: (id: string) => request<FixedCharge>(`/finance/fixed-charges/${id}`),
