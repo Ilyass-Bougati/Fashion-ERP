@@ -28,17 +28,12 @@ public class AuthorityController {
     }
 
     @PostMapping
-    public void grantAuthority(
-            Principal principal,
-            @RequestParam UUID granteeId,
-            @RequestParam UUID authorityId) {
+    public void grantAuthority(Principal principal, @RequestParam UUID granteeId, @RequestParam UUID authorityId) {
         authorityService.grantAuthority(granteeId, principal.getName(), authorityId);
     }
 
     @DeleteMapping
-    public void removeAuthority(
-            @RequestParam UUID userId,
-            @RequestParam UUID authorityId) {
+    public void removeAuthority(@RequestParam UUID userId, @RequestParam UUID authorityId) {
         authorityService.removeAuthority(userId, authorityId);
     }
 }
