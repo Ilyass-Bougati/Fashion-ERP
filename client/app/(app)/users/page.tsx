@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, CheckCircle, Trash2, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, CheckCircle, UserX, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -85,13 +85,13 @@ export default function UsersPage() {
     }
   }
 
-  async function handleDelete(id: string) {
+  async function handleDeactivate(id: string) {
     try {
-      await users.remove(id)
-      toast('User deleted', 'success')
-      load()
+      await users.deactivate(id)
+      toast('User deactivated', 'success')
+      setUserList(prev => prev.map(u => u.id === id ? { ...u, active: false } : u))
     } catch {
-      toast('Delete failed', 'error')
+      toast('Deactivation failed', 'error')
     }
   }
 
@@ -289,10 +289,12 @@ export default function UsersPage() {
                             <CheckCircle className="h-4 w-4" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" className="text-[var(--destructive)]"
-                          onClick={() => handleDelete(user.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {user.active && (
+                          <Button variant="ghost" size="icon" className="text-amber-500"
+                            title="Deactivate" onClick={() => handleDeactivate(user.id)}>
+                            <UserX className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

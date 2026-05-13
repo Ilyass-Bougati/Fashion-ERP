@@ -17,5 +17,7 @@ public interface UserService {
 
     UserRecord activateUser(UUID id);
 
+    UserRecord deactivateUser(UUID id);
+
     void deleteUserById(UUID id);
 }

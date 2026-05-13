@@ -40,6 +40,12 @@ public class UserController {
         return ResponseEntity.ok(userService.activateUser(id));
     }
 
+    @PostMapping("/deactivate/{id}")
+    @PreAuthorize("hasAuthority(@authorities.activateUsersAuthority)")
+    public ResponseEntity<UserRecord> deactivateUser(@PathVariable UUID id) {
+        return ResponseEntity.ok(userService.deactivateUser(id));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority(@authorities.getUsersAuthority)")
     public ResponseEntity<UserRecord> getUser(@PathVariable UUID id) {

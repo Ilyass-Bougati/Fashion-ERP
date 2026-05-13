@@ -238,6 +238,7 @@ export const users = {
   update: (id: string, data: Partial<User>) =>
     request<User>(`/user/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   activate: (id: string) => request<void>(`/user/${id}/activate`, { method: 'POST' }),
+  deactivate: (id: string) => request<void>(`/user/${id}/deactivate`, { method: 'POST' }),
   remove: (id: string) => request<void>(`/user/${id}`, { method: 'DELETE' }),
   authorities: {
     listAll: () => request<Authority[]>('/authority'),
