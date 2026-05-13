@@ -128,7 +128,7 @@ public class StatsController {
             financialStatsService.saveFinancialStats(start, end, startDate, periodType);
         }
 
-        return ResponseEntity.ok("Stats calculated successfully for period %s from %s to %s."
-                .formatted(periodType, startDate, endDate));
+        return ResponseEntity.ok(
+                "Stats calculated successfully for period %s from %s to %s.".formatted(periodType, startDate, endDate));
     }
 }
