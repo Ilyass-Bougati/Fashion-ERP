@@ -2,6 +2,11 @@
 -- Mirrors seed.py but inserts data directly via SQL, with sales and
 -- transactions spread across a wide time range (2023-01-01 → 2025-12-31).
 --
+-- Volume summary:
+--   50 images · 10 categories · 91 products · ~640 variations
+--   30 employees · 2 000 sales · 60 manual transactions · monthly payroll (36 months)
+--   15 additional user accounts
+--
 -- Prerequisites:
 --   • PostgreSQL with pgcrypto extension available
 --   • The Spring Boot application has been started at least once so that
@@ -25,7 +30,7 @@ BEGIN
     END IF;
 END $$;
 
--- ── 1. Placeholder images (20) ────────────────────────────────────────────────
+-- ── 1. Placeholder images (50) ────────────────────────────────────────────────
 INSERT INTO image (id, object_key, bucket_name, content_type, created_at, updated_at)
 SELECT
     gen_random_uuid(),
@@ -34,7 +39,7 @@ SELECT
     'image/png',
     NOW() - (random() * INTERVAL '730 days'),
     NOW()
-FROM generate_series(1, 20) AS n;
+FROM generate_series(1, 50) AS n;
 
 -- ── 2-11. All reference + transactional data ──────────────────────────────────
 DO $$
@@ -104,102 +109,161 @@ DECLARE
 
     -- products[i][1] = name, products[i][2] = category index (1-based)
     products TEXT[][] := ARRAY[
-        -- T-Shirts (cat 1)
+        -- T-Shirts (cat 1) – 10 items
         ARRAY['Classic White Tee',        '1'],
         ARRAY['Graphic Print Tee',        '1'],
         ARRAY['Polo Shirt',               '1'],
         ARRAY['V-Neck Tee',               '1'],
         ARRAY['Striped Tee',              '1'],
         ARRAY['Pocket Tee',               '1'],
-        -- Jeans (cat 2)
+        ARRAY['Long Sleeve Tee',          '1'],
+        ARRAY['Henley Shirt',             '1'],
+        ARRAY['Mock Neck Tee',            '1'],
+        ARRAY['Tie-Dye Tee',             '1'],
+        -- Jeans (cat 2) – 10 items
         ARRAY['Slim Fit Jeans',           '2'],
         ARRAY['Bootcut Jeans',            '2'],
         ARRAY['Skinny Jeans',             '2'],
         ARRAY['Wide Leg Jeans',           '2'],
         ARRAY['Cargo Jeans',              '2'],
         ARRAY['Straight Cut Jeans',       '2'],
-        -- Dresses (cat 3)
+        ARRAY['High Waist Jeans',         '2'],
+        ARRAY['Tapered Jeans',            '2'],
+        ARRAY['Ripped Jeans',             '2'],
+        ARRAY['Relaxed Fit Jeans',        '2'],
+        -- Dresses (cat 3) – 10 items
         ARRAY['Summer Floral Dress',      '3'],
         ARRAY['Evening Gown',             '3'],
         ARRAY['Casual Midi Dress',        '3'],
         ARRAY['Maxi Dress',               '3'],
         ARRAY['Mini Dress',               '3'],
         ARRAY['Wrap Dress',               '3'],
-        -- Jackets (cat 4)
+        ARRAY['Shirt Dress',              '3'],
+        ARRAY['Bodycon Dress',            '3'],
+        ARRAY['A-Line Dress',             '3'],
+        ARRAY['Slip Dress',               '3'],
+        -- Jackets (cat 4) – 9 items
         ARRAY['Leather Biker Jacket',     '4'],
         ARRAY['Denim Jacket',             '4'],
         ARRAY['Puffer Jacket',            '4'],
         ARRAY['Trench Coat',              '4'],
         ARRAY['Bomber Jacket',            '4'],
-        -- Shoes (cat 5)
+        ARRAY['Windbreaker',              '4'],
+        ARRAY['Fleece Jacket',            '4'],
+        ARRAY['Varsity Jacket',           '4'],
+        ARRAY['Raincoat',                 '4'],
+        -- Shoes (cat 5) – 11 items
         ARRAY['White Sneakers',           '5'],
         ARRAY['Ankle Boots',              '5'],
         ARRAY['Loafers',                  '5'],
         ARRAY['High Heels',               '5'],
         ARRAY['Running Shoes',            '5'],
         ARRAY['Oxford Shoes',             '5'],
-        -- Accessories (cat 6)
+        ARRAY['Slip-On Sneakers',         '5'],
+        ARRAY['Chelsea Boots',            '5'],
+        ARRAY['Mule Sandals',             '5'],
+        ARRAY['Platform Shoes',           '5'],
+        ARRAY['Derby Shoes',              '5'],
+        -- Accessories (cat 6) – 11 items
         ARRAY['Leather Belt',             '6'],
         ARRAY['Silk Scarf',               '6'],
         ARRAY['Baseball Cap',             '6'],
         ARRAY['Sunglasses',               '6'],
         ARRAY['Tote Bag',                 '6'],
         ARRAY['Crossbody Bag',            '6'],
-        -- Hoodies (cat 7)
+        ARRAY['Leather Wallet',           '6'],
+        ARRAY['Classic Watch',            '6'],
+        ARRAY['Hair Clip Set',            '6'],
+        ARRAY['Bucket Hat',               '6'],
+        ARRAY['Knit Gloves',              '6'],
+        -- Hoodies (cat 7) – 8 items
         ARRAY['Zip-Up Hoodie',            '7'],
         ARRAY['Pullover Hoodie',          '7'],
         ARRAY['Cropped Hoodie',           '7'],
         ARRAY['Oversized Hoodie',         '7'],
         ARRAY['Fleece Hoodie',            '7'],
-        -- Shorts (cat 8)
+        ARRAY['Quarter-Zip Hoodie',       '7'],
+        ARRAY['Tie-Dye Hoodie',           '7'],
+        ARRAY['Ribbed Hoodie',            '7'],
+        -- Shorts (cat 8) – 7 items
         ARRAY['Chino Shorts',             '8'],
         ARRAY['Denim Shorts',             '8'],
         ARRAY['Athletic Shorts',          '8'],
         ARRAY['Linen Shorts',             '8'],
-        -- Blazers (cat 9)
+        ARRAY['Cargo Shorts',             '8'],
+        ARRAY['Swim Shorts',              '8'],
+        ARRAY['Paperbag Shorts',          '8'],
+        -- Blazers (cat 9) – 6 items
         ARRAY['Single Breasted Blazer',   '9'],
         ARRAY['Double Breasted Blazer',   '9'],
         ARRAY['Checked Blazer',           '9'],
         ARRAY['Velvet Blazer',            '9'],
-        -- Activewear (cat 10)
+        ARRAY['Linen Blazer',             '9'],
+        ARRAY['Oversized Blazer',         '9'],
+        -- Activewear (cat 10) – 9 items
         ARRAY['Sports Leggings',          '10'],
         ARRAY['Training Top',             '10'],
         ARRAY['Running Jacket',           '10'],
         ARRAY['Compression Shorts',       '10'],
-        ARRAY['Sports Bra',               '10']
+        ARRAY['Sports Bra',               '10'],
+        ARRAY['Yoga Pants',               '10'],
+        ARRAY['Tank Top',                 '10'],
+        ARRAY['Cycling Shorts',           '10'],
+        ARRAY['Sports Hoodie',            '10']
     ];
 
     sizes  TEXT[] := ARRAY['XS','S','M','L','XL','XXL'];
-    colors TEXT[] := ARRAY['BLACK','WHITE','NAVY','RED','GREEN','GREY','BEIGE','BLUE','KHAKI','BROWN'];
+    colors TEXT[] := ARRAY['BLACK','WHITE','NAVY','RED','GREEN','GREY','BEIGE','BLUE','KHAKI','BROWN','PINK','PURPLE','ORANGE','YELLOW','BURGUNDY'];
 
     companies TEXT[] := ARRAY[
-        'FashionHub Ltd', 'StyleSource Inc', 'TrendFactory SA',    'GlobalTextiles Co',
-        'ModaSupply AG',  'PrimeCloth GmbH',  'EliteWear Partners', 'UrbanFabric LLC',
-        'ChicSuppliers',  'LuxeTextile Group','FabricNation Ltd',   'TrendSetters Co',
-        'CoutureSupply',  'ModeExpress',      'StyleBridge LLC',    'NovaTex SA',
-        'FastFabric Inc', 'EcoCloth Co',      'PremiumWear Ltd',    'FreshMode SAS'
+        'FashionHub Ltd',    'StyleSource Inc',   'TrendFactory SA',    'GlobalTextiles Co',
+        'ModaSupply AG',     'PrimeCloth GmbH',   'EliteWear Partners', 'UrbanFabric LLC',
+        'ChicSuppliers',     'LuxeTextile Group', 'FabricNation Ltd',   'TrendSetters Co',
+        'CoutureSupply',     'ModeExpress',        'StyleBridge LLC',    'NovaTex SA',
+        'FastFabric Inc',    'EcoCloth Co',        'PremiumWear Ltd',    'FreshMode SAS',
+        'DesignForce Ltd',   'SilkRoad Textiles',  'MetroFashion GmbH',  'AlphaCloth Inc',
+        'VogueSupply Co',    'ArtisanFabrics AG',  'TrendWave Ltd',      'PureFiber SAS',
+        'ClothingBridge',    'TextileVision GmbH'
     ];
 
     payment_terms TEXT[] := ARRAY['Net 30','Net 60','Net 15','2/10 Net 30','COD','Net 45','EOM'];
 
     first_names TEXT[] := ARRAY[
-        'Youssef','Fatima','Mohammed','Aicha',    'Omar',   'Khadija',
-        'Hassan',  'Zineb', 'Rachid',  'Samira',  'Khalid', 'Nadia',
-        'Mehdi',  'Soukaina','Amine',  'Houda',   'Tarik',  'Laila',
-        'Bilal',  'Meryem'
+        'Youssef', 'Fatima',   'Mohammed', 'Aicha',    'Omar',    'Khadija',
+        'Hassan',  'Zineb',    'Rachid',   'Samira',   'Khalid',  'Nadia',
+        'Mehdi',   'Soukaina', 'Amine',    'Houda',    'Tarik',   'Laila',
+        'Bilal',   'Meryem',   'Karim',    'Sara',     'Hamza',   'Leila',
+        'Adil',    'Imane',    'Younes',   'Hajar',    'Saad',    'Chaimae',
+        'Redouane','Widad',    'Hicham',   'Btissam',  'Walid',   'Loubna'
     ];
 
     last_names TEXT[] := ARRAY[
-        'Benkhalil','Alami',  'Benali', 'Tazi',    'Chraibi','Fassi',
-        'Ouali',    'Berrada','Rhazi',  'Lamrani', 'Kadiri', 'Mekki',
-        'Bouazza',  'Hajji',  'El Amri','Slaoui',  'Idrissi','Lahlou'
+        'Benkhalil', 'Alami',   'Benali',   'Tazi',    'Chraibi', 'Fassi',
+        'Ouali',     'Berrada', 'Rhazi',    'Lamrani', 'Kadiri',  'Mekki',
+        'Bouazza',   'Hajji',   'El Amri',  'Slaoui',  'Idrissi', 'Lahlou',
+        'Mansouri',  'Cherkaoui','Bougati', 'Tlemcani','Bensouda','Merini',
+        'Ziani',     'Qasimi',  'Fennich',  'Oujda',   'Sefrioui','Benkirane'
     ];
 
     discounts FLOAT8[] := ARRAY[0.0, 0.0, 0.0, 0.05, 0.10, 0.15, 0.20, 0.25];
 
-    -- Manual (non-sale) transaction templates: type, base amount
-    tx_types    TEXT[]   := ARRAY['PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID'];
-    tx_amounts  FLOAT8[] := ARRAY[2500.0, 5000.0, 800.0, 1200.0, 3200.0, 750.0, 1500.0, 4300.0, 600.0, 900.0, 2100.0, 3600.0, 450.0, 1800.0, 1100.0];
+    -- Manual (non-sale) transaction templates: type, base amount (60 entries)
+    tx_types TEXT[] := ARRAY[
+        'PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED',
+        'PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED',
+        'PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED',
+        'PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED',
+        'PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED',
+        'PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED','PAID','RECEIVED'
+    ];
+    tx_amounts FLOAT8[] := ARRAY[
+         2500.0,  5000.0,   800.0,  1200.0,  3200.0,   750.0,  1500.0,  4300.0,   600.0,   900.0,
+         2100.0,  3600.0,   450.0,  1800.0,  1100.0,  7500.0,  2200.0,  4800.0,   350.0,  6100.0,
+         1750.0,  3300.0,   980.0,  2600.0,  5400.0,   420.0,  1950.0,  8200.0,   670.0,  3900.0,
+         1300.0,  4100.0,   550.0,  2900.0,  6700.0,   830.0,  2400.0,  5600.0,   740.0,  1600.0,
+         3800.0,  7100.0,   490.0,  2150.0,  4500.0,  1050.0,  3100.0,  6300.0,   880.0,  2700.0,
+         5200.0,  1400.0,   960.0,  3450.0,  7800.0,   510.0,  2850.0,  4700.0,  1250.0,  5900.0
+    ];
 
 BEGIN
 
@@ -226,12 +290,12 @@ BEGIN
         prod_ids := array_append(prod_ids, new_id);
     END LOOP;
 
-    -- ── 5. Product variations (3-6 per product) ───────────────────────────
+    -- ── 5. Product variations (5-8 per product) ───────────────────────────
     var_ids    := ARRAY[]::UUID[];
     var_prices := ARRAY[]::FLOAT8[];
     FOR i IN 1..array_length(prod_ids, 1) LOOP
         prod_id := prod_ids[i];
-        FOR j IN 1..(3 + (random() * 3)::INT) LOOP
+        FOR j IN 1..(5 + (random() * 3)::INT) LOOP
             sz        := sizes [1 + (random() * (array_length(sizes,  1) - 1))::INT];
             col       := colors[1 + (random() * (array_length(colors, 1) - 1))::INT];
             sku       := 'SKU-' || LPAD(sku_n::TEXT, 5, '0') || '-' || sz || '-' || LEFT(col, 3);
@@ -269,9 +333,9 @@ BEGIN
     END LOOP;
     phone_n := phone_n + vendor_n + 1;
 
-    -- ── 7. Employees (15) ─────────────────────────────────────────────────
+    -- ── 7. Employees (30) ─────────────────────────────────────────────────
     emp_ids := ARRAY[]::UUID[];
-    FOR i IN 1..15 LOOP
+    FOR i IN 1..30 LOOP
         fname  := first_names[1 + (random() * (array_length(first_names, 1) - 1))::INT];
         lname  := last_names [1 + (random() * (array_length(last_names,  1) - 1))::INT];
         new_id := gen_random_uuid();
@@ -323,10 +387,10 @@ BEGIN
         (gen_random_uuid(), 'Window Display Maintenance', 'Monthly cost of external window-dressing service',               300.0, TRUE,  NOW());
 
     -- ── 10. Sales + sale lines + transactions ─────────────────────────────
-    -- 300 sales distributed across 2023-01-01 … 2025-12-31.
+    -- 2 000 sales distributed across 2023-01-01 … 2025-12-31.
     -- Status mix: 65 % COMPLETED, 12 % REFUNDED, 23 % PENDING (same as seed.py).
     -- Each completed/refunded sale generates a matching transaction entry.
-    FOR i IN 1..300 LOOP
+    FOR i IN 1..2000 LOOP
         emp_id := emp_ids[1 + (random() * (array_length(emp_ids, 1) - 1))::INT];
 
         -- Random timestamp spanning the full 3-year window
@@ -348,14 +412,14 @@ BEGIN
         INSERT INTO sale (id, discount, status, employee_id, created_at, updated_at)
         VALUES (sale_id, discount_val, status_val, emp_id, sale_date, sale_date + INTERVAL '1 minute');
 
-        -- Insert 2-6 sale lines, skipping duplicate variations per sale
+        -- Insert 2-8 sale lines, skipping duplicate variations per sale
         lines_added := 0;
-        FOR j IN 1..(2 + (random() * 4)::INT) LOOP
+        FOR j IN 1..(2 + (random() * 6)::INT) LOOP
             var_idx   := 1 + (random() * (array_length(var_ids, 1) - 1))::INT;
             var_id    := var_ids   [var_idx];
             price_val := var_prices[var_idx];
             sale_price := GREATEST(ROUND((price_val * (0.85 + random() * 0.20))::NUMERIC, 2), 0.01);
-            qty_val    := 1 + (random() * 2)::INT;
+            qty_val    := 1 + (random() * 4)::INT;
             BEGIN
                 INSERT INTO sale_line (sale_id, product_variation_id, quantity, sale_at_price)
                 VALUES (sale_id, var_id, qty_val, sale_price);
@@ -443,16 +507,36 @@ END $$;
 -- Spring Security's BCryptPasswordEncoder.  Plain-text password: "password123"
 INSERT INTO erp_users (id, first_name, last_name, email, password, phone_number, active, created_at, updated_at)
 VALUES
-    (gen_random_uuid(), 'Ilyass', 'Bougati',   'ilyass.bougati@fashion-erp.ma',
+    (gen_random_uuid(), 'Ilyass',   'Bougati',   'ilyass.bougati@fashion-erp.ma',
      crypt('password123', gen_salt('bf', 10)), '0612345678', TRUE, NOW(), NOW()),
-    (gen_random_uuid(), 'Sara',   'Alaoui',    'sara.alaoui@fashion-erp.ma',
+    (gen_random_uuid(), 'Sara',     'Alaoui',    'sara.alaoui@fashion-erp.ma',
      crypt('password123', gen_salt('bf', 10)), '0623456789', TRUE, NOW(), NOW()),
-    (gen_random_uuid(), 'Karim',  'Mansouri',  'karim.mansouri@fashion-erp.ma',
+    (gen_random_uuid(), 'Karim',    'Mansouri',  'karim.mansouri@fashion-erp.ma',
      crypt('password123', gen_salt('bf', 10)), '0634567890', TRUE, NOW(), NOW()),
-    (gen_random_uuid(), 'Leila',  'Cherkaoui', 'leila.cherkaoui@fashion-erp.ma',
+    (gen_random_uuid(), 'Leila',    'Cherkaoui', 'leila.cherkaoui@fashion-erp.ma',
      crypt('password123', gen_salt('bf', 10)), '0645678901', TRUE, NOW(), NOW()),
-    (gen_random_uuid(), 'Hamza',  'Bensouda',  'hamza.bensouda@fashion-erp.ma',
-     crypt('password123', gen_salt('bf', 10)), '0656789012', TRUE, NOW(), NOW())
+    (gen_random_uuid(), 'Hamza',    'Bensouda',  'hamza.bensouda@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0656789012', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Adil',     'Ziani',     'adil.ziani@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0667890123', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Imane',    'Qasimi',    'imane.qasimi@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0678901234', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Younes',   'Fennich',   'younes.fennich@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0689012345', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Hajar',    'Merini',    'hajar.merini@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0690123456', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Redouane', 'Sefrioui',  'redouane.sefrioui@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0601234567', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Widad',    'Benkirane', 'widad.benkirane@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0611234567', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Hicham',   'Tlemcani',  'hicham.tlemcani@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0622234567', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Btissam',  'Oujda',     'btissam.oujda@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0633234567', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Walid',    'Idrissi',   'walid.idrissi@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0644234567', TRUE, NOW(), NOW()),
+    (gen_random_uuid(), 'Loubna',   'Lahlou',    'loubna.lahlou@fashion-erp.ma',
+     crypt('password123', gen_salt('bf', 10)), '0655234567', TRUE, NOW(), NOW())
 ON CONFLICT (email) DO NOTHING;
 
 COMMIT;
