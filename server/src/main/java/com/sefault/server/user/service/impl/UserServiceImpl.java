@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id.toString()));
 
-        user.setActive(true);
+        user.setActive(!user.getActive());
         return userMapper.entityToRecord(userRepository.save(user));
     }
 
