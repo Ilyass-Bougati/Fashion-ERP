@@ -28,7 +28,7 @@ export default function NewSalePage() {
 
   useEffect(() => {
     hr.employees.listActive()
-      .then(setEmployees)
+      .then(r => setEmployees(r.content))
       .catch(() => setError('Failed to load employees'))
   }, [])
 

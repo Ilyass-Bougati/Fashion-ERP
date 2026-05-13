@@ -44,7 +44,7 @@ export default function FinancePage() {
     setLoading(true)
     try {
       const res = await finance.transactions.list(filter === 'ALL' ? undefined : filter)
-      setTransactions(res)
+      setTransactions(res.content)
     } catch {
       toast('Failed to load transactions', 'error')
     } finally {

@@ -24,6 +24,7 @@ export default function LoginPage() {
       await auth.login({ email, password })
       router.push('/dashboard')
     } catch (err) {
+      console.log(err);
       const msg = err instanceof Error ? err.message : 'Login failed'
       if (msg === 'UNAUTHORIZED' || msg.toLowerCase().includes('unauthorized')) {
         setError('Invalid email or password.')
