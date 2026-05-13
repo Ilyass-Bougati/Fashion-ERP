@@ -46,8 +46,8 @@ export default function InventoryPage() {
         inventory.products.list(),
         inventory.categories.list(),
       ])
-      setProducts(prods)
-      setCategories(cats)
+      setProducts(prods.content)
+      setCategories(cats.content)
     } catch {
       toast('Failed to load products', 'error')
     } finally {
