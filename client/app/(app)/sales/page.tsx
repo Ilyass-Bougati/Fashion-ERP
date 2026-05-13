@@ -45,8 +45,9 @@ export default function SalesPage() {
   async function loadChart() {
     try {
       const res = await stats.sales('DAILY', 0, 30)
-      const sorted = [...res.content].sort((a, b) => a.period.localeCompare(b.period))
-      setChartData(sorted.map(s => ({ day: s.period, sales: s.transactionCount })))
+      const sorted = [...res.content].sort((a, b) => a.statDate.localeCompare(b.statDate))
+      setChartData(sorted.map(s => ({ day: s.statDate, sales: s.totalTransactions })))
+      console.log(res.content)
     } catch {
       // chart is non-critical; silently ignore
     }
@@ -175,8 +176,8 @@ export default function SalesPage() {
                     <TableCell className="font-mono text-xs">{truncate(sale.employeeId)}</TableCell>
                     <TableCell>{sale.discount != null ? `${sale.discount}%` : '—'}</TableCell>
                     <TableCell>
-                      <Badge variant={sale.refunded ? 'destructive' : 'success'}>
-                        {sale.refunded ? 'Refunded' : 'Active'}
+                      <Badge variant={sale.status === 'REFUNDED' ? 'destructive' : sale.status === 'COMPLETED' ? 'success' : 'secondary'}>
+                        {sale.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-[var(--muted-foreground)]">
@@ -189,26 +190,26 @@ export default function SalesPage() {
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>
-                        {!sale.refunded && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setConfirm({ action: 'checkout', id: sale.id })}
-                              title="Checkout"
-                            >
-                              <CreditCard className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setConfirm({ action: 'refund', id: sale.id })}
-                              title="Refund"
-                              className="text-[var(--destructive)]"
-                            >
-                              <RotateCcw className="h-4 w-4" />
-                            </Button>
-                          </>
+                        {sale.status === 'PENDING' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setConfirm({ action: 'checkout', id: sale.id })}
+                            title="Checkout"
+                          >
+                            <CreditCard className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {sale.status === 'COMPLETED' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setConfirm({ action: 'refund', id: sale.id })}
+                            title="Refund"
+                            className="text-[var(--destructive)]"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
                         )}
                       </div>
                     </TableCell>

@@ -13,9 +13,10 @@ export interface RegisterUserRequest {
 export interface Authority { id: string; name: string }
 
 // Sales
+export type SaleStatus = 'PENDING' | 'COMPLETED' | 'REFUNDED'
 export interface Sale {
   id: string; discount: number | null; employeeId: string;
-  refunded: boolean; createdAt: string; updatedAt: string
+  status: SaleStatus; createdAt: string; updatedAt: string
 }
 export interface SaleLine {
   saleId: string; productVariationId: string;
@@ -74,8 +75,9 @@ export interface FinancialStat {
   revenue: number; payroll: number; fixedCharges: number; netProfit: number; period: string
 }
 export interface SalesStat {
-  transactionCount: number; grossRevenue: number; netRevenue: number;
-  discounts: number; topCategories: string[]; topProducts: string[]; period: string
+  statDate: string;
+  totalTransactions: number; grossRevenue: number; netRevenue: number;
+  discounts: number; topCategories: string[]; topProducts: string[]; period: string;
 }
 export interface EmployeePerformanceStat {
   employeeId: string; firstName: string; lastName: string;

@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { finance } from '@/lib/api'
 import type { FixedCharge } from '@/types'
@@ -28,7 +29,13 @@ export default function FixedChargesPage() {
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const { toasts, toast, removeToast } = useToast()
+
+  const filtered = charges
+    .filter(c => statusFilter === 'all' || (statusFilter === 'active' ? c.active : !c.active))
+    .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
 
   useEffect(() => { load() }, [])
 
@@ -125,14 +132,45 @@ export default function FixedChargesPage() {
         </DialogContent>
       </Dialog>
 
+      {charges.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Total Monthly Charges</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">
+              ${charges.filter(c => c.active).reduce((sum, c) => sum + c.amount, 0).toFixed(2)}
+            </p>
+            <p className="text-sm text-[var(--muted-foreground)] mt-1">
+              across {charges.filter(c => c.active).length} active charge{charges.filter(c => c.active).length !== 1 ? 's' : ''}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
-        <CardHeader><CardTitle>All Fixed Charges</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle>All Fixed Charges</CardTitle>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Search by name…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="h-8 w-44 text-sm"
+            />
+            <Tabs value={statusFilter} onValueChange={v => setStatusFilter(v as typeof statusFilter)}>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="inactive">Inactive</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center h-40">
               <p className="text-sm text-[var(--muted-foreground)]">Loading…</p>
             </div>
-          ) : charges.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="flex items-center justify-center h-40">
               <p className="text-sm text-[var(--muted-foreground)]">No fixed charges found</p>
             </div>
@@ -148,7 +186,7 @@ export default function FixedChargesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {charges.map(c => (
+                {filtered.map(c => (
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">{c.name}</TableCell>
                     <TableCell className="text-[var(--muted-foreground)]">{c.description || '—'}</TableCell>

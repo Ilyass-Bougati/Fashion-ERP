@@ -124,6 +124,20 @@ export default function PayrollPage() {
         </DialogContent>
       </Dialog>
 
+      {payrolls.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Total Paid (this page)</CardTitle></CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">
+              ${payrolls.reduce((sum, p) => sum + p.salary + p.commission, 0).toFixed(2)}
+            </p>
+            <p className="text-sm text-[var(--muted-foreground)] mt-1">
+              across {payrolls.length} payroll record{payrolls.length !== 1 ? 's' : ''}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader><CardTitle>Payroll History</CardTitle></CardHeader>
         <CardContent className="p-0">
