@@ -101,7 +101,8 @@ export const sales = {
 // Inventory
 export const inventory = {
   products: {
-    list: () => request<Product[]>('/products'),
+    list: (page = 0, size = 20) =>
+      request<Page<Product>>(`/products?page=${page}&size=${size}`),
     get: (id: string) => request<Product>(`/products/${id}`),
     create: (data: Partial<Product>) =>
       request<Product>('/products', { method: 'POST', body: JSON.stringify(data) }),
@@ -110,7 +111,8 @@ export const inventory = {
     remove: (id: string) => request<void>(`/products/${id}`, { method: 'DELETE' }),
   },
   categories: {
-    list: () => request<ProductCategory[]>('/product-categories'),
+    list: (page = 0, size = 20) =>
+      request<Page<ProductCategory>>(`/product-categories?page=${page}&size=${size}`),
     get: (id: string) => request<ProductCategory>(`/product-categories/${id}`),
     create: (data: Partial<ProductCategory>) =>
       request<ProductCategory>('/product-categories', {
