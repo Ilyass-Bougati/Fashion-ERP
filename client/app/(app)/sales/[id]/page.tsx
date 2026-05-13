@@ -16,10 +16,17 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { sales } from '@/lib/api'
 import type { Sale, SaleLine } from '@/types'
+
+function StatusBadge({ status }: { status: Sale['status'] }) {
+  if (status === 'REFUNDED') return <Badge variant="destructive">Refunded</Badge>
+  if (status === 'COMPLETED') return <Badge variant="success">Completed</Badge>
+  return <Badge variant="warning">Pending</Badge>
+}
 
 export default function SaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -27,6 +34,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
   const [lines, setLines] = useState<SaleLine[]>([])
   const [loading, setLoading] = useState(true)
   const [addOpen, setAddOpen] = useState(false)
+  const [refundConfirm, setRefundConfirm] = useState(false)
   const [variationId, setVariationId] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [price, setPrice] = useState('')
@@ -70,6 +78,8 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
       loadSale()
     } catch {
       toast('Refund failed', 'error')
+    } finally {
+      setRefundConfirm(false)
     }
   }
 
@@ -136,18 +146,20 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
           <h2 className="text-2xl font-bold">Sale Details</h2>
           <p className="text-xs font-mono text-[var(--muted-foreground)]">{sale.id}</p>
         </div>
-        {!sale.refunded && (
-          <div className="flex gap-2">
+        <div className="flex gap-2">
+          {sale.status === 'PENDING' && (
             <Button onClick={handleCheckout} size="sm">
               <CreditCard className="mr-2 h-4 w-4" />
               Checkout
             </Button>
-            <Button onClick={handleRefund} size="sm" variant="destructive">
+          )}
+          {sale.status === 'COMPLETED' && (
+            <Button onClick={() => setRefundConfirm(true)} size="sm" variant="destructive">
               <RotateCcw className="mr-2 h-4 w-4" />
               Refund
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Info card */}
@@ -155,9 +167,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-[var(--muted-foreground)]">Status</p>
-            <Badge variant={sale.refunded ? 'destructive' : 'success'} className="mt-1">
-              {sale.refunded ? 'Refunded' : 'Active'}
-            </Badge>
+            <StatusBadge status={sale.status} />
           </CardContent>
         </Card>
         <Card>
@@ -184,7 +194,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Line Items</CardTitle>
-          {!sale.refunded && (
+          {sale.status === 'PENDING' && (
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
               <DialogTrigger asChild>
                 <Button size="sm">
@@ -251,7 +261,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
                   <TableHead>Qty</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Line Total</TableHead>
-                  {!sale.refunded && <TableHead />}
+                  {sale.status === 'PENDING' && <TableHead />}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -261,7 +271,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
                     <TableCell>{line.quantity}</TableCell>
                     <TableCell>${line.saleAtPrice.toFixed(2)}</TableCell>
                     <TableCell>${(line.quantity * line.saleAtPrice).toFixed(2)}</TableCell>
-                    {!sale.refunded && (
+                    {sale.status === 'PENDING' && (
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -280,6 +290,22 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={refundConfirm} onOpenChange={setRefundConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Refund</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to refund this sale? Stock will be restored and a refund transaction will be created. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRefundConfirm(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleRefund}>Refund</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   )

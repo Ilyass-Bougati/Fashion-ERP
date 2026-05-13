@@ -15,7 +15,7 @@ export interface Authority { id: string; name: string }
 // Sales
 export interface Sale {
   id: string; discount: number | null; employeeId: string;
-  refunded: boolean; createdAt: string; updatedAt: string
+  status: 'PENDING' | 'COMPLETED' | 'REFUNDED'; createdAt: string; updatedAt: string
 }
 export interface SaleLine {
   saleId: string; productVariationId: string;
