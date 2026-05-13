@@ -17,6 +17,8 @@ import org.springframework.stereotype.Repository;
 public interface FinancialStatRepository extends JpaRepository<@NonNull FinancialStat, @NonNull UUID> {
     Optional<FinancialStatProjection> getFinancialStatProjectionById(UUID id);
 
+    List<FinancialStatProjection> findByPeriodType(PeriodType periodType);
+    
     Optional<FinancialStat> findByStatDateAndPeriodType(LocalDate statDate, PeriodType periodType);
 
     Page<FinancialStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);

@@ -11,6 +11,8 @@ import com.sefault.server.stats.repository.SalesStatRepository;
 import com.sefault.server.stats.repository.StockStatRepository;
 import com.sefault.server.stats.service.StatsQueryService;
 import java.time.LocalDate;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,13 +33,28 @@ public class StatsQueryServiceImpl implements StatsQueryService {
         return financialRepo.findByPeriodType(periodType, pageable);
     }
 
+    @Override
+    public List<FinancialStatProjection> getAllFinancialStats(PeriodType periodType) {
+        return financialRepo.findByPeriodType(periodType);
+    }
+
     public Page<SalesStatProjection> getSalesStats(PeriodType periodType, Pageable pageable) {
         return salesRepo.findByPeriodType(periodType, pageable);
+    }
+
+    @Override
+    public List<SalesStatProjection> getAllSalesStats(PeriodType periodType) {
+        return salesRepo.findByPeriodType(periodType);
     }
 
     public Page<EmployeePerformanceStatProjection> getEmployeePerformanceStats(
             PeriodType periodType, Pageable pageable) {
         return employeeRepo.findByPeriodType(periodType, pageable);
+    }
+
+    @Override
+    public List<EmployeePerformanceStatProjection> getAllEmployeePerformanceStats(PeriodType periodType) {
+        return employeeRepo.findByPeriodType(periodType);
     }
 
     public Page<StockStatProjection> getStockStats(LocalDate statDate, PeriodType periodType, Pageable pageable) {

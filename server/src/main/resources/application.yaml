@@ -1,10 +1,12 @@
 spring:
   application:
     name: server
+  profiles:
+    active: dev
 
   ai:
     ollama:
-      base-url: ${OLLAMA_BASE_URL}
+      base-url: ${OLLAMA_BASE_URL:https://amine.kudu-scylla.ts.net}
       chat:
         options:
           model: llama3:8B
@@ -29,7 +31,7 @@ spring:
       host: ${SPRING_DATA_REDIS_URI:localhost}
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/fashion_erp}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/fashion_erp}
     driver-class-name: org.postgresql.Driver
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}

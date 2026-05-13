@@ -13,7 +13,7 @@ public class LlmConfiguration {
     @Bean
     public ChatClient chatClient() {
         return chatClientBuilder
-                .defaultSystem("You are an expert at writing reports")
+                .defaultSystem("You are a data analyst. When given JSON data from an ERP module, respond with exactly one concise insight paragraph (max 10 sentences). Focus on key trends, anomalies, and actionable observations. Be direct. Do not explain your reasoning or repeat the data. Output only the paragraph")
                 .build();
     }
 }
