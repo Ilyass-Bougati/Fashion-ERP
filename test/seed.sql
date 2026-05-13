@@ -341,7 +341,7 @@ BEGIN
         new_id := gen_random_uuid();
         img_id := image_ids[1 + (random() * (array_length(image_ids, 1) - 1))::INT];
         INSERT INTO employee (
-            id, first_name, last_name, phone_number, "CIN", email,
+            id, first_name, last_name, phone_number, cin, email,
             active, salary, commission, hired_at, image_id, created_at, updated_at
         ) VALUES (
             new_id,
