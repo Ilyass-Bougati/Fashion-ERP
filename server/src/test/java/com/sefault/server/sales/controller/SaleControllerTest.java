@@ -92,7 +92,13 @@ public class SaleControllerTest {
     @WithMockUser(authorities = "CREATE_SALE")
     void createSale_Success() throws Exception {
         UUID id = UUID.randomUUID();
-        SaleRecord record = new SaleRecord(id, 0.0, UUID.randomUUID(), false, LocalDateTime.now(), LocalDateTime.now());
+        SaleRecord record = new SaleRecord(
+                id,
+                0.0,
+                UUID.randomUUID(),
+                com.sefault.server.sales.SaleStatus.PENDING,
+                LocalDateTime.now(),
+                LocalDateTime.now());
         when(saleService.create(any())).thenReturn(record);
 
         mockMvc.perform(post("/api/v1/sale")
