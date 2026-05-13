@@ -7,7 +7,10 @@ import type {
   Page
 } from '@/types'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+// Always use a relative URL so requests go through Next.js's /api rewrite proxy
+// (next.config.ts: /api/* → backend).  A direct cross-origin fetch to the
+// backend causes the browser to drop SameSite cookies on subsequent requests.
+const BASE_URL = ''
 
 async function request<T>(
   path: string,
@@ -39,6 +42,8 @@ async function request<T>(
     throw new Error(error)
   }
   if (res.status === 204) return undefined as T
+  const ct = res.headers.get('content-type') ?? ''
+  if (!ct.includes('application/json')) return undefined as T
   return res.json()
 }
 
@@ -118,6 +123,8 @@ export const inventory = {
     remove: (id: string) => request<void>(`/product-categories/${id}`, { method: 'DELETE' }),
   },
   variations: {
+    list: (page = 0, size = 20) =>
+      request<Page<ProductVariation>>(`/product-variations?page=${page}&size=${size}`),
     get: (id: string) => request<ProductVariation>(`/product-variations/${id}`),
     create: (data: Partial<ProductVariation>) =>
       request<ProductVariation>('/product-variations', {
@@ -146,7 +153,10 @@ export const hr = {
   employees: {
     list: (page = 0, size = 20) =>
       request<Page<Employee>>(`/employee?page=${page}&size=${size}`),
-    listActive: () => request<Employee[]>('/employee/active'),
+    listActive: (page = 0, size = 20) =>
+      request<Page<Employee>>(`/employee/active?page=${page}&size=${size}`),
+    listTerminated: (page = 0, size = 20) =>
+      request<Page<Employee>>(`/employee/terminated?page=${page}&size=${size}`),
     get: (id: string) => request<Employee>(`/employee/${id}`),
     create: (data: Partial<Employee>) =>
       request<Employee>('/employee', { method: 'POST', body: JSON.stringify(data) }),
@@ -176,8 +186,10 @@ export const hr = {
 // Finance
 export const finance = {
   transactions: {
-    list: (type?: 'PAID' | 'RECEIVED') =>
-      request<Transaction[]>(`/finance/transactions${type ? `?type=${type}` : ''}`),
+    list: (type?: 'PAID' | 'RECEIVED', page = 0, size = 20) =>
+      request<Page<Transaction>>(
+        `/finance/transactions?page=${page}&size=${size}${type ? `&type=${type}` : ''}`
+      ),
     get: (id: string) => request<Transaction>(`/finance/transactions/${id}`),
     create: (data: { type: 'PAID' | 'RECEIVED'; amount: number; saleId?: string }) =>
       request<Transaction>('/finance/transactions', {
@@ -187,7 +199,7 @@ export const finance = {
   },
   fixedCharges: {
     list: (activeOnly?: boolean) =>
-      request<FixedCharge[]>(
+      request<Page<FixedCharge>>(
         `/finance/fixed-charges${activeOnly !== undefined ? `?activeOnly=${activeOnly}` : ''}`
       ),
     get: (id: string) => request<FixedCharge>(`/finance/fixed-charges/${id}`),
@@ -216,6 +228,8 @@ export const finance = {
 
 // Users
 export const users = {
+  list: (page = 0, size = 20) =>
+    request<Page<User>>(`/user?page=${page}&size=${size}`),
   get: (id: string) => request<User>(`/user/${id}`),
   create: (data: RegisterUserRequest) =>
     request<User>('/user', { method: 'POST', body: JSON.stringify(data) }),

@@ -1,41 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus, RotateCcw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useState, useEffect, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { finance } from '@/lib/api'
 import type { Transaction } from '@/types'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts'
 
 export default function FinancePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [filter, setFilter] = useState<'ALL' | 'PAID' | 'RECEIVED'>('ALL')
   const [loading, setLoading] = useState(true)
-  const [open, setOpen] = useState(false)
-  const [type, setType] = useState<'PAID' | 'RECEIVED'>('RECEIVED')
-  const [amount, setAmount] = useState('')
-  const [saleId, setSaleId] = useState('')
-  const [submitting, setSubmitting] = useState(false)
   const { toasts, toast, removeToast } = useToast()
 
   useEffect(() => { load() }, [filter])
@@ -43,8 +29,9 @@ export default function FinancePage() {
   async function load() {
     setLoading(true)
     try {
-      const res = await finance.transactions.list(filter === 'ALL' ? undefined : filter)
-      setTransactions(res)
+      // Fetch a large window so the chart has enough data
+      const res = await finance.transactions.list(filter === 'ALL' ? undefined : filter, 0, 200)
+      setTransactions(res.content)
     } catch {
       toast('Failed to load transactions', 'error')
     } finally {
@@ -52,79 +39,67 @@ export default function FinancePage() {
     }
   }
 
-  function close() { setOpen(false); setAmount(''); setSaleId('') }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!amount) return
-    setSubmitting(true)
-    try {
-      await finance.transactions.create({
-        type,
-        amount: parseFloat(amount),
-        ...(saleId ? { saleId } : {}),
-      })
-      toast('Transaction created', 'success')
-      close()
-      load()
-    } catch {
-      toast('Failed to create transaction', 'error')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  async function handleReverse(id: string) {
-    try {
-      await finance.transactions.reverse(id)
-      toast('Transaction reversed', 'success')
-      load()
-    } catch {
-      toast('Failed to reverse transaction', 'error')
-    }
-  }
+  // Aggregate transactions per day for the chart
+  const chartData = useMemo(() => {
+    const counts: Record<string, { date: string; PAID: number; RECEIVED: number }> = {}
+    transactions.forEach(t => {
+      const date = new Date(t.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+      if (!counts[date]) counts[date] = { date, PAID: 0, RECEIVED: 0 }
+      counts[date][t.type]++
+    })
+    return Object.values(counts).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    )
+  }, [transactions])
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Transactions</h2>
-          <p className="text-sm text-[var(--muted-foreground)]">Financial transaction history</p>
-        </div>
-        <Button onClick={() => setOpen(true)}><Plus className="mr-2 h-4 w-4" />New Transaction</Button>
+      <div>
+        <h2 className="text-2xl font-bold">Transactions</h2>
+        <p className="text-sm text-[var(--muted-foreground)]">Financial transaction history</p>
       </div>
 
-      <Dialog open={open} onOpenChange={v => { if (!v) close() }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>New Transaction</DialogTitle></DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Type *</Label>
-              <Select value={type} onValueChange={v => setType(v as 'PAID' | 'RECEIVED')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="RECEIVED">Received</SelectItem>
-                  <SelectItem value="PAID">Paid</SelectItem>
-                </SelectContent>
-              </Select>
+      {/* Daily transactions chart */}
+      <Card>
+        <CardHeader><CardTitle>Transactions per day</CardTitle></CardHeader>
+        <CardContent>
+          {chartData.length === 0 ? (
+            <div className="flex items-center justify-center h-40">
+              <p className="text-sm text-[var(--muted-foreground)]">No data available</p>
             </div>
-            <div className="space-y-2">
-              <Label>Amount *</Label>
-              <Input type="number" step="0.01" min="0" value={amount}
-                onChange={e => setAmount(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label>Sale ID (optional)</Label>
-              <Input value={saleId} onChange={e => setSaleId(e.target.value)} placeholder="Link to sale…" />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" type="button" onClick={close}>Cancel</Button>
-              <Button type="submit" disabled={submitting}>{submitting ? 'Creating…' : 'Create'}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
+                <Bar dataKey="RECEIVED" name="Received" fill="var(--success, #22c55e)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="PAID"     name="Paid"     fill="var(--destructive)"          radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
 
+      {/* Transactions table */}
       <Tabs value={filter} onValueChange={v => setFilter(v as typeof filter)}>
         <TabsList>
           <TabsTrigger value="ALL">All</TabsTrigger>
@@ -151,7 +126,6 @@ export default function FinancePage() {
                       <TableHead>Amount</TableHead>
                       <TableHead>Sale ID</TableHead>
                       <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -170,11 +144,6 @@ export default function FinancePage() {
                         </TableCell>
                         <TableCell className="text-sm text-[var(--muted-foreground)]">
                           {new Date(t.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => handleReverse(t.id)} title="Reverse">
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
