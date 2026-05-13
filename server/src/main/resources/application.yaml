@@ -100,3 +100,7 @@ app:
     max-pool-size: 10
     queue-capacity: 500
     thread-name-prefix: "EmailThread-"
+
+erp:
+  prediction:
+    service-url: ${:http://localhost:8000}
