@@ -12,7 +12,6 @@ import com.sefault.server.stats.repository.StockStatRepository;
 import com.sefault.server.stats.service.StatsQueryService;
 import java.time.LocalDate;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

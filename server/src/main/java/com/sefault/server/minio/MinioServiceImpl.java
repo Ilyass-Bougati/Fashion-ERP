@@ -23,7 +23,7 @@ public class MinioServiceImpl implements MinioService {
         uploadFile(objectName, file.getInputStream(), file.getSize(), file.getContentType());
     }
 
-    // I added this so that I could save reports, since they don't come in as MultipartFiles
+    // I added this so that I could save reports, since they are generated not uploaded as MultipartFiles
     public void uploadFile(String objectName, InputStream inputStream, long size, String contentType)
             throws MinioException, IOException {
         boolean found = minioClient.bucketExists(
@@ -34,12 +34,10 @@ public class MinioServiceImpl implements MinioService {
         }
 
         try (inputStream) {
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(objectName)
-                    .stream(inputStream, size, -1L)
-                    .contentType(contentType)
-                    .build());
+            minioClient.putObject(
+                    PutObjectArgs.builder().bucket(bucketName).object(objectName).stream(inputStream, size, -1L)
+                            .contentType(contentType)
+                            .build());
         }
     }
 

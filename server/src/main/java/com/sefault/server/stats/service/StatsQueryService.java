@@ -7,7 +7,6 @@ import com.sefault.server.stats.dto.projection.StockStatProjection;
 import com.sefault.server.stats.enums.PeriodType;
 import java.time.LocalDate;
 import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

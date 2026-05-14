@@ -2,8 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Financial Statistics Report</title>
+    <title>Sales Statistics Report</title>
     <style>
+        @page {
+            size: A4;
+            margin: 20px 24px;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -11,7 +16,7 @@
             font-size: 12px;
             color: #1a1a2e;
             background-color: #ffffff;
-            padding: 40px;
+            padding: 0;
         }
 
         /* ── Header ── */
@@ -57,6 +62,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 24px;
+            table-layout: fixed;
         }
 
         thead tr {
@@ -65,16 +71,17 @@
         }
 
         thead th {
-            padding: 9px 10px;
+            padding: 7px 4px;
             text-align: left;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            white-space: nowrap;
+            letter-spacing: 0.3px;
+            white-space: normal;
+            word-break: break-word;
         }
 
-        thead th.right { text-align: right; }
+        thead th.right  { text-align: right; }
         thead th.center { text-align: center; }
 
         tbody tr {
@@ -86,31 +93,53 @@
         }
 
         tbody td {
-            padding: 8px 10px;
-            font-size: 11px;
+            padding: 6px 4px;
+            font-size: 10px;
             color: #2c2c2c;
             vertical-align: middle;
+            word-break: break-word;
         }
 
         tbody td.right  { text-align: right; }
         tbody td.center { text-align: center; }
-        tbody td.mono   { font-family: "Courier New", monospace; font-size: 10px; }
+        tbody td.mono   { font-family: "Courier New", monospace; font-size: 9px; }
 
-        /* Profit coloring */
+        /* Revenue coloring */
         .positive { color: #1a7a4a; font-weight: bold; }
         .negative { color: #c0392b; font-weight: bold; }
 
         /* Period badge */
         .badge {
             display: inline;
-            padding: 2px 7px;
+            padding: 2px 5px;
             border-radius: 3px;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             background-color: #e8eaf6;
             color: #1a1a2e;
+        }
+
+        /* Reconciled badge */
+        .badge-success {
+            display: inline;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 8px;
+            font-weight: bold;
+            background-color: #d4edda;
+            color: #1a7a4a;
+        }
+
+        .badge-pending {
+            display: inline;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 8px;
+            font-weight: bold;
+            background-color: #fff3cd;
+            color: #856404;
         }
 
         /* ── Empty state ── */
@@ -132,9 +161,7 @@
         }
 
         .ai-insight-header {
-            display: flex;
-            align-items: center;
-            gap: 7px;
+            display: block;
             margin-bottom: 10px;
         }
 
@@ -149,19 +176,22 @@
             font-weight: bold;
             text-align: center;
             line-height: 18px;
-            flex-shrink: 0;
+            vertical-align: middle;
+            margin-right: 7px;
         }
 
         .ai-insight-label {
+            display: inline-block;
             font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1.2px;
             color: #4a6cf7;
+            vertical-align: middle;
         }
 
         .ai-insight-body {
-            font-size: 11.5px;
+            font-size: 11px;
             line-height: 1.75;
             color: #2c2c2c;
             white-space: pre-wrap;
@@ -187,8 +217,8 @@
 
 <!-- Header -->
 <div class="report-header">
-    <div class="report-title">Financial Statistics Report</div>
-    <div class="report-subtitle">Consolidated financial performance overview</div>
+    <div class="report-title">Sales Statistics Report</div>
+    <div class="report-subtitle">Consolidated sales performance overview</div>
     <div class="report-meta">
         Generated on:
         <span th:text="${#temporals.format(#temporals.createNow(), 'dd MMMM yyyy, HH:mm')}">01 January 2025, 00:00</span>
@@ -201,70 +231,96 @@
 <div class="section-title">Performance Records</div>
 
 <table>
+    <colgroup>
+        <col style="width:3%"/>   <!-- # -->
+        <col style="width:8%"/>   <!-- Stat Date -->
+        <col style="width:7%"/>   <!-- Period -->
+        <col style="width:7%"/>   <!-- Transactions -->
+        <col style="width:6%"/>   <!-- Refunds -->
+        <col style="width:9%"/>   <!-- Gross Revenue -->
+        <col style="width:9%"/>   <!-- Net Revenue -->
+        <col style="width:8%"/>   <!-- Discounts -->
+        <col style="width:8%"/>   <!-- Avg Basket -->
+        <col style="width:6%"/>   <!-- Units Sold -->
+        <col style="width:10%"/>  <!-- Top Category -->
+        <col style="width:10%"/>  <!-- Top Product SKU -->
+        <col style="width:7%"/>   <!-- Reconciled -->
+        <col style="width:12%"/>  <!-- Computed At -->
+    </colgroup>
     <thead>
     <tr>
         <th>#</th>
         <th>Stat Date</th>
         <th class="center">Period</th>
-        <th class="right">Total Revenue</th>
-        <th class="right">Payroll Cost</th>
-        <th class="right">Fix Charges</th>
-        <th class="right">Gross Profit</th>
-        <th class="right">Net Profit</th>
-        <th class="right">Margin %</th>
-        <th class="right">Employees</th>
-        <th class="right">Rev / Employee</th>
+        <th class="right">Transactions</th>
+        <th class="right">Refunds</th>
+        <th class="right">Gross Rev.</th>
+        <th class="right">Net Rev.</th>
+        <th class="right">Discounts</th>
+        <th class="right">Avg Basket</th>
+        <th class="right">Units</th>
+        <th>Top Category</th>
+        <th>Top SKU</th>
+        <th class="center">Reconciled</th>
         <th>Computed At</th>
     </tr>
     </thead>
     <tbody>
     <tr th:if="${stats.isEmpty()}" class="empty-row">
-        <td colspan="12">No financial records found for this period.</td>
+        <td colspan="14">No sales records found for this period.</td>
     </tr>
     <tr th:each="stat, i : ${stats}">
         <!-- # -->
-        <td th:text="${i.index + 1}"/>
+        <td th:text="${i.index + 1}"></td>
 
         <!-- Stat Date -->
-        <td th:text="${#temporals.format(stat.statDate, 'dd MMM yyyy')}"/>
+        <td th:text="${#temporals.format(stat.statDate, 'dd MMM yyyy')}"></td>
 
         <!-- Period Type -->
         <td class="center">
-            <span class="badge" th:text="${stat.periodType}"/>
+            <span class="badge" th:text="${stat.periodType}"></span>
         </td>
 
-        <!-- Total Revenue -->
-        <td class="right mono" th:text="${#numbers.formatDecimal(stat.totalRevenue, 1, 'COMMA', 2, 'POINT')}"/>
+        <!-- Total Transactions -->
+        <td class="right" th:text="${stat.totalTransactions != null ? stat.totalTransactions : '-'}"></td>
 
-        <!-- Payroll Cost -->
-        <td class="right mono" th:text="${#numbers.formatDecimal(stat.totalPayrollCost, 1, 'COMMA', 2, 'POINT')}"/>
+        <!-- Refunded Count -->
+        <td class="right" th:text="${stat.refundedCount != null ? stat.refundedCount : '-'}"></td>
 
-        <!-- Fix Charges -->
-        <td class="right mono" th:text="${#numbers.formatDecimal(stat.totalFixCharges, 1, 'COMMA', 2, 'POINT')}"/>
-
-        <!-- Gross Profit -->
+        <!-- Gross Revenue -->
         <td class="right mono"
-            th:classappend="${stat.grossProfit >= 0} ? 'positive' : 'negative'"
-            th:text="${#numbers.formatDecimal(stat.grossProfit, 1, 'COMMA', 2, 'POINT')}"/>
+            th:text="${stat.grossRevenue != null ? #numbers.formatDecimal(stat.grossRevenue, 1, 'COMMA', 2, 'POINT') : '-'}"></td>
 
-        <!-- Net Profit -->
+        <!-- Net Revenue -->
         <td class="right mono"
-            th:classappend="${stat.netProfit >= 0} ? 'positive' : 'negative'"
-            th:text="${#numbers.formatDecimal(stat.netProfit, 1, 'COMMA', 2, 'POINT')}"/>
+            th:classappend="${stat.netRevenue != null and stat.netRevenue >= 0} ? 'positive' : 'negative'"
+            th:text="${stat.netRevenue != null ? #numbers.formatDecimal(stat.netRevenue, 1, 'COMMA', 2, 'POINT') : '-'}"></td>
 
-        <!-- Profit Margin % -->
-        <td class="right"
-            th:classappend="${stat.profitMarginPct >= 0} ? 'positive' : 'negative'"
-            th:text="${#numbers.formatDecimal(stat.profitMarginPct, 1, 2)} + '%'"/>
+        <!-- Total Discounts -->
+        <td class="right mono"
+            th:text="${stat.totalDiscounts != null ? #numbers.formatDecimal(stat.totalDiscounts, 1, 'COMMA', 2, 'POINT') : '-'}"></td>
 
-        <!-- Active Employees -->
-        <td class="right" th:text="${stat.activeEmployeesCount}"/>
+        <!-- Avg Basket Value -->
+        <td class="right mono"
+            th:text="${stat.avgBasketValue != null ? #numbers.formatDecimal(stat.avgBasketValue, 1, 'COMMA', 2, 'POINT') : '-'}"></td>
 
-        <!-- Revenue per Employee -->
-        <td class="right mono" th:text="${#numbers.formatDecimal(stat.revenuePerEmployee, 1, 'COMMA', 2, 'POINT')}"/>
+        <!-- Units Sold -->
+        <td class="right" th:text="${stat.unitsSold != null ? stat.unitsSold : '-'}"></td>
+
+        <!-- Top Category -->
+        <td th:text="${stat.topCategoryName != null ? stat.topCategoryName : '-'}"></td>
+
+        <!-- Top Product SKU -->
+        <td class="mono" th:text="${stat.topProductSku != null ? stat.topProductSku : '-'}"></td>
+
+        <!-- Reconciled -->
+        <td class="center">
+            <span th:if="${stat.reconciled != null and stat.reconciled}" class="badge-success">Yes</span>
+            <span th:if="${stat.reconciled == null or !stat.reconciled}" class="badge-pending">Pending</span>
+        </td>
 
         <!-- Computed At -->
-        <td class="mono" th:text="${#temporals.format(stat.computedAt, 'dd MMM yyyy HH:mm')}"/>
+        <td class="mono" th:text="${stat.computedAt != null ? #temporals.format(stat.computedAt, 'dd MMM yyyy HH:mm') : '-'}"></td>
     </tr>
     </tbody>
 </table>

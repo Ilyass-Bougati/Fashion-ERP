@@ -1,6 +1,5 @@
 package com.sefault.server.user.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sefault.server.ai.service.LlmService;
 import com.sefault.server.exception.NotFoundException;
@@ -14,19 +13,23 @@ import com.sefault.server.stats.service.StatsQueryService;
 import com.sefault.server.user.dto.record.ReportRecord;
 import com.sefault.server.user.dto.record.SavedReportRecord;
 import com.sefault.server.user.entity.Report;
+import com.sefault.server.user.enums.ReportStatus;
 import com.sefault.server.user.enums.ReportType;
 import com.sefault.server.user.mapper.ReportMapper;
 import com.sefault.server.user.repository.ReportRepository;
 import com.sefault.server.user.service.PdfGenerationService;
 import com.sefault.server.user.service.ReportService;
+import io.minio.errors.MinioException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -41,11 +44,14 @@ public class ReportServiceImpl implements ReportService {
     private final ObjectMapper objectMapper;
 
     public ReportServiceImpl(
-            StatsQueryService statsQueryService, PdfGenerationService pdfGenerationService, MinioService minioService,
+            StatsQueryService statsQueryService,
+            PdfGenerationService pdfGenerationService,
+            MinioService minioService,
             MinioProperties minioProperties,
             ReportRepository reportRepository,
             ReportMapper reportMapper,
-            LlmService llmService, ObjectMapper objectMapper) {
+            LlmService llmService,
+            ObjectMapper objectMapper) {
         this.statsQueryService = statsQueryService;
         this.pdfGenerationService = pdfGenerationService;
         this.minioService = minioService;
@@ -57,37 +63,59 @@ public class ReportServiceImpl implements ReportService {
         this.minioService.setBucketName(minioProperties.reportsBucket());
     }
 
-    private String getInsight(String moduleName, String data){
-        String prompt = "ERP Module: " + moduleName+ "\n" +
-                "Data: "+ data +"\n" +
-                "\n" +
-                "Write an insight paragraph for a business report based on this data.";
-
-        System.out.println(prompt);
+    private String getInsight(String moduleName, String data) {
+        String prompt = "ERP Module: " + moduleName + "\n" + "Data: "
+                + data + "\n" + "\n"
+                + "Write an insight paragraph for a business report based on this data.";
 
         return llmService.prompt(prompt);
     }
 
-    public SavedReportRecord generateReport(PeriodType period , ReportType type) throws JsonProcessingException {
-        //Get all necessary stats
+    private void uploadFile(byte[] fileBytes, String fileName) throws MinioException, IOException {
+        InputStream file = new ByteArrayInputStream(fileBytes);
+        minioService.uploadFile(fileName, file, fileBytes.length, "application/pdf");
+    }
+
+    public SavedReportRecord generateReport(PeriodType period) throws IOException, MinioException {
         List<FinancialStatProjection> financialData = statsQueryService.getAllFinancialStats(period);
         List<SalesStatProjection> salesData = statsQueryService.getAllSalesStats(period);
-        List<EmployeePerformanceStatProjection> employeePerformanceData = statsQueryService.getAllEmployeePerformanceStats(period);
+        List<EmployeePerformanceStatProjection> employeePerformanceData =
+                statsQueryService.getAllEmployeePerformanceStats(period);
 
-        //Send to LLM
         String financeInsight = getInsight("finance", objectMapper.writeValueAsString(financialData));
-//        String salesInsight = getInsight("sales", salesData.toString());
-//        String employeePerformanceInsight = getInsight("employee performance", financialData.toString());
+        String salesInsight = getInsight("sales", objectMapper.writeValueAsString(salesData));
+        String employeePerformanceInsight =
+                getInsight("employee performance", objectMapper.writeValueAsString(employeePerformanceData));
 
-        System.out.println(financeInsight);
-//        System.out.println(salesInsight);
-//        System.out.println(employeePerformanceInsight);
+        byte[] fileBytes = pdfGenerationService.generateDocument(
+                "reports/combined-report",
+                Map.of(
+                        "fStats",
+                        financialData,
+                        "fInsight",
+                        financeInsight,
+                        "sStats",
+                        salesData,
+                        "sInsight",
+                        salesInsight,
+                        "eStats",
+                        employeePerformanceData,
+                        "eInsight",
+                        employeePerformanceInsight));
+        String fileName = UUID.randomUUID().toString();
+        uploadFile(fileBytes, fileName);
+        ReportRecord saved = save(new ReportRecord(
+                null,
+                fileName,
+                ReportType.PDF,
+                ReportStatus.DONE,
+                fileName,
+                minioProperties.reportsBucket(),
+                "application/pdf",
+                null,
+                null));
 
-        //Compile template
-        String html = pdfGenerationService.processTemplate("reports/test-report", Map.of("stats", financialData, "aiInsight", financeInsight));
-        System.out.println(html);
-        //Render template into document
-        return new SavedReportRecord(UUID.randomUUID(), "");
+        return new SavedReportRecord(saved.id(), minioService.getPermanentFileUrl(fileName));
     }
 
     @Override
