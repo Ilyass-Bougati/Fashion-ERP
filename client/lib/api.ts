@@ -48,6 +48,23 @@ async function request<T>(
   return res.json()
 }
 
+// Images
+export const images = {
+  upload: async (file: File): Promise<{ imageId: string; url: string }> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await fetch(`${BASE_URL}/api/v1/images/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    })
+    if (!res.ok) throw new Error(await res.text().catch(() => res.statusText))
+    return res.json()
+  },
+  getUrl: (id: string) =>
+    request<{ url: string }>(`/images/${id}/url`),
+}
+
 // Auth
 export const auth = {
   login: (data: LoginRequest) =>
