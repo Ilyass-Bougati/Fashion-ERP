@@ -32,7 +32,8 @@ public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceSt
                 salesAgg.stream().collect(Collectors.toMap(EmployeeSalesProjection::getCin, proj -> proj));
 
         Map<String, Double> commissionMap = payrollRepository.aggregateCommissionByEmployee(start, end).stream()
-                .collect(Collectors.toMap(EmployeeCommissionProjection::getCin, EmployeeCommissionProjection::getTotalCommission));
+                .collect(Collectors.toMap(
+                        EmployeeCommissionProjection::getCin, EmployeeCommissionProjection::getTotalCommission));
 
         List<EmployeePerformanceStat> statsToSave = new ArrayList<>();
 
