@@ -1,6 +1,8 @@
 package com.sefault.server.stats.service.impl;
 
+import com.sefault.server.finance.repository.PayrollRepository;
 import com.sefault.server.sales.repository.SaleRepository;
+import com.sefault.server.stats.dto.projection.EmployeeCommissionProjection;
 import com.sefault.server.stats.dto.projection.EmployeeSalesProjection;
 import com.sefault.server.stats.entity.EmployeePerformanceStat;
 import com.sefault.server.stats.enums.PeriodType;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceStatService {
     private final SaleRepository saleRepository;
+    private final PayrollRepository payrollRepository;
     private final EmployeePerformanceStatRepository statRepository;
 
     public void saveEmployeeStats(LocalDateTime start, LocalDateTime end, LocalDate anchorDate, PeriodType periodType) {
@@ -28,6 +31,9 @@ public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceSt
         Map<String, EmployeeSalesProjection> salesMap =
                 salesAgg.stream().collect(Collectors.toMap(EmployeeSalesProjection::getCin, proj -> proj));
 
+        Map<String, Double> commissionMap = payrollRepository.aggregateCommissionByEmployee(start, end).stream()
+                .collect(Collectors.toMap(EmployeeCommissionProjection::getCin, EmployeeCommissionProjection::getTotalCommission));
+
         List<EmployeePerformanceStat> statsToSave = new ArrayList<>();
 
         for (String cin : salesMap.keySet()) {
@@ -35,8 +41,7 @@ public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceSt
 
             String fullName = sData.getFirstName() + " " + sData.getLastName();
 
-            Double commissionEarned = (sData.getGrossSalesAmount() != null ? sData.getGrossSalesAmount() : 0.0)
-                    * (sData.getCommissionRate() != null ? sData.getCommissionRate() : 0.0);
+            Double commissionEarned = commissionMap.getOrDefault(cin, 0.0);
 
             EmployeePerformanceStat existingStat = statRepository
                     .findByStatDateAndPeriodTypeAndEmployeeCin(anchorDate, periodType, cin)

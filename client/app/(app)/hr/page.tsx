@@ -104,7 +104,7 @@ export default function HRPage() {
         active: editing ? editing.active : true,
         salary: parseFloat(form.salary),
         commission: parseFloat(form.commission) / 100,
-        hiredAt: form.hiredAt ? `${form.hiredAt}T00:00:00` : null,
+        hiredAt: form.hiredAt ? `${form.hiredAt}T00:00:00` : undefined,
       }
       if (editing) {
         await hr.employees.update(editing.id, payload)
