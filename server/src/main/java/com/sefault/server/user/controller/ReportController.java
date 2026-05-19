@@ -3,12 +3,10 @@ package com.sefault.server.user.controller;
 import com.sefault.server.user.dto.record.ReportRecord;
 import com.sefault.server.user.dto.record.SavedReportRecord;
 import com.sefault.server.user.service.ReportService;
-
-import java.security.Principal;
-import java.util.UUID;
-
 import com.sefault.server.user.service.UserReportService;
 import io.minio.errors.MinioException;
+import java.security.Principal;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

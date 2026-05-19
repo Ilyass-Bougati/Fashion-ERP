@@ -16,20 +16,20 @@ public class ReportCronScheduler {
     private final ReportService reportService;
 
     @Scheduled(cron = "0 0 0 1 * *")
-    private void generateMonthlyReports(){
-        try{
+    private void generateMonthlyReports() {
+        try {
             reportService.generateReport(PeriodType.MONTHLY, ReportCategory.FINANCIAL);
             log.info("Monthly financial report successfully generated !");
-        }catch(FailedReportGenerationException e){
+        } catch (FailedReportGenerationException e) {
             log.error("Monthly financial report generation failed.");
         }
-        try{
+        try {
             reportService.generateReport(PeriodType.MONTHLY, ReportCategory.SALES);
             log.info("Monthly sales report successfully generated !");
-        }catch (FailedReportGenerationException e){
+        } catch (FailedReportGenerationException e) {
             log.error("Monthly sales report generation failed.");
         }
-        try{
+        try {
             reportService.generateReport(PeriodType.MONTHLY, ReportCategory.EMPLOYEE_PERFORMANCE);
             log.info("Monthly employee performance report successfully generated !");
         } catch (FailedReportGenerationException e) {
@@ -38,20 +38,20 @@ public class ReportCronScheduler {
     }
 
     @Scheduled(cron = "0 0 0 1 1 *")
-    private void generateYearlyReports(){
-        try{
+    private void generateYearlyReports() {
+        try {
             reportService.generateReport(PeriodType.YEARLY, ReportCategory.FINANCIAL);
             log.info("Yearly financial report successfully generated !");
-        }catch(FailedReportGenerationException e){
+        } catch (FailedReportGenerationException e) {
             log.error("Yearly financial report generation failed.");
         }
-        try{
+        try {
             reportService.generateReport(PeriodType.YEARLY, ReportCategory.SALES);
             log.info("Yearly sales report successfully generated !");
-        }catch (FailedReportGenerationException e){
+        } catch (FailedReportGenerationException e) {
             log.error("Yearly sales report generation failed.");
         }
-        try{
+        try {
             reportService.generateReport(PeriodType.YEARLY, ReportCategory.EMPLOYEE_PERFORMANCE);
             log.info("Yearly employee performance report successfully generated !");
         } catch (FailedReportGenerationException e) {
