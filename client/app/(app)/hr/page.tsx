@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, UserX, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, UserX, Eye, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -241,7 +242,7 @@ export default function HRPage() {
                     <TableCell className="font-medium">{emp.firstName} {emp.lastName}</TableCell>
                     <TableCell>{emp.email}</TableCell>
                     <TableCell>${emp.salary.toLocaleString()}</TableCell>
-                    <TableCell>{emp.commission}%</TableCell>
+                    <TableCell>{(emp.commission * 100).toFixed(1)}%</TableCell>
                     <TableCell>
                       <Badge variant={emp.active ? 'success' : 'secondary'}>
                         {emp.active ? 'Active' : 'Terminated'}
@@ -249,6 +250,9 @@ export default function HRPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/hr/${emp.id}`}><Eye className="h-4 w-4" /></Link>
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(emp)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
