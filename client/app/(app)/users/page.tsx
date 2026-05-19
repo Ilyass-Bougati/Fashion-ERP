@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, CheckCircle, Trash2, Shield, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, CheckCircle, XCircle, Trash2, Shield, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,6 +31,8 @@ export default function UsersPage() {
   const [open, setOpen]             = useState(false)
   const [form, setForm]             = useState<RegisterUserRequest>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+
+  const [confirmToggle, setConfirmToggle] = useState<{ id: string; name: string; active: boolean } | null>(null)
 
   const [authOpen, setAuthOpen]         = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -75,13 +77,17 @@ export default function UsersPage() {
     }
   }
 
-  async function handleActivate(id: string) {
+  async function handleToggleActive() {
+    if (!confirmToggle) return
+    const { id, active } = confirmToggle
     try {
       await users.activate(id)
-      toast('User activated', 'success')
-      setUserList(prev => prev.map(u => u.id === id ? { ...u, active: true } : u))
+      toast(active ? 'User deactivated' : 'User activated', 'success')
+      setUserList(prev => prev.map(u => u.id === id ? { ...u, active: !active } : u))
     } catch {
-      toast('Activation failed', 'error')
+      toast(active ? 'Deactivation failed' : 'Activation failed', 'error')
+    } finally {
+      setConfirmToggle(null)
     }
   }
 
@@ -184,6 +190,33 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Activate / Deactivate confirmation dialog */}
+      <Dialog open={confirmToggle !== null} onOpenChange={v => { if (!v) setConfirmToggle(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-[var(--destructive)]" />
+              {confirmToggle?.active ? 'Deactivate User' : 'Activate User'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-[var(--muted-foreground)]">
+            {confirmToggle?.active
+              ? <>Are you sure you want to deactivate <strong>{confirmToggle.name}</strong>?</>
+              : <>Are you sure you want to activate <strong>{confirmToggle?.name}</strong>?</>
+            }
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmToggle(null)}>Cancel</Button>
+            <Button
+              variant={confirmToggle?.active ? 'destructive' : 'default'}
+              onClick={handleToggleActive}
+            >
+              {confirmToggle?.active ? 'Deactivate' : 'Activate'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Authorities dialog */}
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
         <DialogContent className="max-w-md">
@@ -283,12 +316,14 @@ export default function UsersPage() {
                           onClick={() => openAuthorities(user)}>
                           <Shield className="h-4 w-4" />
                         </Button>
-                        {!user.active && (
-                          <Button variant="ghost" size="icon" className="text-emerald-500"
-                            title="Activate" onClick={() => handleActivate(user.id)}>
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost" size="icon"
+                          className={user.active ? 'text-[var(--destructive)]' : 'text-emerald-500'}
+                          title={user.active ? 'Deactivate' : 'Activate'}
+                          onClick={() => setConfirmToggle({ id: user.id, name: `${user.firstName} ${user.lastName}`, active: user.active })}
+                        >
+                          {user.active ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                        </Button>
                         <Button variant="ghost" size="icon" className="text-[var(--destructive)]"
                           onClick={() => handleDelete(user.id)}>
                           <Trash2 className="h-4 w-4" />

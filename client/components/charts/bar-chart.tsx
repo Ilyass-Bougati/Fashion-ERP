@@ -15,9 +15,18 @@ interface BarChartProps {
   xKey: string
   yKey: string
   color?: string
+  yTickFormatter?: (value: number) => string
+  tooltipFormatter?: (value: number) => [string, string]
 }
 
-export function BarChart({ data, xKey, yKey, color = '#6366f1' }: BarChartProps) {
+export function BarChart({
+  data,
+  xKey,
+  yKey,
+  color = '#6366f1',
+  yTickFormatter = (v) => `$${(v / 1000).toFixed(0)}k`,
+  tooltipFormatter = (value) => [`$${Number(value).toLocaleString()}`, 'Revenue'],
+}: BarChartProps) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <RechartsBarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -32,7 +41,7 @@ export function BarChart({ data, xKey, yKey, color = '#6366f1' }: BarChartProps)
           tick={{ fill: '#a1a1aa', fontSize: 12 }}
           axisLine={false}
           tickLine={false}
-          tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+          tickFormatter={yTickFormatter}
         />
         <Tooltip
           contentStyle={{
@@ -41,7 +50,7 @@ export function BarChart({ data, xKey, yKey, color = '#6366f1' }: BarChartProps)
             borderRadius: '8px',
             color: '#fafafa',
           }}
-          formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Revenue']}
+          formatter={(value) => tooltipFormatter(Number(value))}
         />
         <Bar dataKey={yKey} fill={color} radius={[4, 4, 0, 0]} />
       </RechartsBarChart>
