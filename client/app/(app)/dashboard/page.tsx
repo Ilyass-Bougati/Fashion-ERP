@@ -53,9 +53,9 @@ function fmt(n: number | undefined | null) {
 }
 
 function StatCard({
-  title, value, icon: Icon, sub, valueColor,
+  title, value, icon: Icon, sub, valueColor, trend,
 }: {
-  title: string; value: string; icon: React.ElementType; sub?: string; valueColor?: string
+  title: string; value: string; icon: React.ElementType; sub?: string; valueColor?: string; trend?: number | null
 }) {
   return (
     <Card>
@@ -64,8 +64,15 @@ function StatCard({
         <Icon className="h-4 w-4 text-[var(--muted-foreground)]" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold" style={valueColor ? { color: valueColor } : undefined}>
-          {value}
+        <div className="flex items-center gap-2">
+          <div className="text-2xl font-bold" style={valueColor ? { color: valueColor } : undefined}>
+            {value}
+          </div>
+          {trend != null && (
+            <span className="text-sm font-semibold" style={{ color: '#22c55e' }}>
+              ↑{trend.toFixed(1)}%
+            </span>
+          )}
         </div>
         {sub && <p className="text-xs text-[var(--muted-foreground)] mt-1">{sub}</p>}
       </CardContent>
@@ -183,6 +190,17 @@ export default function DashboardPage() {
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
   }, [chartData, predData, todayStr])
 
+  const next7 = useMemo(() => {
+    const slice = predData.slice(0, 7)
+    return {
+      netRevenue:   slice.reduce((s, p) => s + (p.predictedNetRevenue   ?? 0), 0),
+      transactions: slice.reduce((s, p) => s + (p.predictedTransactions ?? 0), 0),
+    }
+  }, [predData])
+
+  const revTrend  = totals.netRevenue  > 0 ? (next7.netRevenue   / totals.netRevenue)  * 100 : null
+  const saleTrend = totals.totalSales  > 0 ? (next7.transactions / totals.totalSales)  * 100 : null
+
   const yMax = useMemo(() => {
     const vals = combinedChart.flatMap(d => [d.net ?? 0, d.pred ?? 0, (d.lower ?? 0) + (d.bandH ?? 0)])
     return Math.max(...vals, 1) * 1.1
@@ -225,6 +243,7 @@ export default function DashboardPage() {
             value={fmt(totals.netRevenue)}
             icon={DollarSign}
             valueColor={totals.netRevenue >= 0 ? '#22c55e' : '#ef4444'}
+            trend={revTrend}
             sub={totals.grossRevenue > 0
               ? `${((totals.netRevenue / totals.grossRevenue) * 100).toFixed(1)}% net margin`
               : undefined}
@@ -239,6 +258,7 @@ export default function DashboardPage() {
             title="Total Sales"
             value={String(totals.totalSales)}
             icon={ShoppingCart}
+            trend={saleTrend}
             sub={`${totals.unitsSold} units · ${totals.refunded} refunded`}
           />
           <StatCard
