@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Dark theme (default) */
 :root {
   --background: #09090b;
   --foreground: #fafafa;
@@ -25,6 +26,37 @@
   --sidebar-border: #27272a;
   --sidebar-accent: #1e1e22;
   --sidebar-accent-foreground: #fafafa;
+  --sidebar-primary: #6366f1;
+  --sidebar-primary-foreground: #ffffff;
+  --radius: 0.5rem;
+}
+
+/* Light theme */
+.light {
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: #f4f4f5;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #ececef;
+  --accent-foreground: #18181b;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #6366f1;
+  --sidebar: #f9f9fb;
+  --sidebar-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-accent: #ececef;
+  --sidebar-accent-foreground: #18181b;
   --sidebar-primary: #6366f1;
   --sidebar-primary-foreground: #ffffff;
   --radius: 0.5rem;

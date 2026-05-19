@@ -4,13 +4,14 @@ import type {
   Product, ProductCategory, ProductVariation, Vendor,
   Employee, Isle, Transaction, FixedCharge, Payroll,
   FinancialStat, SalesStat, EmployeePerformanceStat, StockStat,
+  SalesPrediction, EmployeePerformancePrediction,
   Page
 } from '@/types'
 
 // Always use a relative URL so requests go through Next.js's /api rewrite proxy
 // (next.config.ts: /api/* → backend).  A direct cross-origin fetch to the
 // backend causes the browser to drop SameSite cookies on subsequent requests.
-const BASE_URL = ''
+const BASE_URL = 'http://localhost:8080'
 
 async function request<T>(
   path: string,
@@ -79,6 +80,8 @@ export const stats = {
 export const sales = {
   list: (page = 0, size = 20) =>
     request<Page<Sale>>(`/sale?page=${page}&size=${size}`),
+  byEmployee: (employeeId: string, page = 0, size = 20) =>
+    request<Page<Sale>>(`/sale/employee/${employeeId}?page=${page}&size=${size}`),
   get: (id: string) => request<Sale>(`/sale/${id}`),
   create: (data: CreateSaleRequest) =>
     request<Sale>('/sale', { method: 'POST', body: JSON.stringify(data) }),
@@ -226,6 +229,18 @@ export const finance = {
         { method: 'POST' }
       ),
   },
+}
+
+// Predictions
+export const predictions = {
+  sales: (fromDate: string, page = 0, size = 30) =>
+    request<Page<SalesPrediction>>(
+      `/predictions/sales?fromDate=${fromDate}&periodType=DAILY&page=${page}&size=${size}`
+    ),
+  employees: (fromDate: string, cin: string, page = 0, size = 30) =>
+    request<Page<EmployeePerformancePrediction>>(
+      `/predictions/employees?fromDate=${fromDate}&periodType=DAILY&cin=${cin}&page=${page}&size=${size}`
+    ),
 }
 
 // Users

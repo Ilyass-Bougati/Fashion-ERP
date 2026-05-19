@@ -516,15 +516,103 @@ class Seeder:
                 warn(f"User {email} failed: {e}")
         return created
 
+    # ── historical stats ─────────────────────────────────────────────────────
+
+    def generate_stats(self, years: int = 2):
+        today = datetime.now().date()
+        start = today - timedelta(days=365 * years)
+        total = (today - start).days + 1
+        section(f"· Generating daily stats  ({start} → {today},  {total} days)")
+        current, done, errors = start, 0, 0
+        while current <= today:
+            date_str = current.strftime("%Y-%m-%d")
+            try:
+                self._post(f"/test/stats/run-today-stats/{date_str}")
+            except RuntimeError as e:
+                warn(f"Stats failed for {date_str}: {e}")
+                errors += 1
+            current += timedelta(days=1)
+            done += 1
+            if done % 60 == 0 or done == total:
+                ok(f"Progress: {done}/{total} days  (up to {date_str})")
+        ok(f"Done — {total - errors} succeeded, {errors} failed")
+
+    # ── fetch existing data (used by --only mode) ────────────────────────────
+
+    def _get_all_pages(self, path: str, page_size: int = 500) -> list[dict]:
+        """Collect all items from a paginated endpoint (Spring Page response)."""
+        items, page = [], 0
+        while True:
+            data = self._get(path, params={"page": page, "size": page_size})
+            items.extend(data["content"])
+            if data["last"] or len(data["content"]) < page_size:
+                break
+            page += 1
+        return items
+
+    def fetch_employees(self) -> list[dict]:
+        section("· Fetching existing employees")
+        raw       = self._get_all_pages("/employee")
+        employees = [{"id": e["id"], "name": f"{e['firstName']} {e['lastName']}"} for e in raw]
+        ok(f"Found {len(employees)} employees")
+        return employees
+
+    def fetch_variations(self) -> list[dict]:
+        section("· Fetching existing product variations")
+        raw        = self._get_all_pages("/product-variations")
+        variations = [
+            {
+                "id":    v["id"],
+                "sku":   v["sku"],
+                "price": v["price"],
+                "qty":   v.get("quantity", v.get("qty", 0)),
+            }
+            for v in raw
+        ]
+        ok(f"Found {len(variations)} variations")
+        return variations
+
     # ── orchestration ─────────────────────────────────────────────────────────
 
-    def run(self):
+    def run(self, only: set | None = None, sales_count: int = 80):
         print(f"\n{'═'*60}")
         print( "   Fashion ERP — Mock Data Seeder")
         print(f"   Target: {self.base}")
+        if only:
+            print(f"   Mode  : {', '.join(sorted(only))} only")
         print(f"{'═'*60}")
 
         self.login()
+
+        if only:
+            needs_employees = only & {"sales", "transactions"}
+            employees, variations = [], []
+            if needs_employees:
+                employees  = self.fetch_employees()
+                variations = self.fetch_variations() if "sales" in only else []
+                if not employees:
+                    raise RuntimeError("No employees found — seed the full dataset first")
+                if "sales" in only and not variations:
+                    raise RuntimeError("No product variations found — seed the full dataset first")
+
+            completed, pending = [], []
+            if "sales" in only:
+                completed, pending = self.create_sales(employees, variations, count=sales_count)
+            if "transactions" in only:
+                self.create_manual_transactions()
+            if "stats" in only:
+                self.generate_stats()
+
+            section("Summary")
+            if "sales" in only:
+                print(f"  Sales completed   : {len(completed)}")
+                print(f"  Sales pending     : {len(pending)}")
+            if "transactions" in only:
+                print(f"  Transactions      : {len(self._TX_DESCRIPTIONS)}")
+            if "stats" in only:
+                print(f"  Stats days        : {365 * 2 + 1}")
+            print(f"\n{GREEN}  ✓ Seeding complete!{RESET}\n")
+            return
 
         image_pool  = self.upload_images(count=20)
         cat_ids     = self.create_categories()
@@ -534,7 +622,7 @@ class Seeder:
         employees   = self.create_employees(count=15, image_pool=image_pool)
         self.create_isles(employees)
         self.create_fixed_charges()
-        completed, pending = self.create_sales(employees, variations, count=80)
+        completed, pending = self.create_sales(employees, variations, count=sales_count)
         self.process_payrolls(employees)
         self.create_manual_transactions()
         self.create_users()
@@ -559,10 +647,33 @@ def main():
         default="http://localhost:8080",
         help="Base URL of the running server (default: http://localhost:8080)",
     )
+    parser.add_argument(
+        "--only",
+        default=None,
+        metavar="SECTIONS",
+        help="Comma-separated subset to seed: sales, transactions (e.g. --only sales,transactions). "
+             "Requires the full dataset to already exist. Omit to seed everything.",
+    )
+    parser.add_argument(
+        "--sales-count",
+        type=int,
+        default=80,
+        metavar="N",
+        help="Number of sales to generate (default: 80)",
+    )
     args = parser.parse_args()
 
+    only = None
+    if args.only:
+        valid = {"sales", "transactions", "stats"}
+        only  = {s.strip().lower() for s in args.only.split(",")}
+        bad   = only - valid
+        if bad:
+            err(f"Unknown section(s): {', '.join(sorted(bad))}. Valid: {', '.join(sorted(valid))}")
+            sys.exit(1)
+
     try:
-        Seeder(args.base_url).run()
+        Seeder(args.base_url).run(only=only, sales_count=args.sales_count)
     except KeyboardInterrupt:
         print("\nAborted.")
     except RuntimeError as e:

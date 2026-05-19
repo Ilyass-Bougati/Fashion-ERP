@@ -15,7 +15,7 @@ export interface Authority { id: string; name: string }
 // Sales
 export interface Sale {
   id: string; discount: number | null; employeeId: string;
-  refunded: boolean; createdAt: string; updatedAt: string
+  status: 'PENDING' | 'COMPLETED' | 'REFUNDED'; createdAt: string; updatedAt: string
 }
 export interface SaleLine {
   saleId: string; productVariationId: string;
@@ -78,12 +78,30 @@ export interface SalesStat {
   discounts: number; topCategories: string[]; topProducts: string[]; period: string
 }
 export interface EmployeePerformanceStat {
-  employeeId: string; firstName: string; lastName: string;
-  grossSalesAmount: number; transactionCount: number; commission: number; period: string
+  id: string; statDate: string; periodType: string;
+  employeeCin: string; employeeFullName: string;
+  salesCount: number; grossSalesAmount: number;
+  commissionEarned: number; itemsSold: number;
+  avgDiscountGiven: number; computedAt: string
 }
 export interface StockStat {
   productVariationId: string; sku: string; productName: string;
   quantityOnHand: number; value: number; velocity30Days: number
+}
+
+// Predictions
+export interface SalesPrediction {
+  id: string; targetDate: string; periodType: string
+  predictedNetRevenue: number | null; netRevenueLowerBound: number | null; netRevenueUpperBound: number | null
+  predictedUnitsSold: number | null; unitsSoldLowerBound: number | null; unitsSoldUpperBound: number | null
+  predictedTransactions: number | null; transactionsLowerBound: number | null; transactionsUpperBound: number | null
+  modelVersion: string; predictedAt: string
+}
+export interface EmployeePerformancePrediction {
+  id: string; targetDate: string; periodType: string
+  employeeCin: string; employeeFullName: string
+  predictedGrossSales: number | null; grossSalesLowerBound: number | null; grossSalesUpperBound: number | null
+  modelVersion: string; predictedAt: string
 }
 
 // API Pagination
