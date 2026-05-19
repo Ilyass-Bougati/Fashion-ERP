@@ -8,5 +8,6 @@ public record MinioProperties(
         @DefaultValue("http://localhost:9000") String endpoint,
         @DefaultValue("images") String imagesBucket,
         @DefaultValue("reports") String reportsBucket,
+        @DefaultValue("60") int expirationDuration,
         String accessKey,
         String secretKey) {}

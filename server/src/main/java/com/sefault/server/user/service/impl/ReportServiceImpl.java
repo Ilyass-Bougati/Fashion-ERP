@@ -2,6 +2,7 @@ package com.sefault.server.user.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sefault.server.ai.service.LlmService;
+import com.sefault.server.exception.FailedReportGenerationException;
 import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.minio.MinioProperties;
 import com.sefault.server.minio.MinioService;
@@ -13,6 +14,7 @@ import com.sefault.server.stats.service.StatsQueryService;
 import com.sefault.server.user.dto.record.ReportRecord;
 import com.sefault.server.user.dto.record.SavedReportRecord;
 import com.sefault.server.user.entity.Report;
+import com.sefault.server.user.enums.ReportCategory;
 import com.sefault.server.user.enums.ReportStatus;
 import com.sefault.server.user.enums.ReportType;
 import com.sefault.server.user.mapper.ReportMapper;
@@ -23,16 +25,23 @@ import io.minio.errors.MinioException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
     private final StatsQueryService statsQueryService;
     private final PdfGenerationService pdfGenerationService;
@@ -43,26 +52,6 @@ public class ReportServiceImpl implements ReportService {
     private final LlmService llmService;
     private final ObjectMapper objectMapper;
 
-    public ReportServiceImpl(
-            StatsQueryService statsQueryService,
-            PdfGenerationService pdfGenerationService,
-            MinioService minioService,
-            MinioProperties minioProperties,
-            ReportRepository reportRepository,
-            ReportMapper reportMapper,
-            LlmService llmService,
-            ObjectMapper objectMapper) {
-        this.statsQueryService = statsQueryService;
-        this.pdfGenerationService = pdfGenerationService;
-        this.minioService = minioService;
-        this.minioProperties = minioProperties;
-        this.reportRepository = reportRepository;
-        this.reportMapper = reportMapper;
-        this.llmService = llmService;
-        this.objectMapper = objectMapper;
-        this.minioService.setBucketName(minioProperties.reportsBucket());
-    }
-
     private String getInsight(String moduleName, String data) {
         String prompt = "ERP Module: " + moduleName + "\n" + "Data: "
                 + data + "\n" + "\n"
@@ -72,58 +61,102 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void uploadFile(byte[] fileBytes, String fileName) throws MinioException, IOException {
+        if (fileBytes == null) throw new IOException();
         InputStream file = new ByteArrayInputStream(fileBytes);
-        minioService.uploadFile(fileName, file, fileBytes.length, "application/pdf");
+        minioService.uploadFile(minioProperties.reportsBucket(), fileName, file, fileBytes.length, "application/pdf");
     }
 
-    public SavedReportRecord generateReport(PeriodType period) throws IOException, MinioException {
-        List<FinancialStatProjection> financialData = statsQueryService.getAllFinancialStats(period);
-        List<SalesStatProjection> salesData = statsQueryService.getAllSalesStats(period);
-        List<EmployeePerformanceStatProjection> employeePerformanceData =
-                statsQueryService.getAllEmployeePerformanceStats(period);
-
-        String financeInsight = getInsight("finance", objectMapper.writeValueAsString(financialData));
-        String salesInsight = getInsight("sales", objectMapper.writeValueAsString(salesData));
-        String employeePerformanceInsight =
-                getInsight("employee performance", objectMapper.writeValueAsString(employeePerformanceData));
-
-        byte[] fileBytes = pdfGenerationService.generateDocument(
-                "reports/combined-report",
-                Map.of(
-                        "fStats",
-                        financialData,
-                        "fInsight",
-                        financeInsight,
-                        "sStats",
-                        salesData,
-                        "sInsight",
-                        salesInsight,
-                        "eStats",
-                        employeePerformanceData,
-                        "eInsight",
-                        employeePerformanceInsight));
-        String fileName = UUID.randomUUID().toString();
-        uploadFile(fileBytes, fileName);
+    @Async
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public CompletableFuture<SavedReportRecord> generateReport(PeriodType period, ReportCategory category)
+            throws FailedReportGenerationException {
+        String title = period + "-" + category + "-" + LocalDateTime.now();
         ReportRecord saved = save(new ReportRecord(
                 null,
-                fileName,
+                title,
                 ReportType.PDF,
-                ReportStatus.DONE,
-                fileName,
+                ReportStatus.PENDING,
+                title,
                 minioProperties.reportsBucket(),
                 "application/pdf",
-                null,
+                category,
                 null));
+        try {
+            byte[] fileBytes;
+            switch (category) {
+                case FINANCIAL:
+                    List<FinancialStatProjection> financialData = statsQueryService.getAllFinancialStats(period);
+                    String financeInsight = getInsight("finance", objectMapper.writeValueAsString(financialData));
+                    fileBytes = pdfGenerationService.generateDocument(
+                            "reports/financial-report.html",
+                            Map.of("stats", financialData, "aiInsight", financeInsight));
+                    break;
 
-        return new SavedReportRecord(saved.id(), minioService.getPermanentFileUrl(fileName));
+                case SALES:
+                    List<SalesStatProjection> salesData = statsQueryService.getAllSalesStats(period);
+                    String salesInsight = getInsight("sales", objectMapper.writeValueAsString(salesData));
+                    fileBytes = pdfGenerationService.generateDocument(
+                            "reports/sales-report.html", Map.of("stats", salesData, "aiInsight", salesInsight));
+                    break;
+                case EMPLOYEE_PERFORMANCE:
+                    List<EmployeePerformanceStatProjection> employeePerformanceData =
+                            statsQueryService.getAllEmployeePerformanceStats(period);
+                    String employeePerformanceInsight = getInsight(
+                            "employee performance", objectMapper.writeValueAsString(employeePerformanceData));
+                    fileBytes = pdfGenerationService.generateDocument(
+                            "reports/employee-performance-report.html",
+                            Map.of("stats", employeePerformanceData, "aiInsight", employeePerformanceInsight));
+                    break;
+                default:
+                    fileBytes = null;
+            }
+            uploadFile(fileBytes, title);
+        } catch (Exception e) {
+            save(new ReportRecord(
+                    saved.id(),
+                    title,
+                    ReportType.PDF,
+                    ReportStatus.FAILED,
+                    title,
+                    minioProperties.reportsBucket(),
+                    "application/pdf",
+                    category,
+                    null));
+            throw new FailedReportGenerationException(e.getMessage());
+        }
+
+        save(new ReportRecord(
+                saved.id(),
+                title,
+                ReportType.PDF,
+                ReportStatus.DONE,
+                title,
+                minioProperties.reportsBucket(),
+                "application/pdf",
+                category,
+                null));
+        return CompletableFuture.completedFuture(new SavedReportRecord(
+                saved.id(), minioService.getPermanentFileUrl(minioProperties.reportsBucket(), title), null));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ReportRecord> getAll(Pageable pageable) {
         return reportRepository.findAllBy(pageable).map(reportMapper::projectionToRecord);
     }
 
+    @Transactional(readOnly = true)
+    public SavedReportRecord getUrlById(UUID id) throws MinioException {
+        return new SavedReportRecord(
+                id,
+                minioService.getFileUrl(
+                        minioProperties.reportsBucket(), getById(id).objectKey(), minioProperties.expirationDuration()),
+                LocalDateTime.now().plusSeconds(minioProperties.expirationDuration()));
+    }
+
     @Override
+    @Transactional(readOnly = true)
     public ReportRecord getById(UUID id) {
         return reportRepository
                 .getReportProjectionById(id)
@@ -131,19 +164,16 @@ public class ReportServiceImpl implements ReportService {
                 .orElseThrow(() -> new NotFoundException("Report not found with id : " + id));
     }
 
-    @Override
-    public ReportRecord save(ReportRecord record) {
+    private ReportRecord save(ReportRecord record) {
         Report entity = reportMapper.toEntity(record);
         Report saved = reportRepository.save(entity);
         return reportMapper.entityToRecord(saved);
     }
 
     @Override
-    public void deleteById(UUID id) {
-        if (!reportRepository.existsById(id)) {
-            throw new NotFoundException("Report not found by id : " + id);
-        } else {
-            reportRepository.deleteById(id);
-        }
+    public void deleteById(UUID id) throws MinioException {
+        ReportRecord record = getById(id);
+        minioService.deleteFile(minioProperties.reportsBucket(), record.objectKey());
+        reportRepository.deleteById(id);
     }
 }
