@@ -29,4 +29,6 @@ public interface UserRepository extends JpaRepository<@NonNull User, @NonNull UU
     User findByEmail(String mail);
 
     boolean existsByEmail(String email);
+
+    User getReferenceByEmail(String email);
 }

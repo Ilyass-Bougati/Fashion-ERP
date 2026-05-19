@@ -1,5 +1,6 @@
 package com.sefault.server.user.entity;
 
+import com.sefault.server.user.enums.ReportCategory;
 import com.sefault.server.user.enums.ReportStatus;
 import com.sefault.server.user.enums.ReportType;
 import jakarta.persistence.*;
@@ -8,7 +9,6 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -49,12 +49,8 @@ public class Report {
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
     private List<UserReport> userReports = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "report_report_category",
-            joinColumns = @JoinColumn(name = "report_id"),
-            inverseJoinColumns = @JoinColumn(name = "report_category_id"))
-    private Set<ReportCategory> categories;
+    @Enumerated(EnumType.STRING)
+    private ReportCategory category;
 
     @CreationTimestamp
     @Immutable

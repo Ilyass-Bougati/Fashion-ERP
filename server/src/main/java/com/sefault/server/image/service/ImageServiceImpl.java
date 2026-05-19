@@ -43,10 +43,11 @@ public class ImageServiceImpl implements ImageService {
                 .objectKey(objectName)
                 .build();
 
-        minioService.uploadFile(objectName, file);
+        minioService.uploadFile(minioProperties.imagesBucket(), objectName, file);
         Image savedImage = imageRepository.save(image);
 
-        return new ImageUrlRecord(savedImage.getId(), minioService.getPermanentFileUrl(objectName));
+        return new ImageUrlRecord(
+                savedImage.getId(), minioService.getPermanentFileUrl(minioProperties.imagesBucket(), objectName));
     }
 
     @Transactional(readOnly = true)
@@ -59,12 +60,12 @@ public class ImageServiceImpl implements ImageService {
 
     public void deleteImageById(UUID id) throws MinioException {
         ImageRecord record = findImageById(id);
-        minioService.deleteFile(record.objectKey());
+        minioService.deleteFile(minioProperties.imagesBucket(), record.objectKey());
         imageRepository.deleteById(id);
     }
 
     public String getImageUrl(UUID id) {
         ImageRecord record = findImageById(id);
-        return minioService.getPermanentFileUrl(record.objectKey());
+        return minioService.getPermanentFileUrl(minioProperties.imagesBucket(), record.objectKey());
     }
 }
