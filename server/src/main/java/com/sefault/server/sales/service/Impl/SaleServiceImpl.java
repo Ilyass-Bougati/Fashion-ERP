@@ -13,13 +13,14 @@ import com.sefault.server.sales.mapper.SaleMapper;
 import com.sefault.server.sales.repository.SaleRepository;
 import com.sefault.server.sales.service.SaleService;
 import com.sefault.server.storage.repository.ProductVariationRepository;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,9 @@ public class SaleServiceImpl implements SaleService {
         if (record.employeeId() != null) {
             sale.setEmployee(employeeRepository.getReferenceById(record.employeeId()));
         }
+        // when creating a sale, the status should always be PENDING
+        sale.setStatus(SaleStatus.PENDING);
+        
         return saleMapper.entityToRecord(saleRepository.save(sale));
     }
 
@@ -54,6 +58,12 @@ public class SaleServiceImpl implements SaleService {
     @Transactional(readOnly = true)
     public Page<SaleRecord> getAll(Pageable pageable) {
         return saleRepository.findAllBy(pageable).map(saleMapper::projectionToRecord);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SaleRecord> getByEmployee(UUID employeeId, Pageable pageable) {
+        return saleRepository.findAllByEmployeeId(employeeId, pageable).map(saleMapper::projectionToRecord);
     }
 
     private Sale findEntityOrThrow(UUID id) {
