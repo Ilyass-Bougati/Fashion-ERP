@@ -53,8 +53,6 @@ spring:
             required: true
           ssl:
             trust: "*"
-  profiles:
-    active: dev
 management:
   endpoints:
     web:
