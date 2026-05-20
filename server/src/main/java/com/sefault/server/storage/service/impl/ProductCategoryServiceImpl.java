@@ -8,6 +8,8 @@ import com.sefault.server.storage.repository.ProductCategoryRepository;
 import com.sefault.server.storage.service.ProductCategoryService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductCategoryServiceImpl implements ProductCategoryService {
     private final ProductCategoryRepository productCategoryRepository;
     private final ProductCategoryMapper productCategoryMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductCategoryRecord> getAll(Pageable pageable) {
+        return productCategoryRepository.findAllBy(pageable).map(productCategoryMapper::projectionToRecord);
+    }
 
     @Override
     @Transactional(readOnly = true)

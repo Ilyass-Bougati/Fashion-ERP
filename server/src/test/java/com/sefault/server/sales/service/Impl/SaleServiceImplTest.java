@@ -81,7 +81,8 @@ class SaleServiceImplTest {
         sale.setSaleLines(new ArrayList<>());
         sale.setTransactions(new ArrayList<>());
 
-        saleRecord = new SaleRecord(saleId, 0.1, employeeId, false, LocalDateTime.now(), LocalDateTime.now());
+        saleRecord =
+                new SaleRecord(saleId, 0.1, employeeId, SaleStatus.PENDING, LocalDateTime.now(), LocalDateTime.now());
     }
 
     @Nested

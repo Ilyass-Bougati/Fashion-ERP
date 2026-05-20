@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -71,14 +72,13 @@ public class TestStatsController {
         return ResponseEntity.ok("Manual trigger sent to Monthly Cron Job. Check logs!");
     }
 
-    @PostMapping("/run-today-stats")
-    public ResponseEntity<String> runTodayStats() {
-        LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
-        salesService.saveSalesStats(startOfDay, endOfDay, today, PeriodType.DAILY);
-        employeeService.saveEmployeeStats(startOfDay, endOfDay, today, PeriodType.DAILY);
-        stockService.saveStockStats(today, PeriodType.DAILY);
+    @PostMapping("/run-today-stats/{date}")
+    public ResponseEntity<String> runTodayStats(@PathVariable("date") LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        salesService.saveSalesStats(startOfDay, endOfDay, date, PeriodType.DAILY);
+        employeeService.saveEmployeeStats(startOfDay, endOfDay, date, PeriodType.DAILY);
+        stockService.saveStockStats(date, PeriodType.DAILY);
         return ResponseEntity.ok("Calculated DAILY stats for TODAY! Check your database tables.");
     }
 }

@@ -1,5 +1,6 @@
 package com.sefault.server.sales.dto.projection;
 
+import com.sefault.server.sales.SaleStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ public interface SaleProjection {
 
     UUID getEmployeeId();
 
-    Boolean getRefunded();
+    SaleStatus getStatus();
 
     LocalDateTime getCreatedAt();
 

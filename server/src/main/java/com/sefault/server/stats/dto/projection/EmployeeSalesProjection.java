@@ -14,4 +14,6 @@ public interface EmployeeSalesProjection {
     Long getItemsSold();
 
     Double getAvgDiscountGiven();
+
+    Double getCommissionRate();
 }

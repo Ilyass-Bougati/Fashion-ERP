@@ -1,0 +1,576 @@
+
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .dash {
+    font-family: 'Syne', sans-serif;
+    background: #0a0a0f;
+    color: #e8e6f0;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+
+  .header-left .subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #6b6880;
+    margin-top: 4px;
+  }
+
+  .repo-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #a78bfa;
+    text-decoration: none;
+    border: 1px solid #3d3754;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .repo-link:hover { background: #1e1a2e; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: #13111e;
+    border: 1px solid #221f35;
+    border-radius: 10px;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 10px 10px 0 0;
+  }
+  .stat-card.purple::before { background: #7c3aed; }
+  .stat-card.green::before  { background: #22c55e; }
+  .stat-card.amber::before  { background: #f59e0b; }
+  .stat-card.blue::before   { background: #3b82f6; }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #6b6880;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+  .stat-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #6b6880;
+    margin-top: 4px;
+  }
+
+  .chart-section {
+    background: #13111e;
+    border: 1px solid #221f35;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #c4c0d4;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #6b6880;
+  }
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.open { background: #22c55e; }
+  .dot.closed { background: #7c3aed; }
+
+  .range-btns {
+    display: flex;
+    gap: 6px;
+  }
+  .range-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: 1px solid #221f35;
+    background: transparent;
+    color: #6b6880;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .range-btn.active, .range-btn:hover {
+    background: #221f35;
+    color: #e8e6f0;
+    border-color: #3d3754;
+  }
+
+  canvas { display: block; }
+
+  .issues-list {
+    background: #13111e;
+    border: 1px solid #221f35;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .issues-list-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #221f35;
+    font-size: 14px;
+    font-weight: 600;
+    color: #c4c0d4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .filter-tab {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid #221f35;
+    background: transparent;
+    color: #6b6880;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-tab.active {
+    background: #221f35;
+    color: #e8e6f0;
+    border-color: #3d3754;
+  }
+
+  .issue-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid #1a1826;
+    transition: background 0.15s;
+  }
+  .issue-row:last-child { border-bottom: none; }
+  .issue-row:hover { background: #17152a; }
+
+  .issue-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+  .issue-dot.open { background: #22c55e; }
+  .issue-dot.closed { background: #7c3aed; }
+
+  .issue-title {
+    font-size: 13px;
+    color: #d4d0e4;
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .issue-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #4d4960;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .issue-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #4d4960;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .loading-msg, .error-msg {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #6b6880;
+    text-align: center;
+    padding: 2rem;
+  }
+  .error-msg { color: #f87171; }
+
+  .updated-at {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #4d4960;
+    text-align: right;
+    margin-top: 1rem;
+  }
+</style>
+
+<div class="dash">
+  <div class="header">
+    <div class="header-left">
+      <h1>Fashion ERP · Project Dashboard</h1>
+      <div class="subtitle" id="repo-desc">Loading repository info...</div>
+    </div>
+    <a class="repo-link" href="https://github.com/Ilyass-Bougati/Fashion-ERP" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Ilyass-Bougati/Fashion-ERP
+    </a>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card purple">
+      <div class="stat-label">Total Issues</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-sub">all time</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Open</div>
+      <div class="stat-value" id="stat-open">—</div>
+      <div class="stat-sub">currently open</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">Closed</div>
+      <div class="stat-value" id="stat-closed">—</div>
+      <div class="stat-sub">resolved</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Close Rate</div>
+      <div class="stat-value" id="stat-rate">—</div>
+      <div class="stat-sub">% resolved</div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-title">Cumulative Issues Over Time</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div class="legend">
+          <span><span class="dot open"></span>Open</span>
+          <span><span class="dot closed"></span>Closed</span>
+        </div>
+        <div class="range-btns">
+          <button class="range-btn" data-days="14">2W</button>
+          <button class="range-btn active" data-days="30">1M</button>
+          <button class="range-btn" data-days="90">3M</button>
+          <button class="range-btn" data-days="0">Max</button>
+        </div>
+      </div>
+    </div>
+    <div style="position:relative;height:260px;">
+      <canvas id="issueChart" role="img" aria-label="Cumulative issues over time chart"></canvas>
+    </div>
+  </div>
+
+  <div class="issues-list">
+    <div class="issues-list-header">
+      <span>Recent Issues</span>
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="open">Open</button>
+        <button class="filter-tab" data-filter="closed">Closed</button>
+      </div>
+    </div>
+    <div id="issues-container">
+      <div class="loading-msg">Fetching issues...</div>
+    </div>
+  </div>
+
+  <div class="updated-at" id="updated-at"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const REPO = 'Ilyass-Bougati/Fashion-ERP';
+const API = 'https://api.github.com/repos/' + REPO;
+let allIssues = [];
+let chartInstance = null;
+let currentFilter = 'all';
+let currentDays = 30;
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr);
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'today';
+  if (days === 1) return '1 day ago';
+  if (days < 30) return days + ' days ago';
+  const months = Math.floor(days / 30);
+  return months + ' month' + (months > 1 ? 's' : '') + ' ago';
+}
+
+async function fetchAllIssues() {
+  let page = 1;
+  let results = [];
+  while (true) {
+    const res = await fetch(`${API}/issues?state=all&per_page=100&page=${page}`);
+    if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+    const data = await res.json();
+    if (!data.length) break;
+    results = results.concat(data.filter(i => !i.pull_request));
+    if (data.length < 100) break;
+    page++;
+  }
+  return results;
+}
+
+async function fetchRepo() {
+  const res = await fetch(API);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+function buildChart(issues, days) {
+  const now = new Date();
+  const cutoff = days > 0 ? new Date(now - days * 86400000) : new Date(0);
+
+  const filtered = issues.filter(i => new Date(i.created_at) >= cutoff);
+
+  const dateMap = {};
+  filtered.forEach(i => {
+    const d = i.created_at.slice(0, 10);
+    if (!dateMap[d]) dateMap[d] = { opened: 0, closed: 0 };
+    dateMap[d].opened++;
+  });
+  issues.forEach(i => {
+    if (i.closed_at) {
+      const d = i.closed_at.slice(0, 10);
+      const dt = new Date(d);
+      if (dt >= cutoff && dt <= now) {
+        if (!dateMap[d]) dateMap[d] = { opened: 0, closed: 0 };
+        dateMap[d].closed++;
+      }
+    }
+  });
+
+  const sortedDates = Object.keys(dateMap).sort();
+  if (!sortedDates.length) return;
+
+  const labels = [];
+  const openData = [];
+  const closedData = [];
+
+  let cumOpen = 0, cumClosed = 0;
+
+  if (days > 0) {
+    const start = new Date(cutoff);
+    const allDates = [];
+    for (let d = new Date(start); d <= now; d.setDate(d.getDate() + 1)) {
+      allDates.push(d.toISOString().slice(0, 10));
+    }
+    allDates.forEach(date => {
+      if (dateMap[date]) {
+        cumOpen += dateMap[date].opened;
+        cumClosed += dateMap[date].closed;
+      }
+      labels.push(date.slice(5));
+      openData.push(cumOpen);
+      closedData.push(cumClosed);
+    });
+  } else {
+    sortedDates.forEach(date => {
+      cumOpen += dateMap[date].opened || 0;
+      cumClosed += dateMap[date].closed || 0;
+      labels.push(date.slice(5));
+      openData.push(cumOpen);
+      closedData.push(cumClosed);
+    });
+  }
+
+  const skipN = Math.max(1, Math.floor(labels.length / 12));
+
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('issueChart').getContext('2d');
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Opened',
+          data: openData,
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34,197,94,0.08)',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Closed',
+          data: closedData,
+          borderColor: '#7c3aed',
+          backgroundColor: 'rgba(124,58,237,0.08)',
+          borderWidth: 2,
+          borderDash: [5, 4],
+          pointRadius: 0,
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e1a2e',
+          borderColor: '#3d3754',
+          borderWidth: 1,
+          titleColor: '#c4c0d4',
+          bodyColor: '#9d99b0',
+          titleFont: { family: 'DM Mono', size: 11 },
+          bodyFont: { family: 'DM Mono', size: 11 }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: {
+            color: '#4d4960',
+            font: { family: 'DM Mono', size: 10 },
+            maxRotation: 45,
+            autoSkip: true,
+            maxTicksLimit: 12
+          }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: {
+            color: '#4d4960',
+            font: { family: 'DM Mono', size: 10 }
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+function renderIssues(issues, filter) {
+  const container = document.getElementById('issues-container');
+  let list = issues;
+  if (filter === 'open') list = issues.filter(i => i.state === 'open');
+  if (filter === 'closed') list = issues.filter(i => i.state === 'closed');
+  list = list.slice(0, 20);
+  if (!list.length) {
+    container.innerHTML = '<div class="loading-msg">No issues found.</div>';
+    return;
+  }
+  container.innerHTML = list.map(i => `
+    <div class="issue-row">
+      <div class="issue-dot ${i.state}"></div>
+      <div class="issue-num">#${i.number}</div>
+      <div class="issue-title">${i.title}</div>
+      <div class="issue-meta">${timeAgo(i.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+async function init() {
+  try {
+    const [repoData, issues] = await Promise.all([fetchRepo(), fetchAllIssues()]);
+
+    if (repoData) {
+      document.getElementById('repo-desc').textContent = repoData.description || repoData.full_name;
+    }
+
+    allIssues = issues;
+    const open = issues.filter(i => i.state === 'open').length;
+    const closed = issues.filter(i => i.state === 'closed').length;
+    const total = issues.length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-open').textContent = open;
+    document.getElementById('stat-closed').textContent = closed;
+    document.getElementById('stat-rate').textContent = total ? Math.round(closed / total * 100) + '%' : '0%';
+
+    buildChart(issues, currentDays);
+    renderIssues(issues, currentFilter);
+
+    document.getElementById('updated-at').textContent =
+      'Last updated: ' + new Date().toLocaleString();
+
+  } catch (err) {
+    document.getElementById('issues-container').innerHTML =
+      '<div class="error-msg">Could not load data: ' + err.message + '</div>';
+    document.getElementById('repo-desc').textContent = 'Error loading repository';
+  }
+}
+
+document.querySelectorAll('.range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDays = parseInt(btn.dataset.days);
+    buildChart(allIssues, currentDays);
+  });
+});
+
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.filter;
+    renderIssues(allIssues, currentFilter);
+  });
+});
+
+init();
+</script>

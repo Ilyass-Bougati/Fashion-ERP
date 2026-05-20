@@ -19,6 +19,8 @@ public interface SalesStatRepository extends JpaRepository<@NonNull SalesStat, @
 
     Optional<SalesStat> findByStatDateAndPeriodType(LocalDate statDate, PeriodType periodType);
 
+    List<SalesStatProjection> findByPeriodType(PeriodType periodType);
+
     Page<SalesStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
 
     List<SalesStat> findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType periodType);

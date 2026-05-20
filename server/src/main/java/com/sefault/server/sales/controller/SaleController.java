@@ -34,6 +34,14 @@ public class SaleController {
         return ResponseEntity.ok(saleService.getAll(pageable));
     }
 
+    @GetMapping("/employee/{employeeId}")
+    @PreAuthorize("hasAuthority(@authorities.readSaleAuthority)")
+    public ResponseEntity<Page<SaleRecord>> getByEmployee(
+            @PathVariable UUID employeeId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(saleService.getByEmployee(employeeId, pageable));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority(@authorities.readSaleAuthority)")
     public ResponseEntity<SaleRecord> getById(@PathVariable UUID id) {

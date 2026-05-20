@@ -24,6 +24,8 @@ public interface EmployeePerformanceStatRepository
 
     Page<EmployeePerformanceStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
 
+    List<EmployeePerformanceStatProjection> findByPeriodType(PeriodType periodType);
+
     @Query("SELECT DISTINCT e.employeeCin FROM EmployeePerformanceStat e")
     List<String> findDistinctEmployeeCins();
 

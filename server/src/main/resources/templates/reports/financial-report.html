@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Financial Statistics Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20px 24px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: Georgia, serif;
+            font-size: 12px;
+            color: #1a1a2e;
+            background-color: #ffffff;
+            padding: 0;
+        }
+
+        /* ── Header ── */
+        .report-header {
+            border-bottom: 3px solid #1a1a2e;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .report-title {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #1a1a2e;
+        }
+
+        .report-subtitle {
+            font-size: 11px;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        .report-meta {
+            margin-top: 8px;
+            font-size: 10px;
+            color: #888;
+        }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #555;
+            margin: 28px 0 10px 0;
+            border-left: 3px solid #c0392b;
+            padding-left: 8px;
+        }
+
+        /* ── Table ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            table-layout: fixed;
+        }
+
+        thead tr {
+            background-color: #1a1a2e;
+            color: #ffffff;
+        }
+
+        thead th {
+            padding: 7px 4px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        thead th.right { text-align: right; }
+        thead th.center { text-align: center; }
+
+        tbody tr {
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        tbody tr:nth-child(even) td {
+            background-color: #f7f7f9;
+        }
+
+        tbody td {
+            padding: 6px 4px;
+            font-size: 10px;
+            color: #2c2c2c;
+            vertical-align: middle;
+            word-break: break-word;
+        }
+
+        tbody td.right  { text-align: right; }
+        tbody td.center { text-align: center; }
+        tbody td.mono   { font-family: "Courier New", monospace; font-size: 9px; }
+
+        /* Profit coloring */
+        .positive { color: #1a7a4a; font-weight: bold; }
+        .negative { color: #c0392b; font-weight: bold; }
+
+        /* Period badge */
+        .badge {
+            display: inline;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: #e8eaf6;
+            color: #1a1a2e;
+        }
+
+        /* ── Empty state ── */
+        .empty-row td {
+            text-align: center;
+            color: #aaa;
+            font-style: italic;
+            padding: 24px;
+        }
+
+        /* ── AI Insights ── */
+        .ai-insight-box {
+            border: 1px solid #d0d7f0;
+            border-left: 4px solid #4a6cf7;
+            border-radius: 4px;
+            background-color: #f4f6fe;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+        }
+
+        /* Flying Saucer does not support flexbox — use inline-block instead */
+        .ai-insight-header {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .ai-insight-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: #4a6cf7;
+            border-radius: 50%;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 18px;
+            vertical-align: middle;
+            margin-right: 7px;
+        }
+
+        .ai-insight-label {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #4a6cf7;
+            vertical-align: middle;
+        }
+
+        .ai-insight-body {
+            font-size: 11px;
+            line-height: 1.75;
+            color: #2c2c2c;
+            white-space: pre-wrap;
+        }
+
+        .ai-insight-empty {
+            font-size: 11px;
+            font-style: italic;
+            color: #aaa;
+        }
+
+        /* ── Footer ── */
+        .report-footer {
+            border-top: 1px solid #ddd;
+            padding-top: 12px;
+            margin-top: 32px;
+            font-size: 9px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="report-header">
+    <div class="report-title">Financial Statistics Report</div>
+    <div class="report-subtitle">Consolidated financial performance overview</div>
+    <div class="report-meta">
+        Generated on:
+        <span th:text="${#temporals.format(#temporals.createNow(), 'dd MMMM yyyy, HH:mm')}">01 January 2025, 00:00</span>
+        &nbsp;|&nbsp;
+        Total records: <span th:text="${stats.size()}">0</span>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="section-title">Performance Records</div>
+
+<table>
+    <colgroup>
+        <col style="width:3%"/>
+        <col style="width:9%"/>
+        <col style="width:8%"/>
+        <col style="width:9%"/>
+        <col style="width:9%"/>
+        <col style="width:8%"/>
+        <col style="width:9%"/>
+        <col style="width:9%"/>
+        <col style="width:6%"/>
+        <col style="width:5%"/>
+        <col style="width:8%"/>
+        <col style="width:10%"/>
+    </colgroup>
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Stat Date</th>
+        <th class="center">Period</th>
+        <th class="right">Total Revenue</th>
+        <th class="right">Payroll Cost</th>
+        <th class="right">Fix Charges</th>
+        <th class="right">Gross Profit</th>
+        <th class="right">Net Profit</th>
+        <th class="right">Margin %</th>
+        <th class="right">Emp.</th>
+        <th class="right">Rev / Emp.</th>
+        <th>Computed At</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:if="${stats.isEmpty()}" class="empty-row">
+        <td colspan="12">No financial records found for this period.</td>
+    </tr>
+    <tr th:each="stat, i : ${stats}">
+        <!-- # -->
+        <td th:text="${i.index + 1}"></td>
+
+        <!-- Stat Date -->
+        <td th:text="${#temporals.format(stat.statDate, 'dd MMM yyyy')}"></td>
+
+        <!-- Period Type -->
+        <td class="center">
+            <span class="badge" th:text="${stat.periodType}"></span>
+        </td>
+
+        <!-- Total Revenue -->
+        <td class="right mono" th:text="${#numbers.formatDecimal(stat.totalRevenue, 1, 'COMMA', 2, 'POINT')}"></td>
+
+        <!-- Payroll Cost -->
+        <td class="right mono" th:text="${#numbers.formatDecimal(stat.totalPayrollCost, 1, 'COMMA', 2, 'POINT')}"></td>
+
+        <!-- Fix Charges -->
+        <td class="right mono" th:text="${#numbers.formatDecimal(stat.totalFixCharges, 1, 'COMMA', 2, 'POINT')}"></td>
+
+        <!-- Gross Profit -->
+        <td class="right mono"
+            th:classappend="${stat.grossProfit >= 0} ? 'positive' : 'negative'"
+            th:text="${#numbers.formatDecimal(stat.grossProfit, 1, 'COMMA', 2, 'POINT')}"></td>
+
+        <!-- Net Profit -->
+        <td class="right mono"
+            th:classappend="${stat.netProfit >= 0} ? 'positive' : 'negative'"
+            th:text="${#numbers.formatDecimal(stat.netProfit, 1, 'COMMA', 2, 'POINT')}"></td>
+
+        <!-- Profit Margin % -->
+        <td class="right"
+            th:classappend="${stat.profitMarginPct >= 0} ? 'positive' : 'negative'"
+            th:text="${#numbers.formatDecimal(stat.profitMarginPct, 1, 2)} + '%'"></td>
+
+        <!-- Active Employees -->
+        <td class="right" th:text="${stat.activeEmployeesCount}"></td>
+
+        <!-- Revenue per Employee -->
+        <td class="right mono" th:text="${#numbers.formatDecimal(stat.revenuePerEmployee, 1, 'COMMA', 2, 'POINT')}"></td>
+
+        <!-- Computed At -->
+        <td class="mono" th:text="${#temporals.format(stat.computedAt, 'dd MMM yyyy HH:mm')}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- AI-Generated Insights -->
+<div class="section-title">AI-Generated Insights</div>
+
+<div class="ai-insight-box">
+    <div class="ai-insight-header">
+        <span class="ai-insight-icon">AI</span>
+        <span class="ai-insight-label">Analysis &amp; Recommendations</span>
+    </div>
+    <div th:if="${aiInsight != null and !#strings.isEmpty(aiInsight)}"
+         class="ai-insight-body"
+         th:text="${aiInsight}">
+        AI insight text will appear here.
+    </div>
+    <div th:if="${aiInsight == null or #strings.isEmpty(aiInsight)}"
+         class="ai-insight-empty">
+        No AI insight available for this report.
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="report-footer">
+    This report is auto-generated and intended for internal use only.
+    All monetary values are expressed in the base currency.
+    AI-generated insights are provided for informational purposes and should not be solely relied upon for financial decisions.
+</div>
+
+</body>
+</html>

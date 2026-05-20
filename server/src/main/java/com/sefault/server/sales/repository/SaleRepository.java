@@ -27,7 +27,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         JOIN s.saleLines sl
         WHERE s.employee.id = :employeeId
         AND s.createdAt BETWEEN :startDate AND :endDate
-        AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
+        AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
     """)
     Double sumSaleAmountByEmployeeId(
             @Param("employeeId") UUID employeeId,
@@ -36,12 +36,14 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
 
     Page<SaleProjection> findAllBy(Pageable pageable);
 
+    Page<SaleProjection> findAllByEmployeeId(UUID employeeId, Pageable pageable);
+
     @Query("""
         SELECT coalesce(SUM((sl.quantity * sl.saleAtPrice) * (1.0 - s.discount)), 0.0)
         FROM Sale s
         JOIN s.saleLines sl
         WHERE s.createdAt BETWEEN :startDate AND :endDate
-        AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
+        AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
         """)
     Double calculateTotalNetRevenueForPeriod(
             @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
@@ -50,7 +52,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
             SELECT COUNT(s)
             FROM Sale s
             WHERE s.createdAt between :startDate AND :endDate
-            AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
+            AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
     """)
     Long countValidTransactions(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
@@ -58,7 +60,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
             SELECT COUNT(s)
             FROM Sale s
             WHERE s.createdAt between :startDate AND :endDate
-            AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).REFUNDED}
+            AND s.status = :#{T(com.sefault.server.sales.SaleStatus).REFUNDED}
     """)
     Long countRefundedTransactions(@Param("startDate") LocalDateTime start, @Param("endDate") LocalDateTime end);
 
@@ -70,7 +72,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         FROM Sale s
         JOIN s.saleLines sl
         WHERE s.createdAt BETWEEN :startDate AND :endDate
-        AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
+        AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
         """)
     RevenueAggregationProjection calculateRevenueAndUnits(
             @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
@@ -78,7 +80,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
     @Query("""
         SELECT pc.name
         FROM Sale s JOIN s.saleLines sl JOIN sl.productVariation pv JOIN pv.product p JOIN p.productCategory pc
-        WHERE s.createdAt BETWEEN :startDate AND :endDate AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
+        WHERE s.createdAt BETWEEN :startDate AND :endDate AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
         GROUP BY pc.id, pc.name
         ORDER BY SUM(sl.quantity) DESC
         LIMIT 1
@@ -89,7 +91,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
     @Query("""
         SELECT pv.sku
         FROM Sale s JOIN s.saleLines sl JOIN sl.productVariation pv
-        WHERE s.createdAt BETWEEN :startDate AND :endDate AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
+        WHERE s.createdAt BETWEEN :startDate AND :endDate AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
         GROUP BY pv.id, pv.sku
         ORDER BY SUM(sl.quantity) DESC
         LIMIT 1
@@ -101,7 +103,7 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
         SELECT sl.productVariation.id AS productVariationId,
                SUM(sl.quantity) AS unitsSold
         FROM Sale s JOIN s.saleLines sl
-        WHERE s.createdAt >= :start AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
+        WHERE s.createdAt >= :start AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
         GROUP BY sl.productVariation.id
     """)
     List<ProductVariationVelocityProjection> getSalesVelocitySince(@Param("start") LocalDateTime start);
@@ -113,13 +115,14 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
                COUNT(DISTINCT s.id) AS salesCount,
                COALESCE(SUM(sl.quantity * sl.saleAtPrice), 0.0) AS grossSalesAmount,
                COALESCE(SUM(sl.quantity), 0L) AS itemsSold,
-               COALESCE(AVG(s.discount), 0.0) AS avgDiscountGiven
+               COALESCE(AVG(s.discount), 0.0) AS avgDiscountGiven,
+               COALESCE(e.commission, 0.0) AS commissionRate
         FROM Sale s
         JOIN s.employee e
         JOIN s.saleLines sl
         WHERE s.createdAt >= :start AND s.createdAt < :end
-        AND s.status = :#{T(com.sefault.server.sales.enums.SaleStatus).COMPLETED}
-        GROUP BY e.id, e.CIN, e.firstName, e.lastName
+        AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
+        GROUP BY e.id, e.CIN, e.firstName, e.lastName, e.commission
     """)
     List<EmployeeSalesProjection> aggregateSalesByEmployee(
             @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);

@@ -39,6 +39,13 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getActive(pageable));
     }
 
+    @GetMapping("/terminated")
+    @PreAuthorize("hasAuthority(@authorities.listEmployeesAuthority)")
+    public ResponseEntity<Page<EmployeeRecord>> getTerminatedEmployees(
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(employeeService.getTerminated(pageable));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority(@authorities.getEmployeeAuthority)")
     public ResponseEntity<EmployeeRecord> getById(@PathVariable UUID id) {

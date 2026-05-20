@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Test File Operations", description = "Endpoints for managing MinIO storage assets")
 public class MinioTestController {
     private final MinioService minioService;
+    private final MinioProperties minioProperties;
 
     @Operation(
             summary = "Upload a new file",
@@ -37,7 +38,7 @@ public class MinioTestController {
                     @RequestParam("objectName")
                     String objectName) {
         try {
-            minioService.uploadFile(objectName, file);
+            minioService.uploadFile(minioProperties.imagesBucket(), objectName, file);
             return ResponseEntity.ok("File uploaded successfully as: " + objectName);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
@@ -59,7 +60,7 @@ public class MinioTestController {
                     @RequestParam("objectName")
                     String objectName) {
         try {
-            String url = minioService.getFileUrl(objectName, 60 * 60);
+            String url = minioService.getFileUrl(minioProperties.imagesBucket(), objectName, 60 * 60);
             return ResponseEntity.ok(url);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to generate URL: " + e.getMessage());
@@ -73,7 +74,7 @@ public class MinioTestController {
             @Parameter(description = "The exact name of the file in the bucket", required = true)
                     @RequestParam("objectName")
                     String objectName) {
-        String url = minioService.getPermanentFileUrl(objectName);
+        String url = minioService.getPermanentFileUrl(minioProperties.imagesBucket(), objectName);
         return ResponseEntity.ok(url);
     }
 
@@ -89,7 +90,7 @@ public class MinioTestController {
                     @RequestParam("objectName")
                     String objectName) {
         try {
-            minioService.deleteFile(objectName);
+            minioService.deleteFile(minioProperties.imagesBucket(), objectName);
             return ResponseEntity.ok("File deleted successfully: " + objectName);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Deletion failed: " + e.getMessage());

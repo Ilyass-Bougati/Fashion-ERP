@@ -29,8 +29,8 @@ public class PredictionCronScheduler {
 
         try {
             salesPredictionService.generateDailySalesForecast();
-            stockPredictionService.generateStockForecasts();
-            employeePredictionService.generateEmployeeForecasts();
+            // stockPredictionService.generateStockForecasts();
+            // employeePredictionService.generateEmployeeForecasts();
             log.info("[CRON] Daily Forecasts completed successfully.");
         } catch (Exception e) {
             log.error("[CRON] Daily Forecasts failed: {}", e.getMessage(), e);

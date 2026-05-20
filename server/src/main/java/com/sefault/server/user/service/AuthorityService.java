@@ -11,5 +11,7 @@ public interface AuthorityService {
 
     void removeAuthority(UUID userId, UUID authorityId);
 
+    List<AuthorityRecord> getAllAuthorities();
+
     List<AuthorityRecord> getUserAuthorities(UUID userId);
 }

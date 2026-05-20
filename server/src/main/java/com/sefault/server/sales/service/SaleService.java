@@ -13,6 +13,8 @@ public interface SaleService {
 
     Page<SaleRecord> getAll(Pageable pageable);
 
+    Page<SaleRecord> getByEmployee(UUID employeeId, Pageable pageable);
+
     TransactionRecord checkout(UUID id);
 
     TransactionRecord refund(UUID id);
