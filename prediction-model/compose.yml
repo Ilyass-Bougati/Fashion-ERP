@@ -1,0 +1,18 @@
+services:
+  prediction-api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      MODEL_PATH: ${MODEL_PATH:-/app/data/models}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENV: ${ENV:-production}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
