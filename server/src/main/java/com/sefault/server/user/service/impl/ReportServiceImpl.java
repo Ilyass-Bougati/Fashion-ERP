@@ -3,6 +3,7 @@ package com.sefault.server.user.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sefault.server.ai.service.LlmService;
 import com.sefault.server.exception.FailedReportGenerationException;
+import com.sefault.server.exception.InvalidPeriodException;
 import com.sefault.server.exception.NotFoundException;
 import com.sefault.server.minio.MinioProperties;
 import com.sefault.server.minio.MinioService;
@@ -25,7 +26,9 @@ import io.minio.errors.MinioException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -81,11 +84,37 @@ public class ReportServiceImpl implements ReportService {
                 "application/pdf",
                 category,
                 null));
+
+        PeriodType newPeriod;
+        LocalDate now = LocalDate.now(), date1 = null, date2 = null;
+
+        switch (period) {
+            case MONTHLY:
+                newPeriod = PeriodType.DAILY;
+                date1 = now.with(TemporalAdjusters.firstDayOfMonth());
+                date2 = now.with(TemporalAdjusters.lastDayOfMonth());
+                break;
+
+            case YEARLY:
+                newPeriod = PeriodType.MONTHLY;
+                date1 = now.with(TemporalAdjusters.firstDayOfYear());
+                date2 = now.with(TemporalAdjusters.lastDayOfYear());
+                break;
+
+            default:
+                newPeriod = null;
+        }
+
+        if (newPeriod == null) {
+            throw new InvalidPeriodException("Given period" + period + " is invalid !");
+        }
+
         try {
             byte[] fileBytes;
             switch (category) {
                 case FINANCIAL:
-                    List<FinancialStatProjection> financialData = statsQueryService.getAllFinancialStats(period);
+                    List<FinancialStatProjection> financialData =
+                            statsQueryService.getAllFinancialStats(newPeriod, date1, date2);
                     String financeInsight = getInsight("finance", objectMapper.writeValueAsString(financialData));
                     fileBytes = pdfGenerationService.generateDocument(
                             "reports/financial-report.html",
@@ -93,14 +122,14 @@ public class ReportServiceImpl implements ReportService {
                     break;
 
                 case SALES:
-                    List<SalesStatProjection> salesData = statsQueryService.getAllSalesStats(period);
+                    List<SalesStatProjection> salesData = statsQueryService.getAllSalesStats(newPeriod, date1, date2);
                     String salesInsight = getInsight("sales", objectMapper.writeValueAsString(salesData));
                     fileBytes = pdfGenerationService.generateDocument(
                             "reports/sales-report.html", Map.of("stats", salesData, "aiInsight", salesInsight));
                     break;
                 case EMPLOYEE_PERFORMANCE:
                     List<EmployeePerformanceStatProjection> employeePerformanceData =
-                            statsQueryService.getAllEmployeePerformanceStats(period);
+                            statsQueryService.getAllEmployeePerformanceStats(newPeriod, date1, date2);
                     String employeePerformanceInsight = getInsight(
                             "employee performance", objectMapper.writeValueAsString(employeePerformanceData));
                     fileBytes = pdfGenerationService.generateDocument(

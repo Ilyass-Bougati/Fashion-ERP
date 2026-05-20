@@ -24,4 +24,7 @@ public interface FinancialStatRepository extends JpaRepository<@NonNull Financia
     Page<FinancialStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
 
     List<FinancialStat> findTop24ByPeriodTypeOrderByStatDateDesc(PeriodType periodType);
+
+    List<FinancialStatProjection> findByPeriodTypeAndStatDateIsBetween(
+            PeriodType periodType, LocalDate date1, LocalDate date2);
 }

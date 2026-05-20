@@ -31,4 +31,7 @@ public interface EmployeePerformanceStatRepository
 
     List<EmployeePerformanceStat> findTop30ByEmployeeCinAndPeriodTypeOrderByStatDateDesc(
             String cin, PeriodType periodType);
+
+    List<EmployeePerformanceStatProjection> findByPeriodTypeAndStatDateIsBetween(
+            PeriodType periodType, LocalDate date1, LocalDate date2);
 }

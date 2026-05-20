@@ -3,6 +3,7 @@ package com.sefault.server.stats.repository;
 import com.sefault.server.stats.dto.projection.SalesStatProjection;
 import com.sefault.server.stats.entity.SalesStat;
 import com.sefault.server.stats.enums.PeriodType;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +25,7 @@ public interface SalesStatRepository extends JpaRepository<@NonNull SalesStat, @
     Page<SalesStatProjection> findByPeriodType(PeriodType periodType, Pageable pageable);
 
     List<SalesStat> findTop60ByPeriodTypeOrderByStatDateDesc(PeriodType periodType);
+
+    List<SalesStatProjection> findByPeriodTypeAndStatDateIsBetween(
+            @NotNull PeriodType periodType, LocalDate statDate, LocalDate statDate2);
 }
