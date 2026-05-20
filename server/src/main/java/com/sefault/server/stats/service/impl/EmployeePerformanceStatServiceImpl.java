@@ -27,29 +27,22 @@ public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceSt
     public void saveEmployeeStats(LocalDateTime start, LocalDateTime end, LocalDate anchorDate, PeriodType periodType) {
 
         List<EmployeeSalesProjection> salesAgg = saleRepository.aggregateSalesByEmployee(start, end);
-        List<EmployeeCommissionProjection> commAgg = payrollRepository.aggregateCommissionByEmployee(start, end);
 
         Map<String, EmployeeSalesProjection> salesMap =
                 salesAgg.stream().collect(Collectors.toMap(EmployeeSalesProjection::getCin, proj -> proj));
 
-        Map<String, EmployeeCommissionProjection> commissionMap =
-                commAgg.stream().collect(Collectors.toMap(EmployeeCommissionProjection::getCin, proj -> proj));
-
-        Set<String> activeCins = new HashSet<>();
-        activeCins.addAll(salesMap.keySet());
-        activeCins.addAll(commissionMap.keySet());
+        Map<String, Double> commissionMap = payrollRepository.aggregateCommissionByEmployee(start, end).stream()
+                .collect(Collectors.toMap(
+                        EmployeeCommissionProjection::getCin, EmployeeCommissionProjection::getTotalCommission));
 
         List<EmployeePerformanceStat> statsToSave = new ArrayList<>();
 
-        for (String cin : activeCins) {
+        for (String cin : salesMap.keySet()) {
             EmployeeSalesProjection sData = salesMap.get(cin);
-            EmployeeCommissionProjection cData = commissionMap.get(cin);
 
-            String fullName = sData != null
-                    ? sData.getFirstName() + " " + sData.getLastName()
-                    : cData.getFirstName() + " " + cData.getLastName();
+            String fullName = sData.getFirstName() + " " + sData.getLastName();
 
-            Double commissionEarned = cData != null ? cData.getTotalCommission() : 0.0;
+            Double commissionEarned = commissionMap.getOrDefault(cin, 0.0);
 
             EmployeePerformanceStat existingStat = statRepository
                     .findByStatDateAndPeriodTypeAndEmployeeCin(anchorDate, periodType, cin)
@@ -62,10 +55,10 @@ public class EmployeePerformanceStatServiceImpl implements EmployeePerformanceSt
                     .periodType(periodType)
                     .employeeCin(cin)
                     .employeeFullName(fullName)
-                    .salesCount(sData != null ? sData.getSalesCount().intValue() : 0)
-                    .grossSalesAmount(sData != null ? sData.getGrossSalesAmount() : 0.0)
-                    .itemsSold(sData != null ? sData.getItemsSold().intValue() : 0)
-                    .avgDiscountGiven(sData != null ? sData.getAvgDiscountGiven() : 0.0)
+                    .salesCount(sData.getSalesCount().intValue())
+                    .grossSalesAmount(sData.getGrossSalesAmount())
+                    .itemsSold(sData.getItemsSold().intValue())
+                    .avgDiscountGiven(sData.getAvgDiscountGiven())
                     .commissionEarned(commissionEarned)
                     .reconciledAt(LocalDateTime.now())
                     .build();

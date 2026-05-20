@@ -136,7 +136,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
           <h2 className="text-2xl font-bold">Sale Details</h2>
           <p className="text-xs font-mono text-[var(--muted-foreground)]">{sale.id}</p>
         </div>
-        {!sale.refunded && (
+        {sale.status !== 'REFUNDED' && (
           <div className="flex gap-2">
             <Button onClick={handleCheckout} size="sm">
               <CreditCard className="mr-2 h-4 w-4" />
@@ -155,8 +155,8 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-[var(--muted-foreground)]">Status</p>
-            <Badge variant={sale.refunded ? 'destructive' : 'success'} className="mt-1">
-              {sale.refunded ? 'Refunded' : 'Active'}
+            <Badge variant={sale.status === 'REFUNDED' ? 'destructive' : sale.status === 'COMPLETED' ? 'success' : 'secondary'} className="mt-1">
+              {sale.status === 'PENDING' ? 'Pending' : sale.status === 'COMPLETED' ? 'Completed' : 'Refunded'}
             </Badge>
           </CardContent>
         </Card>
@@ -184,7 +184,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Line Items</CardTitle>
-          {!sale.refunded && (
+          {sale.status !== 'REFUNDED' && (
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
               <DialogTrigger asChild>
                 <Button size="sm">
@@ -251,7 +251,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
                   <TableHead>Qty</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Line Total</TableHead>
-                  {!sale.refunded && <TableHead />}
+                  {sale.status !== 'REFUNDED' && <TableHead />}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -261,7 +261,7 @@ export default function SaleDetailPage({ params }: { params: Promise<{ id: strin
                     <TableCell>{line.quantity}</TableCell>
                     <TableCell>${line.saleAtPrice.toFixed(2)}</TableCell>
                     <TableCell>${(line.quantity * line.saleAtPrice).toFixed(2)}</TableCell>
-                    {!sale.refunded && (
+                    {sale.status !== 'REFUNDED' && (
                       <TableCell>
                         <Button
                           variant="ghost"

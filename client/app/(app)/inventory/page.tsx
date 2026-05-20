@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,9 +25,11 @@ import {
 } from '@/components/ui/select'
 import { ToastContainer, useToast } from '@/components/ui/toast'
 import { inventory } from '@/lib/api'
+import { EntityAvatar } from '@/components/ui/entity-avatar'
 import type { Product, ProductCategory } from '@/types'
 
 export default function InventoryPage() {
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<ProductCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -183,6 +186,7 @@ export default function InventoryPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead></TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Created</TableHead>
@@ -191,7 +195,14 @@ export default function InventoryPage() {
               </TableHeader>
               <TableBody>
                 {products.map(p => (
-                  <TableRow key={p.id}>
+                  <TableRow
+                    key={p.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/inventory/${p.id}`)}
+                  >
+                    <TableCell className="w-10">
+                      <EntityAvatar imageId={p.imageId} fallback={p.name} />
+                    </TableCell>
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell>{getCategoryName(p.productCategoryId)}</TableCell>
                     <TableCell className="text-sm text-[var(--muted-foreground)]">
@@ -199,11 +210,11 @@ export default function InventoryPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
+                        <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); openEdit(p) }}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="text-[var(--destructive)]"
-                          onClick={() => handleDelete(p.id)}>
+                          onClick={e => { e.stopPropagation(); handleDelete(p.id) }}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

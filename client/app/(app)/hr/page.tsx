@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, UserX, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, UserX, Eye, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,7 +18,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { ToastContainer, useToast } from '@/components/ui/toast'
-import { hr } from '@/lib/api'
+import { hr, images } from '@/lib/api'
+import { EntityAvatar } from '@/components/ui/entity-avatar'
 import type { Employee } from '@/types'
 
 type Filter = 'all' | 'active' | 'terminated'
@@ -44,6 +46,7 @@ export default function HRPage() {
   const [editing, setEditing]       = useState<Employee | null>(null)
   const [form, setForm]             = useState<EmployeeForm>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [imageFile, setImageFile]   = useState<File | null>(null)
   const [confirm, setConfirm]       = useState<ConfirmState>(null)
   const { toasts, toast, removeToast } = useToast()
 
@@ -71,25 +74,38 @@ export default function HRPage() {
     setPage(0)
   }
 
-  function openNew() { setEditing(null); setForm(emptyForm); setOpen(true) }
+  function openNew() { setEditing(null); setForm(emptyForm); setImageFile(null); setOpen(true) }
   function openEdit(emp: Employee) {
     setEditing(emp)
+    setImageFile(null)
     setForm({
       firstName: emp.firstName, lastName: emp.lastName, email: emp.email,
       phoneNumber: emp.phoneNumber, CIN: emp.CIN,
-      salary: String(emp.salary), commission: String(emp.commission),
+      salary: String(emp.salary), commission: String(emp.commission * 100),
       hiredAt: emp.hiredAt.split('T')[0]
     })
     setOpen(true)
   }
-  function close() { setOpen(false); setEditing(null); setForm(emptyForm) }
+  function close() { setOpen(false); setEditing(null); setForm(emptyForm); setImageFile(null) }
   function set(key: keyof EmployeeForm, val: string) { setForm(f => ({ ...f, [key]: val })) }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
     try {
-      const payload = { ...form, salary: parseFloat(form.salary), commission: parseFloat(form.commission) }
+      let imageId: string | undefined = editing?.imageId
+      if (imageFile) {
+        const uploaded = await images.upload(imageFile)
+        imageId = uploaded.imageId
+      }
+      const payload = {
+        ...form,
+        imageId,
+        active: editing ? editing.active : true,
+        salary: parseFloat(form.salary),
+        commission: parseFloat(form.commission) / 100,
+        hiredAt: form.hiredAt ? `${form.hiredAt}T00:00:00` : undefined,
+      }
       if (editing) {
         await hr.employees.update(editing.id, payload)
         toast('Employee updated', 'success')
@@ -169,6 +185,15 @@ export default function HRPage() {
                 <Label>Hired At *</Label>
                 <Input type="date" value={form.hiredAt} onChange={e => set('hiredAt', e.target.value)} required />
               </div>
+              <div className="space-y-1 col-span-2">
+                <Label>{editing ? 'Profile Photo (leave blank to keep current)' : 'Profile Photo *'}</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  required={!editing}
+                  onChange={e => setImageFile(e.target.files?.[0] ?? null)}
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" type="button" onClick={close}>Cancel</Button>
@@ -227,6 +252,7 @@ export default function HRPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead></TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Salary</TableHead>
@@ -238,10 +264,13 @@ export default function HRPage() {
               <TableBody>
                 {employees.map(emp => (
                   <TableRow key={emp.id}>
+                    <TableCell className="w-10">
+                      <EntityAvatar imageId={emp.imageId} fallback={`${emp.firstName} ${emp.lastName}`} />
+                    </TableCell>
                     <TableCell className="font-medium">{emp.firstName} {emp.lastName}</TableCell>
                     <TableCell>{emp.email}</TableCell>
                     <TableCell>${emp.salary.toLocaleString()}</TableCell>
-                    <TableCell>{emp.commission}%</TableCell>
+                    <TableCell>{(emp.commission * 100).toFixed(1)}%</TableCell>
                     <TableCell>
                       <Badge variant={emp.active ? 'success' : 'secondary'}>
                         {emp.active ? 'Active' : 'Terminated'}
@@ -249,6 +278,9 @@ export default function HRPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/hr/${emp.id}`}><Eye className="h-4 w-4" /></Link>
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(emp)}>
                           <Pencil className="h-4 w-4" />
                         </Button>

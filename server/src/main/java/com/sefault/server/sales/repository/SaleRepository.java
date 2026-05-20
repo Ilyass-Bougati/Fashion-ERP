@@ -36,6 +36,8 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
 
     Page<SaleProjection> findAllBy(Pageable pageable);
 
+    Page<SaleProjection> findAllByEmployeeId(UUID employeeId, Pageable pageable);
+
     @Query("""
         SELECT coalesce(SUM((sl.quantity * sl.saleAtPrice) * (1.0 - s.discount)), 0.0)
         FROM Sale s
@@ -113,13 +115,14 @@ public interface SaleRepository extends JpaRepository<@NonNull Sale, @NonNull UU
                COUNT(DISTINCT s.id) AS salesCount,
                COALESCE(SUM(sl.quantity * sl.saleAtPrice), 0.0) AS grossSalesAmount,
                COALESCE(SUM(sl.quantity), 0L) AS itemsSold,
-               COALESCE(AVG(s.discount), 0.0) AS avgDiscountGiven
+               COALESCE(AVG(s.discount), 0.0) AS avgDiscountGiven,
+               COALESCE(e.commission, 0.0) AS commissionRate
         FROM Sale s
         JOIN s.employee e
         JOIN s.saleLines sl
         WHERE s.createdAt >= :start AND s.createdAt < :end
         AND s.status = :#{T(com.sefault.server.sales.SaleStatus).COMPLETED}
-        GROUP BY e.id, e.CIN, e.firstName, e.lastName
+        GROUP BY e.id, e.CIN, e.firstName, e.lastName, e.commission
     """)
     List<EmployeeSalesProjection> aggregateSalesByEmployee(
             @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
