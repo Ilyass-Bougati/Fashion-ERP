@@ -86,7 +86,7 @@ public class ReportServiceImpl implements ReportService {
                 null));
 
         PeriodType newPeriod;
-        LocalDate now = LocalDate.now(), date1 = null, date2 = null;
+        LocalDate now = LocalDate.now().minusMonths(1), date1 = null, date2 = null;
 
         switch (period) {
             case MONTHLY:
