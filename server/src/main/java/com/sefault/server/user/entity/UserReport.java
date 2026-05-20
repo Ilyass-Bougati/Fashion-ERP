@@ -16,8 +16,12 @@ import org.hibernate.annotations.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserReport {
-    @EmbeddedId
-    private UserReportId id = new UserReportId();
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Embedded
+    private UserReportId embedded_id = new UserReportId();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
