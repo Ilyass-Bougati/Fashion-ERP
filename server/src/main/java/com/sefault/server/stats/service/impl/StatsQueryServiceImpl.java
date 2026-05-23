@@ -33,8 +33,8 @@ public class StatsQueryServiceImpl implements StatsQueryService {
     }
 
     @Override
-    public List<FinancialStatProjection> getAllFinancialStats(PeriodType periodType) {
-        return financialRepo.findByPeriodType(periodType);
+    public List<FinancialStatProjection> getAllFinancialStats(PeriodType periodType, LocalDate date1, LocalDate date2) {
+        return financialRepo.findByPeriodTypeAndStatDateIsBetween(periodType, date1, date2);
     }
 
     public Page<SalesStatProjection> getSalesStats(PeriodType periodType, Pageable pageable) {
@@ -42,8 +42,8 @@ public class StatsQueryServiceImpl implements StatsQueryService {
     }
 
     @Override
-    public List<SalesStatProjection> getAllSalesStats(PeriodType periodType) {
-        return salesRepo.findByPeriodType(periodType);
+    public List<SalesStatProjection> getAllSalesStats(PeriodType periodType, LocalDate date1, LocalDate date2) {
+        return salesRepo.findByPeriodTypeAndStatDateIsBetween(periodType, date1, date2);
     }
 
     public Page<EmployeePerformanceStatProjection> getEmployeePerformanceStats(
@@ -52,8 +52,9 @@ public class StatsQueryServiceImpl implements StatsQueryService {
     }
 
     @Override
-    public List<EmployeePerformanceStatProjection> getAllEmployeePerformanceStats(PeriodType periodType) {
-        return employeeRepo.findByPeriodType(periodType);
+    public List<EmployeePerformanceStatProjection> getAllEmployeePerformanceStats(
+            PeriodType periodType, LocalDate date1, LocalDate date2) {
+        return employeeRepo.findByPeriodTypeAndStatDateIsBetween(periodType, date1, date2);
     }
 
     public Page<StockStatProjection> getStockStats(LocalDate statDate, PeriodType periodType, Pageable pageable) {

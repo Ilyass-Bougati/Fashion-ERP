@@ -13,15 +13,16 @@ import org.springframework.data.domain.Pageable;
 public interface StatsQueryService {
     Page<FinancialStatProjection> getFinancialStats(PeriodType periodType, Pageable pageable);
 
-    List<FinancialStatProjection> getAllFinancialStats(PeriodType periodType);
+    List<FinancialStatProjection> getAllFinancialStats(PeriodType periodType, LocalDate date1, LocalDate date2);
 
     Page<SalesStatProjection> getSalesStats(PeriodType periodType, Pageable pageable);
 
-    List<SalesStatProjection> getAllSalesStats(PeriodType periodType);
+    List<SalesStatProjection> getAllSalesStats(PeriodType periodType, LocalDate date1, LocalDate date2);
 
     Page<EmployeePerformanceStatProjection> getEmployeePerformanceStats(PeriodType periodType, Pageable pageable);
 
-    List<EmployeePerformanceStatProjection> getAllEmployeePerformanceStats(PeriodType periodType);
+    List<EmployeePerformanceStatProjection> getAllEmployeePerformanceStats(
+            PeriodType periodType, LocalDate date1, LocalDate date2);
 
     Page<StockStatProjection> getStockStats(LocalDate statDate, PeriodType periodType, Pageable pageable);
 }

@@ -2,6 +2,7 @@ spring:
   application:
     name: server
 
+
   ai:
     ollama:
       base-url: ${OLLAMA_BASE_URL:https://amine.kudu-scylla.ts.net}
