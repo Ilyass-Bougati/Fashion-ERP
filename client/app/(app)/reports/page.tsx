@@ -29,12 +29,10 @@ export default function ReportsPage() {
   const authorities = useAuthorities()
   const authorized  = authorities.includes(REQUIRED_AUTHORITY)
 
-  const [reportList, setReportList]     = useState<Report[]>([])
-  const [page, setPage]                 = useState(0)
-  const [totalPages, setTotalPages]     = useState(1)
-  const [loading, setLoading]           = useState(true)
-  const [linkLoading, setLinkLoading]   = useState<string | null>(null)
-  const [resolvedUrls, setResolvedUrls] = useState<Record<string, string>>({})
+  const [reportList, setReportList] = useState<Report[]>([])
+  const [page, setPage]             = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading]       = useState(true)
 
   const { toasts, toast, removeToast } = useToast()
 
@@ -53,20 +51,6 @@ export default function ReportsPage() {
     }
   }
 
-  async function handleGetLink(id: string) {
-    setLinkLoading(id)
-    try {
-      const data = await reports.getById(id)
-      setResolvedUrls(prev => ({ ...prev, [id]: data.url }))
-    } catch {
-      toast('Failed to generate download link', 'error')
-    } finally {
-      setLinkLoading(null)
-    }
-  }
-
-  // authorities starts as [] (loading), so wait until the fetch settles.
-  // Once populated, if READ_REPORTS is absent show the gate.
   if (!authorized && authorities.length > 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
@@ -110,52 +94,47 @@ export default function ReportsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reportList.map(report => {
-                  const url = resolvedUrls[report.id]
-                  const isLoading = linkLoading === report.id
-
-                  return (
-                    <TableRow key={report.id}>
-                      <TableCell className="font-medium max-w-xs truncate" title={report.title}>
-                        {report.title}
-                      </TableCell>
-                      <TableCell>{categoryLabel(report.category)}</TableCell>
-                      <TableCell>
-                        <span className="font-mono text-xs">{report.type}</span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusVariant(report.status)}>
-                          {report.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-[var(--muted-foreground)]">
-                        {report.generatedAt
-                          ? new Date(report.generatedAt).toLocaleString()
-                          : '—'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {url ? (
-                          <Button size="sm" asChild>
-                            <a href={url} target="_blank" rel="noopener noreferrer">
-                              <Download className="mr-1.5 h-4 w-4" />
-                              Download
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={report.status !== 'DONE' || isLoading}
-                            onClick={() => handleGetLink(report.id)}
-                          >
+                {reportList.map(report => (
+                  <TableRow key={report.id}>
+                    <TableCell className="font-medium max-w-xs truncate" title={report.title}>
+                      {report.title}
+                    </TableCell>
+                    <TableCell>{categoryLabel(report.category)}</TableCell>
+                    <TableCell>
+                      <span className="font-mono text-xs">{report.type}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(report.status)}>
+                        {report.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-[var(--muted-foreground)]">
+                      {report.generatedAt
+                        ? new Date(report.generatedAt).toLocaleString()
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant={report.status === 'DONE' ? 'default' : 'ghost'}
+                        disabled={report.status !== 'DONE'}
+                        asChild={report.status === 'DONE'}
+                      >
+                        {report.status === 'DONE' ? (
+                          <a href={`/api/v1/reports/${report.id}/download`} download>
                             <Download className="mr-1.5 h-4 w-4" />
-                            {isLoading ? 'Loading…' : 'Get Link'}
-                          </Button>
+                            Download
+                          </a>
+                        ) : (
+                          <span>
+                            <Download className="mr-1.5 h-4 w-4" />
+                            Download
+                          </span>
                         )}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           )}

@@ -10,6 +10,8 @@ public interface MinioService {
 
     String getFileUrl(String bucketName, String objectName, int expiry) throws MinioException;
 
+    InputStream getObject(String bucketName, String objectName) throws MinioException, IOException;
+
     void uploadFile(String bucketName, String objectName, InputStream inputStream, long size, String contentType)
             throws MinioException, IOException;
 

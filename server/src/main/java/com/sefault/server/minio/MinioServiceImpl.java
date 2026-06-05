@@ -60,6 +60,13 @@ public class MinioServiceImpl implements MinioService {
                 .build());
     }
 
+    public InputStream getObject(String bucketName, String objectName) throws MinioException, IOException {
+        return minioClient.getObject(GetObjectArgs.builder()
+                .bucket(bucketName)
+                .object(objectName)
+                .build());
+    }
+
     public void deleteFile(String bucketName, String objectName) throws MinioException {
         minioClient.removeObject(
                 RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
