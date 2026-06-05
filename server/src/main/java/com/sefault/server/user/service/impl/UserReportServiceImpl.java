@@ -4,6 +4,7 @@ import com.sefault.server.user.dto.record.UserReportRecord;
 import com.sefault.server.user.entity.Report;
 import com.sefault.server.user.entity.User;
 import com.sefault.server.user.entity.UserReport;
+import com.sefault.server.user.entity.id.UserReportId;
 import com.sefault.server.user.mapper.UserReportMapper;
 import com.sefault.server.user.repository.ReportRepository;
 import com.sefault.server.user.repository.UserReportRepository;
