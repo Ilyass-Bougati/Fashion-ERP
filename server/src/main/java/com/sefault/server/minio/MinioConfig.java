@@ -34,6 +34,10 @@ public class MinioConfig {
         return MinioClient.builder()
                 .endpoint(minioProperties.effectivePublicEndpoint())
                 .credentials(minioProperties.accessKey(), minioProperties.secretKey())
+                // Region must be set explicitly so the SDK skips its region-discovery
+                // HTTP call. Without this, it tries to reach the public endpoint from
+                // inside Docker and times out. MinIO defaults to us-east-1.
+                .region("us-east-1")
                 .build();
     }
 }

@@ -4,7 +4,7 @@ services:
     build:
       context: .
     ports:
-      - '8080:8080'
+      - "8080:8080"
     environment:
       SWAGGER_UI: ${SWAGGER_UI}
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
@@ -17,6 +17,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      PREDICTION_API_URL: ${PREDICTION_API_URL}
     depends_on:
       redis:
         condition: service_healthy
