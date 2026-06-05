@@ -18,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @Slf4j
 @RestController
@@ -36,7 +35,7 @@ public class ReportController {
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<StreamingResponseBody> download(Principal principal, @PathVariable UUID id)
+    public ResponseEntity<byte[]> download(Principal principal, @PathVariable UUID id)
             throws MinioException, IOException {
         try {
             userReportService.logAccess(principal.getName(), id);
@@ -45,17 +44,17 @@ public class ReportController {
         }
 
         ReportRecord report = reportService.getById(id);
-        InputStream stream = minioService.getObject(report.bucketName(), report.objectKey());
-
-        StreamingResponseBody body = out -> {
-            try (stream) { stream.transferTo(out); }
-        };
+        byte[] content;
+        try (InputStream stream = minioService.getObject(report.bucketName(), report.objectKey())) {
+            content = stream.readAllBytes();
+        }
 
         String filename = report.title() + "." + report.type().name().toLowerCase();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(body);
+                .contentLength(content.length)
+                .body(content);
     }
 }

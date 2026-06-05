@@ -33,28 +33,7 @@ export default function ReportsPage() {
   const [page, setPage]             = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading]       = useState(true)
-  const [downloading, setDownloading] = useState<string | null>(null)
-
   const { toasts, toast, removeToast } = useToast()
-
-  async function handleDownload(report: Report) {
-    setDownloading(report.id)
-    try {
-      const res = await fetch(`/api/v1/reports/${report.id}/download`, { credentials: 'include' })
-      if (!res.ok) throw new Error('Download failed')
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${report.title}.${report.type.toLowerCase()}`
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      toast('Failed to download report', 'error')
-    } finally {
-      setDownloading(null)
-    }
-  }
 
   useEffect(() => { if (authorized) load() }, [authorized, page])
 
@@ -137,11 +116,20 @@ export default function ReportsPage() {
                       <Button
                         size="sm"
                         variant={report.status === 'DONE' ? 'default' : 'ghost'}
-                        disabled={report.status !== 'DONE' || downloading === report.id}
-                        onClick={() => handleDownload(report)}
+                        disabled={report.status !== 'DONE'}
+                        asChild={report.status === 'DONE'}
                       >
-                        <Download className="mr-1.5 h-4 w-4" />
-                        {downloading === report.id ? 'Downloading…' : 'Download'}
+                        {report.status === 'DONE' ? (
+                          <a href={`/api/v1/reports/${report.id}/download`} download>
+                            <Download className="mr-1.5 h-4 w-4" />
+                            Download
+                          </a>
+                        ) : (
+                          <span>
+                            <Download className="mr-1.5 h-4 w-4" />
+                            Download
+                          </span>
+                        )}
                       </Button>
                     </TableCell>
                   </TableRow>
