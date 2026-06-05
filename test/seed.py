@@ -12,8 +12,10 @@ import struct
 import zlib
 import random
 import argparse
+import threading
 from io import BytesIO
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
     import requests
@@ -72,8 +74,10 @@ def next_phone() -> str:
 
 class Seeder:
     def __init__(self, base_url: str):
-        self.base = base_url.rstrip("/") + "/api/v1"
-        self.s    = requests.Session()
+        self.base              = base_url.rstrip("/") + "/api/v1"
+        self.s                 = requests.Session()
+        self._stat_cookie_gen   = 0
+        self._stat_refresh_lock = threading.Lock()
 
     # ── low-level ────────────────────────────────────────────────────────────
 
@@ -518,24 +522,82 @@ class Seeder:
 
     # ── historical stats ─────────────────────────────────────────────────────
 
-    def generate_stats(self, years: int = 2):
+    def _stat_new_session(self) -> requests.Session:
+        s = requests.Session()
+        for name, value in self._stat_cookies.items():
+            s.cookies.set(name, value)
+        return s
+
+    def _stat_refresh_token(self) -> None:
+        """Refresh the access token. Must be called while holding _stat_refresh_lock."""
+        resp = self.s.post(f"{self.base}/auth/refresh")
+        if not resp.ok:
+            raise RuntimeError(f"Token refresh failed: HTTP {resp.status_code}")
+        for cookie in resp.cookies:
+            self.s.cookies.set(cookie.name, cookie.value)
+            self._stat_cookies[cookie.name] = cookie.value
+        self._stat_cookie_gen += 1
+        ok("Access token refreshed")
+
+    def _seed_stat_day(self, d: date) -> tuple[date, bool, str]:
+        """POST run-today-stats for one date.  On 403 refreshes the token and retries."""
+        gen      = self._stat_cookie_gen
+        s        = self._stat_new_session()
+        date_str = d.strftime("%Y-%m-%d")
+        url      = f"{self.base}/test/stats/run-today-stats/{date_str}"
+        try:
+            resp = s.post(url)
+            if resp.status_code == 403:
+                with self._stat_refresh_lock:
+                    if self._stat_cookie_gen == gen:
+                        self._stat_refresh_token()
+                s    = self._stat_new_session()
+                resp = s.post(url)
+            if not resp.ok:
+                return d, False, f"HTTP {resp.status_code}: {resp.text[:120]}"
+            return d, True, ""
+        except Exception as exc:
+            return d, False, str(exc)
+
+    def generate_stats(self, years: int = 2, concurrency: int = 8):
         today = datetime.now().date()
         start = today - timedelta(days=365 * years)
-        total = (today - start).days + 1
-        section(f"· Generating daily stats  ({start} → {today},  {total} days)")
-        current, done, errors = start, 0, 0
-        while current <= today:
-            date_str = current.strftime("%Y-%m-%d")
-            try:
-                self._post(f"/test/stats/run-today-stats/{date_str}")
-            except RuntimeError as e:
-                warn(f"Stats failed for {date_str}: {e}")
-                errors += 1
-            current += timedelta(days=1)
-            done += 1
-            if done % 60 == 0 or done == total:
-                ok(f"Progress: {done}/{total} days  (up to {date_str})")
+        days  = [start + timedelta(days=i) for i in range((today - start).days + 1)]
+        total = len(days)
+        section(f"· Generating daily stats  ({start} → {today},  {total} days,  {concurrency} threads)")
+
+        # Snapshot cookies for worker threads (requests.Session is not thread-safe)
+        self._stat_cookies = {c.name: c.value for c in self.s.cookies}
+
+        import time as _time
+        done = errors = 0
+        t0 = _time.monotonic()
+
+        with ThreadPoolExecutor(max_workers=concurrency) as pool:
+            futures = {pool.submit(self._seed_stat_day, d): d for d in days}
+            for future in as_completed(futures):
+                d, success, msg = future.result()
+                done += 1
+                if not success:
+                    errors += 1
+                    warn(f"{d} failed: {msg}")
+                if done % 50 == 0 or done == total:
+                    elapsed = _time.monotonic() - t0
+                    rate = done / elapsed if elapsed > 0 else 0
+                    eta  = (total - done) / rate if rate > 0 else 0
+                    ok(f"Progress: {done}/{total} days  ({rate:.1f} req/s  ETA {eta:.0f}s)")
+
         ok(f"Done — {total - errors} succeeded, {errors} failed")
+
+        # Generate MONTHLY stats for the current month (includes financial stats)
+        try:
+            resp = self.s.post(f"{self.base}/test/stats/run-current-month")
+            if resp.ok:
+                ok("Monthly stats (financial/sales/employees) saved for current month")
+            else:
+                warn(f"Monthly stats: HTTP {resp.status_code}")
+        except Exception as exc:
+            warn(f"Monthly stats request failed: {exc}")
 
     # ── fetch existing data (used by --only mode) ────────────────────────────
 
@@ -610,7 +672,7 @@ class Seeder:
             if "transactions" in only:
                 print(f"  Transactions      : {len(self._TX_DESCRIPTIONS)}")
             if "stats" in only:
-                print(f"  Stats days        : {365 * 2 + 1}")
+                print(f"  Stats days        : {365 * 2}")
             print(f"\n{GREEN}  ✓ Seeding complete!{RESET}\n")
             return
 

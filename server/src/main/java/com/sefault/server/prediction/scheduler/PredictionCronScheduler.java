@@ -25,12 +25,14 @@ public class PredictionCronScheduler {
      */
     @Scheduled(cron = "0 0 5 * * *")
     public void runDailyPredictions() {
-        log.info("⏰ [CRON 5:00 AM] Starting Daily Machine Learning Forecasts...");
+        log.info(
+            "⏰ [CRON 5:00 AM] Starting Daily Machine Learning Forecasts..."
+        );
 
         try {
             salesPredictionService.generateDailySalesForecast();
-            // stockPredictionService.generateStockForecasts();
-            // employeePredictionService.generateEmployeeForecasts();
+            stockPredictionService.generateStockForecasts();
+            employeePredictionService.generateEmployeeForecasts();
             log.info("[CRON] Daily Forecasts completed successfully.");
         } catch (Exception e) {
             log.error("[CRON] Daily Forecasts failed: {}", e.getMessage(), e);
@@ -47,9 +49,15 @@ public class PredictionCronScheduler {
 
         try {
             financialPredictionService.generateMonthlyFinancialForecast();
-            log.info("[CRON] Monthly Financial Forecast completed successfully.");
+            log.info(
+                "[CRON] Monthly Financial Forecast completed successfully."
+            );
         } catch (Exception e) {
-            log.error("[CRON] Monthly Financial Forecast failed: {}", e.getMessage(), e);
+            log.error(
+                "[CRON] Monthly Financial Forecast failed: {}",
+                e.getMessage(),
+                e
+            );
         }
     }
 }

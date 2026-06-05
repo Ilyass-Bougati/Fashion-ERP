@@ -8,10 +8,7 @@ import type {
   Page
 } from '@/types'
 
-// Always use a relative URL so requests go through Next.js's /api rewrite proxy
-// (next.config.ts: /api/* → backend).  A direct cross-origin fetch to the
-// backend causes the browser to drop SameSite cookies on subsequent requests.
-const BASE_URL = 'http://localhost:8080'
+const BASE_URL = ''
 
 async function request<T>(
   path: string,
