@@ -8,11 +8,13 @@ import io.minio.errors.MinioException;
 import java.security.Principal;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
@@ -28,7 +30,11 @@ public class ReportController {
 
     @GetMapping("/{id}")
     public SavedReportRecord getById(Principal principal, @PathVariable UUID id) throws MinioException {
-        userReportService.logAccess(principal.getName(), id);
+        try {
+            userReportService.logAccess(principal.getName(), id);
+        } catch (Exception e) {
+            log.warn("Failed to log report access for user {} on report {}: {}", principal.getName(), id, e.getMessage());
+        }
         return reportService.getUrlById(id);
     }
 }

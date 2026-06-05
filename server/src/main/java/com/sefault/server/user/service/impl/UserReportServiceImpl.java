@@ -32,10 +32,15 @@ public class UserReportServiceImpl implements UserReportService {
 
     @Override
     public void logAccess(String email, UUID reportId) {
-        User user = userRepository.getReferenceByEmail(email);
+        User user = userRepository.findByEmail(email);
+
+        UserReportId id = new UserReportId(user.getId(), reportId);
+        if (userReportRepository.existsById(id)) return;
+
         Report report = reportRepository.getReferenceById(reportId);
 
         UserReport entity = new UserReport();
+        entity.setId(id);
         entity.setReport(report);
         entity.setUser(user);
 
