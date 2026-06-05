@@ -5,6 +5,7 @@ import type {
   Employee, Isle, Transaction, FixedCharge, Payroll,
   FinancialStat, SalesStat, EmployeePerformanceStat, StockStat,
   SalesPrediction, EmployeePerformancePrediction,
+  Report, SavedReport,
   Page
 } from '@/types'
 
@@ -257,6 +258,14 @@ export const predictions = {
     ),
 }
 
+// Reports
+export const reports = {
+  list: (page = 0, size = 20) =>
+    request<Page<Report>>(`/reports?page=${page}&size=${size}`),
+  getById: (id: string) =>
+    request<SavedReport>(`/reports/${id}`),
+}
+
 // Users
 export const users = {
   list: (page = 0, size = 20) =>
@@ -276,5 +285,8 @@ export const users = {
       request<void>(`/authority?granteeId=${granteeId}&authorityId=${authorityId}`, { method: 'POST' }),
     revoke: (userId: string, authorityId: string) =>
       request<void>(`/authority?userId=${userId}&authorityId=${authorityId}`, { method: 'DELETE' }),
+  },
+  me: {
+    authorities: () => request<string[]>('/user/me/authorities'),
   },
 }

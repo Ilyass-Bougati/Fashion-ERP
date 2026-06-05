@@ -4,6 +4,7 @@ import com.sefault.server.user.dto.record.RegisterUserRecord;
 import com.sefault.server.user.dto.record.UserRecord;
 import com.sefault.server.user.service.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -58,5 +61,13 @@ public class UserController {
     @PreAuthorize("hasAuthority(@authorities.deleteUsersAuthority)")
     public void deleteUser(@PathVariable UUID id) {
         userService.deleteUserById(id);
+    }
+
+    @GetMapping("/me/authorities")
+    public ResponseEntity<List<String>> getMyAuthorities(Authentication authentication) {
+        List<String> authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+        return ResponseEntity.ok(authorities);
     }
 }

@@ -15,9 +15,11 @@ import {
   MapPin,
   CreditCard,
   ReceiptText,
+  FileText,
   ChevronRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuthorities } from '@/components/authorities-provider'
 
 interface NavItem {
   label: string
@@ -82,6 +84,7 @@ const navSections = [
     title: 'Admin',
     items: [
       { label: 'Users', href: '/users', icon: <UserCog className="h-4 w-4" /> },
+      { label: 'Reports', href: '/reports', icon: <FileText className="h-4 w-4" /> },
     ],
   },
 ]
@@ -147,7 +150,21 @@ function NavItemComponent({ item, depth = 0 }: { item: NavItem; depth?: number }
   )
 }
 
+const AUTHORITY_GATES: Record<string, string> = {
+  '/reports': 'READ_REPORTS',
+}
+
 export function Sidebar() {
+  const authorities = useAuthorities()
+
+  const visibleSections = navSections.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      const required = AUTHORITY_GATES[item.href]
+      return !required || authorities.includes(required)
+    }),
+  })).filter(section => section.items.length > 0)
+
   return (
     <aside className="flex h-full w-60 flex-col border-r border-[var(--sidebar-border)] bg-[var(--sidebar)]">
       {/* Brand */}
@@ -160,7 +177,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-4">
-        {navSections.map(section => (
+        {visibleSections.map(section => (
           <div key={section.title}>
             <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
               {section.title}

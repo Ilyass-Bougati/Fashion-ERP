@@ -27,6 +27,7 @@ const routeTitles: Record<string, string> = {
   '/finance/fixed-charges': 'Fixed Charges',
   '/finance/payroll': 'Payroll',
   '/users': 'Users',
+  '/reports': 'Reports',
 }
 
 function getPageTitle(pathname: string): string {

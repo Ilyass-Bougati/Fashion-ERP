@@ -40,6 +40,9 @@ public class ApplicationAuthorities {
     private final String processPayrollAuthority = "PROCESS_PAYROLL";
     private final String readPayrollAuthority = "READ_PAYROLL";
 
+    // Reports module authorities
+    private final String readReportsAuthority = "READ_REPORTS";
+
     // Sales module authorities
     private final String createSaleAuthority = "CREATE_SALE";
     private final String readSaleAuthority = "READ_SALE";

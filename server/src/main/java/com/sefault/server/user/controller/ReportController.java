@@ -10,11 +10,13 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority(@authorities.readReportsAuthority)")
 public class ReportController {
     private final ReportService reportService;
     private final UserReportService userReportService;

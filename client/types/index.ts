@@ -104,6 +104,29 @@ export interface EmployeePerformancePrediction {
   modelVersion: string; predictedAt: string
 }
 
+// Reports
+export type ReportType = 'PDF' | 'EXCEL' | 'CSV'
+export type ReportStatus = 'PENDING' | 'DONE' | 'FAILED'
+export type ReportCategory = 'FINANCIAL' | 'SALES' | 'EMPLOYEE_PERFORMANCE'
+
+export interface Report {
+  id: string
+  title: string
+  type: ReportType
+  status: ReportStatus
+  objectKey: string
+  bucketName: string
+  contentType: string
+  category: ReportCategory
+  generatedAt: string | null
+}
+
+export interface SavedReport {
+  id: string
+  url: string
+  expiresAt: string | null
+}
+
 // API Pagination
 export interface Page<T> {
   content: T[]; totalElements: number; totalPages: number;

@@ -4,16 +4,25 @@ import io.minio.*;
 import io.minio.errors.MinioException;
 import java.io.IOException;
 import java.io.InputStream;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@RequiredArgsConstructor
 public class MinioServiceImpl implements MinioService {
     private final MinioClient minioClient;
+    private final MinioClient presignClient;
     private final MinioProperties minioProperties;
+
+    public MinioServiceImpl(
+            MinioClient minioClient,
+            @Qualifier("presignClient") MinioClient presignClient,
+            MinioProperties minioProperties) {
+        this.minioClient = minioClient;
+        this.presignClient = presignClient;
+        this.minioProperties = minioProperties;
+    }
 
     // TODO : refactor this later...
     @Setter
@@ -43,7 +52,7 @@ public class MinioServiceImpl implements MinioService {
     }
 
     public String getFileUrl(String bucketName, String objectName, int expiry) throws MinioException {
-        return minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
+        return presignClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
                 .method(Http.Method.GET)
                 .bucket(bucketName)
                 .object(objectName)
