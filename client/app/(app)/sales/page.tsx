@@ -108,7 +108,7 @@ export default function SalesPage() {
       const lastHistDate = Object.keys(map).sort().filter(d => map[d].sales != null).pop()
       if (lastHistDate) {
         const val = map[lastHistDate].sales!
-        map[lastHistDate] = { ...map[lastHistDate], pred: val, lower: val, bandH: 0 }
+        map[lastHistDate] = { ...map[lastHistDate], pred: val }
       }
     }
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
@@ -242,7 +242,7 @@ export default function SalesPage() {
                 <Area dataKey="bandH" stackId="band" stroke="none" fill={`${CHART_COLOR}22`} dot={false} activeDot={false} legendType="none" />
                 {/* Actual + forecast lines */}
                 <Area dataKey="sales" stroke={CHART_COLOR} strokeWidth={2} fill="url(#salesGradient)" dot={false} activeDot={{ r: 4, fill: CHART_COLOR }} />
-                <Area dataKey="pred" stroke={CHART_COLOR} strokeWidth={2} strokeDasharray="5 4" fill="none" dot={false} activeDot={{ r: 4, fill: CHART_COLOR }} />
+                <Area dataKey="pred" stroke={CHART_COLOR} strokeWidth={2} strokeDasharray="5 4" fill="none" dot={false} activeDot={{ r: 4, fill: CHART_COLOR }} connectNulls />
               </AreaChart>
             </ResponsiveContainer>
           )}

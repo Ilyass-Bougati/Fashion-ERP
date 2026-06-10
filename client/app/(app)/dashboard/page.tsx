@@ -184,7 +184,7 @@ export default function DashboardPage() {
       const lastHistDate = Object.keys(map).sort().filter(d => map[d].net != null).pop()
       if (lastHistDate) {
         const val = map[lastHistDate].net!
-        map[lastHistDate] = { ...map[lastHistDate], pred: val, lower: val, bandH: 0 }
+        map[lastHistDate] = { ...map[lastHistDate], pred: val }
       }
     }
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
@@ -336,7 +336,7 @@ export default function DashboardPage() {
                   <Area dataKey="bandH" stackId="band" stroke="none" fill={`${chartColor}22`} dot={false} activeDot={false} legendType="none" />
                   {/* Actual + forecast lines */}
                   <Area dataKey="net" stroke={chartColor} strokeWidth={2} fill="url(#dashRevGradient)" dot={false} activeDot={{ r: 4, fill: chartColor }} />
-                  <Area dataKey="pred" stroke={chartColor} strokeWidth={2} strokeDasharray="5 4" fill="none" dot={false} activeDot={{ r: 4, fill: chartColor }} />
+                  <Area dataKey="pred" stroke={chartColor} strokeWidth={2} strokeDasharray="5 4" fill="none" dot={false} activeDot={{ r: 4, fill: chartColor }} connectNulls />
                 </AreaChart>
               </ResponsiveContainer>
             )}

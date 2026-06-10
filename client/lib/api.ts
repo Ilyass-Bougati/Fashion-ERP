@@ -4,7 +4,7 @@ import type {
   Product, ProductCategory, ProductVariation, Vendor,
   Employee, Isle, Transaction, FixedCharge, Payroll,
   FinancialStat, SalesStat, EmployeePerformanceStat, StockStat,
-  SalesPrediction, EmployeePerformancePrediction,
+  SalesPrediction, EmployeePerformancePrediction, FinancialPrediction,
   Report, SavedReport,
   Page
 } from '@/types'
@@ -255,6 +255,10 @@ export const predictions = {
   employees: (fromDate: string, cin: string, page = 0, size = 30) =>
     request<Page<EmployeePerformancePrediction>>(
       `/predictions/employees?fromDate=${fromDate}&periodType=DAILY&cin=${cin}&page=${page}&size=${size}`
+    ),
+  financial: (fromDate: string, page = 0, size = 3) =>
+    request<Page<FinancialPrediction>>(
+      `/predictions/financial?fromDate=${fromDate}&periodType=MONTHLY&page=${page}&size=${size}`
     ),
 }
 

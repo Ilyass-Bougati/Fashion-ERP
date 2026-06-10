@@ -164,6 +164,12 @@ export default function EmployeeDetailPage() {
   const combinedChart = useMemo(() => {
     type Point = { date: string; revenue?: number; pred?: number; lower?: number; bandH?: number }
     const map: Record<string, Point> = {}
+    // Fill every calendar day so the chart density matches the prediction side
+    for (const d = new Date(periodStart); ; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().slice(0, 10)
+      map[dateStr] = { date: dateStr, revenue: 0 }
+      if (dateStr >= todayStr) break
+    }
     chartData.forEach(d => { map[d.date] = { date: d.date, revenue: d.revenue } })
     if (!map[todayStr]) map[todayStr] = { date: todayStr }
     predData.forEach(p => {
@@ -177,16 +183,15 @@ export default function EmployeeDetailPage() {
         bandH: Math.max(0, Math.round((upper - lower) * 100) / 100),
       }
     })
-    // Bridge: carry the last historical value into pred/band so lines and band connect
+    // Bridge: carry the last historical value so the pred line connects
     if (predData.length > 0) {
       const lastHistDate = Object.keys(map).sort().filter(d => map[d].revenue != null).pop()
       if (lastHistDate) {
-        const val = map[lastHistDate].revenue!
-        map[lastHistDate] = { ...map[lastHistDate], pred: val, lower: val, bandH: 0 }
+        map[lastHistDate] = { ...map[lastHistDate], pred: map[lastHistDate].revenue! }
       }
     }
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date))
-  }, [chartData, predData, todayStr])
+  }, [chartData, predData, todayStr, periodStart])
 
   // ── render ───────────────────────────────────────────────────────────────
 
@@ -347,7 +352,7 @@ export default function EmployeeDetailPage() {
                 <Area dataKey="bandH" stackId="band" stroke="none" fill={`${CHART_COLOR}22`} dot={false} activeDot={false} legendType="none" />
                 {/* Actual + forecast lines */}
                 <Area dataKey="revenue" stroke={CHART_COLOR} strokeWidth={2} fill="url(#empRevGradient)" dot={false} activeDot={{ r: 4, fill: CHART_COLOR }} />
-                <Area dataKey="pred" stroke={CHART_COLOR} strokeWidth={2} strokeDasharray="5 4" fill="none" dot={false} activeDot={{ r: 4, fill: CHART_COLOR }} />
+                <Area dataKey="pred" stroke={CHART_COLOR} strokeWidth={2} strokeDasharray="5 4" fill="none" dot={false} activeDot={{ r: 4, fill: CHART_COLOR }} connectNulls />
               </AreaChart>
             </ResponsiveContainer>
           )}

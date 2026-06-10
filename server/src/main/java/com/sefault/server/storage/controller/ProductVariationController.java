@@ -35,9 +35,8 @@ public class ProductVariationController {
     }
 
     @PutMapping
-    public ProductVariationRecord update(
-            @Valid @RequestBody UUID id, @Valid @RequestBody ProductVariationRecord productVariationRecord) {
-        return productVariationService.update(id, productVariationRecord);
+    public ProductVariationRecord update(@Valid @RequestBody ProductVariationRecord productVariationRecord) {
+        return productVariationService.update(productVariationRecord.id(), productVariationRecord);
     }
 
     @DeleteMapping("/{id}")

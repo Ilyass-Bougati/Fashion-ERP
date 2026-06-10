@@ -103,6 +103,12 @@ export interface EmployeePerformancePrediction {
   predictedGrossSales: number | null; grossSalesLowerBound: number | null; grossSalesUpperBound: number | null
   modelVersion: string; predictedAt: string
 }
+export interface FinancialPrediction {
+  id: string; targetDate: string; periodType: string
+  predictedTotalRevenue: number | null; totalRevenueLowerBound: number | null; totalRevenueUpperBound: number | null
+  predictedNetProfit: number | null; netProfitLowerBound: number | null; netProfitUpperBound: number | null
+  modelVersion: string; predictedAt: string
+}
 
 // Reports
 export type ReportType = 'PDF' | 'EXCEL' | 'CSV'

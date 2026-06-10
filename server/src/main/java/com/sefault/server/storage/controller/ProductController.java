@@ -35,8 +35,8 @@ public class ProductController {
     }
 
     @PutMapping
-    public ProductRecord update(@Valid @RequestBody UUID id, @Valid @RequestBody ProductRecord productRecord) {
-        return productService.update(id, productRecord);
+    public ProductRecord update(@Valid @RequestBody ProductRecord productRecord) {
+        return productService.update(productRecord.id(), productRecord);
     }
 
     @DeleteMapping("/{id}")
