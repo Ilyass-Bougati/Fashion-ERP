@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthorities } from '@/components/authorities-provider'
+import { canView } from '@/lib/nav-permissions'
 
 interface NavItem {
   label: string
@@ -28,7 +29,12 @@ interface NavItem {
   children?: NavItem[]
 }
 
-const navSections = [
+interface NavSection {
+  title: string
+  items: NavItem[]
+}
+
+const navSections: NavSection[] = [
   {
     title: 'Overview',
     items: [
@@ -150,19 +156,21 @@ function NavItemComponent({ item, depth = 0 }: { item: NavItem; depth?: number }
   )
 }
 
-const AUTHORITY_GATES: Record<string, string> = {
-  '/reports': 'READ_REPORTS',
-}
-
 export function Sidebar() {
   const authorities = useAuthorities()
 
   const visibleSections = navSections.map(section => ({
     ...section,
-    items: section.items.filter(item => {
-      const required = AUTHORITY_GATES[item.href]
-      return !required || authorities.includes(required)
-    }),
+    items: section.items
+      .map(item => {
+        if (item.children) {
+          // Keep only the sub-items the user can see; hide the whole group if none remain.
+          const children = item.children.filter(child => canView(child.href, authorities))
+          return children.length > 0 ? { ...item, children } : null
+        }
+        return canView(item.href, authorities) ? item : null
+      })
+      .filter((item): item is NavItem => item !== null),
   })).filter(section => section.items.length > 0)
 
   return (

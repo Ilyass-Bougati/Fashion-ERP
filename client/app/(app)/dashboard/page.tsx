@@ -23,7 +23,10 @@ import {
   ReferenceLine,
 } from 'recharts'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { stats, hr, predictions } from '@/lib/api'
+import { useAuthorities, useAuthoritiesLoaded } from '@/components/authorities-provider'
+import { firstAllowedPath } from '@/lib/nav-permissions'
 import type { EmployeePerformanceStat, StockStat, SalesPrediction } from '@/types'
 
 // ── types ──────────────────────────────────────────────────────────────────────
@@ -90,6 +93,19 @@ export default function DashboardPage() {
   const [stockAlerts, setStockAlerts]     = useState<StockStat[]>([])
   const [predData, setPredData]           = useState<SalesPrediction[]>([])
   const [loading, setLoading]             = useState(true)
+
+  const router = useRouter()
+  const authorities = useAuthorities()
+  const authLoaded = useAuthoritiesLoaded()
+  const canSeeDashboard = authorities.includes('VIEW_DASHBOARD')
+
+  // Every user is landed on /dashboard by default; send those without access to their first allowed screen.
+  useEffect(() => {
+    if (authLoaded && !canSeeDashboard) {
+      const dest = firstAllowedPath(authorities)
+      if (dest && dest !== '/dashboard') router.replace(dest)
+    }
+  }, [authLoaded, canSeeDashboard, authorities, router])
 
   useEffect(() => { loadData() }, [])
 
@@ -207,6 +223,16 @@ export default function DashboardPage() {
   }, [combinedChart])
 
   // ── render ──────────────────────────────────────────────────────────────────
+
+  if (authLoaded && !canSeeDashboard) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-[var(--muted-foreground)]">
+        {firstAllowedPath(authorities)
+          ? 'Redirecting…'
+          : 'You don’t have access to any screens. Contact your administrator.'}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,7 @@
 package com.sefault.server.runner;
 
 import com.sefault.server.security.properties.ApplicationAuthorities;
+import com.sefault.server.user.dto.record.AuthorityRecord;
 import com.sefault.server.user.dto.record.RegisterUserRecord;
 import com.sefault.server.user.entity.Authority;
 import com.sefault.server.user.entity.User;
@@ -12,12 +13,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DefaultAuthoritiesAndAdminRunner implements CommandLineRunner {
@@ -28,43 +29,55 @@ public class DefaultAuthoritiesAndAdminRunner implements CommandLineRunner {
     private final ApplicationAuthorities applicationAuthorities;
 
     @Override
-    public void run(String... args) throws Exception {
-        if (userRepository.existsByEmail("admin@gmail.com")) {
-            return;
+    public void run(String... args) {
+        seedAuthorities();
+
+        User admin = userRepository.findByEmail("admin@gmail.com");
+        if (admin == null) {
+            userService.registerUser(
+                    new RegisterUserRecord("admin", "admin", "admin@gmail.com", "adminadmin", "0000000000"));
+            admin = userRepository.findByEmail("admin@gmail.com");
         }
 
-        log.warn("The logic for creating the authorities is not sound, update it in the future");
-        authorityRepository.deleteAll();
-        List<Authority> savedAuthorities = new ArrayList<>();
-        List<Authority> authorities = new ArrayList<>();
+        grantMissingAuthorities(admin);
+    }
 
-        // Using reflection to create all the authorities present on the applicationAuthorities bean
+    /** Creates any authority declared on the {@link ApplicationAuthorities} bean that is not yet persisted. */
+    private void seedAuthorities() {
+        for (String authorityName : declaredAuthorityNames()) {
+            if (!authorityRepository.existsByName(authorityName)) {
+                authorityRepository.save(new Authority(null, new ArrayList<>(), authorityName));
+            }
+        }
+    }
+
+    /** Grants the admin user every authority it does not already hold. */
+    private void grantMissingAuthorities(User admin) {
+        Set<String> alreadyGranted = authorityService.getUserAuthorities(admin.getId()).stream()
+                .map(AuthorityRecord::name)
+                .collect(Collectors.toSet());
+
+        for (Authority authority : authorityRepository.findAll()) {
+            if (!alreadyGranted.contains(authority.getName())) {
+                authorityService.grantAuthority(admin.getId(), admin.getEmail(), authority.getId());
+            }
+        }
+    }
+
+    /** Reflectively reads every authority name exposed as a getter on the {@link ApplicationAuthorities} bean. */
+    private List<String> declaredAuthorityNames() {
+        List<String> names = new ArrayList<>();
         for (Method method : applicationAuthorities.getClass().getDeclaredMethods()) {
             if (method.getName().startsWith("get")
                     && method.getParameterCount() == 0
                     && method.getReturnType() == String.class) {
                 try {
-                    String authorityName = (String) method.invoke(applicationAuthorities);
-                    authorities.add(new Authority(null, new ArrayList<>(), authorityName));
+                    names.add((String) method.invoke(applicationAuthorities));
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new RuntimeException("Failed to invoke method: " + method.getName(), e);
                 }
             }
         }
-
-        for (Authority authority : authorities) {
-            savedAuthorities.add(authorityRepository.save(authority));
-        }
-
-        RegisterUserRecord adminUser =
-                new RegisterUserRecord("admin", "admin", "admin@gmail.com", "adminadmin", "0000000000");
-
-        // Creating the admin user
-        userService.registerUser(adminUser);
-        User admin = userRepository.findByEmail("admin@gmail.com");
-
-        for (Authority authority : savedAuthorities) {
-            authorityService.grantAuthority(admin.getId(), admin.getEmail(), authority.getId());
-        }
+        return names;
     }
 }

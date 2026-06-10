@@ -107,7 +107,7 @@ export default function HRPage() {
         hiredAt: form.hiredAt ? `${form.hiredAt}T00:00:00` : undefined,
       }
       if (editing) {
-        await hr.employees.update(editing.id, payload)
+        await hr.employees.update(editing.id, { ...payload, id: editing.id })
         toast('Employee updated', 'success')
       } else {
         await hr.employees.create(payload)

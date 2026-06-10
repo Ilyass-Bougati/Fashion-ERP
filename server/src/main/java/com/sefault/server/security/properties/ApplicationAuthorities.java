@@ -52,4 +52,32 @@ public class ApplicationAuthorities {
     private final String readSaleLineAuthority = "READ_SALE_LINE";
     private final String updateSaleLineAuthority = "UPDATE_SALE_LINE";
     private final String deleteSaleLineAuthority = "DELETE_SALE_LINE";
+
+    // Storage / Inventory module authorities
+    private final String createProductAuthority = "CREATE_PRODUCT";
+    private final String updateProductAuthority = "UPDATE_PRODUCT";
+    private final String deleteProductAuthority = "DELETE_PRODUCT";
+    private final String getProductAuthority = "GET_PRODUCT";
+    private final String listProductsAuthority = "LIST_PRODUCTS";
+
+    private final String createProductCategoryAuthority = "CREATE_PRODUCT_CATEGORY";
+    private final String updateProductCategoryAuthority = "UPDATE_PRODUCT_CATEGORY";
+    private final String deleteProductCategoryAuthority = "DELETE_PRODUCT_CATEGORY";
+    private final String getProductCategoryAuthority = "GET_PRODUCT_CATEGORY";
+    private final String listProductCategoriesAuthority = "LIST_PRODUCT_CATEGORIES";
+
+    private final String createProductVariationAuthority = "CREATE_PRODUCT_VARIATION";
+    private final String updateProductVariationAuthority = "UPDATE_PRODUCT_VARIATION";
+    private final String deleteProductVariationAuthority = "DELETE_PRODUCT_VARIATION";
+    private final String getProductVariationAuthority = "GET_PRODUCT_VARIATION";
+    private final String listProductVariationsAuthority = "LIST_PRODUCT_VARIATIONS";
+
+    private final String createVendorAuthority = "CREATE_VENDOR";
+    private final String updateVendorAuthority = "UPDATE_VENDOR";
+    private final String deleteVendorAuthority = "DELETE_VENDOR";
+    private final String getVendorAuthority = "GET_VENDOR";
+    private final String listVendorsAuthority = "LIST_VENDORS";
+
+    // Dashboard module authorities
+    private final String viewDashboardAuthority = "VIEW_DASHBOARD";
 }

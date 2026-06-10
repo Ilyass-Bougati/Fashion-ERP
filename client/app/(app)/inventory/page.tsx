@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -89,16 +89,6 @@ export default function InventoryPage() {
       toast('Operation failed', 'error')
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  async function handleDelete(id: string) {
-    try {
-      await inventory.products.remove(id)
-      toast('Product deleted', 'success')
-      load()
-    } catch {
-      toast('Delete failed', 'error')
     }
   }
 
@@ -212,10 +202,6 @@ export default function InventoryPage() {
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); openEdit(p) }}>
                           <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-[var(--destructive)]"
-                          onClick={e => { e.stopPropagation(); handleDelete(p.id) }}>
-                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

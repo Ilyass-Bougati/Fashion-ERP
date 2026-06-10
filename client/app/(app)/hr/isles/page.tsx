@@ -64,7 +64,7 @@ export default function IslesPage() {
     setSubmitting(true)
     try {
       if (editing) {
-        await hr.isles.update(editing.id, { code, employeeId })
+        await hr.isles.update(editing.id, { code, employeeId, id: editing.id })
         toast('Isle updated', 'success')
       } else {
         await hr.isles.create({ code, employeeId })
