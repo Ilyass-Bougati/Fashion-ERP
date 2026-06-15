@@ -15,12 +15,4 @@ This project is developed as part of a Software Engineering & AI academic curric
 ## Tech Stack
 - *Backend*: Spring Boot (Java)
 - *Frontend*: Next.js (React)
-- *AI Integration*: LLMs (Architecture specifics TBD)
-
-## Deliverables
-1. Detailed Project Schedule (MS Project)
-2. Project Specifications (Cahier de charge)
-3. Functional Web Application (Spring Boot / Next.js)
-4. Final Presentation Materials (including UML diagrams)
-5. Live Demonstration
-6. Project Post-Mortem / Final Report
+- *AI Integration*: LLMs & Google's TimesFM
